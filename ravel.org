@@ -1,0 +1,712 @@
+#+TITLE:     ravel.org
+#+AUTHOR:    Charles Berry
+#+EMAIL:     ccberry@ucsd.edu
+#+DATE:      2012-07-17
+#+DESCRIPTION: Sweave/knit/brew document maker for orgmode
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+#+DRAWERS: DEVNOTES TODOWHAT
+
+* Background
+  :PROPERTIES:
+  :eval:     never
+  :END:
+  
+** orgmode
+
+[[http://orgmode.org/index.html][Orgmode]] is /for keeping notes, maintaining TODO lists, doing project planning, and authoring with a fast and effective plain-text system./ The same org document can be used to create LaTeX, HTML, plain ASCII, and various other formats upon export.
+
+[[http://orgmode.org/worg/org-contrib/babel/index.html][Babel]] is /Org-mode's ability to/ /execute source code/ /within Org-mode documents/. It is powerful and flexible and a useful tool for generating reproducible research reports as outlined in [[http://www.jstatsoft.org/v46/i03][the report :]] Eric Schulte, Dan Davison, Thomas Dye, and Carsten Dominik. A Multi-Language Computing Environment for Literate Programming and Reproducible Research. Journal of Statistical Software. 46(3) Jan 2012. Source code blocks can be editted in place or in a language major-mode edit buffer containing the body of the code block. And for R blocks, ~ESS~ is fully functional.
+
+** R document/report Generators 
+
+There are many markup and report and document generating packages and
+functions for R. A useful overview of them is at [[http://cran.r-project.org/web/views/ReproducibleResearch.html][CRAN Task View for
+Reproducible Research]]
+
+Several to which this software is aimed are 
+
+   - Sweave :: This R function is the basic workhorse for many report
+               and document generating functions. It uses (by default)
+               a noweb type syntax to separate code chunks from LaTeX
+               markup and can be run to /weave/ reports or /tangle/
+               executable code.. It described in
+               detail at
+     - [[http://www.statistik.uni-muenchen.de/~leisch/Sweave/][the Sweave homepage]] and in
+     - Friedrich Leisch. Sweave: Dynamic generation of statistical
+       reports using literate data analysis. In Wolfgang Härdle and
+       Bernd Rönz, editors, Compstat 2002 - Proceedings in
+       Computational Statistics, pages 575-580. Physica Verlag,
+       Heidelberg, 2002. ISBN 3-7908-1517-9.
+       
+
+   - brew :: This R package uses a simple PHP-like syntax to markup
+               documents mixing text and code which are then through
+               the ~brew()~ function. It is described in the help documents for the package: 
+       - Jeffrey Horner (2011). brew: Templating Framework for Report
+         Generation. R package version 1.0-6.
+         http://CRAN.R-project.org/package=brew
+
+   - knitr :: This R package is an attempt to combine and unify the
+                 best features of many report generating/markup
+                 package and functions in R. It is described in
+
+	 - Yihui Xie (2012). knitr: A general-purpose package for
+           dynamic report generation in R. R package version 0.6.3.
+           http://CRAN.R-project.org/package=knitr and
+
+	 - [[http://yihui.name/knitr/][The knitr home page]]
+
+** Putting orgmode and Sweave together
+
+Each approach (orgmode as report generator vs Sweave-like report
+generators) has its own strengths and weaknesses.
+
+After years of using Sweave for report creation, I tried to use
+orgmode to construct a research report from a moderate sized database
+using some simulations and lengthy statistical resampling routines. I
+got through the first draft of the report and a 25-page supplement
+using orgmode/Babel.
+
+I really liked the ease with which I could organize some things in the
+process - like notes, emails from collaborators, TODO lists, and code
+snippets and intermediate results that might not show up in the final
+report or supplement or whose location was uncertain. Being able to
+run code snippets and have the results saved in the master document
+and be able to toggle to view LaTeX snippets and graphics rendered in
+place was very slick.
+
+However, there were some things I really missed that were helpful in
+the Sweave style of work. There are /dependency aware/ caching systems
+in R that are simple and powerful; you can change a line of code and
+rerun the document and all the pieces that need to be recomputed are
+rebuilt and recached. And it all happens in a flash if all you needed
+to do was change a format in table or anything that doesn't require a
+large object to be rebuilt. And when a large object is rebuilt, all
+its dependencies get updated, too. I ended up building a collection of
+intermediate R objects to make the build/revision process execute in
+finite time, but maintaining them and rebuilding them as needed was a
+nuisance. Some componenents of the project required only a subset of
+objects and the R packages that access them and I ended up having to
+sprinkle links to the code to ~load~ or ~require~ throughout the
+orgmode file. In the end, the orgmode files that served as the master
+and the supplement were more than 7500 lines long and had more than
+130 R source code blocks. And to be honest, there were some
+stand-alone R scripts and a separate org file that had over 100 source
+code blocks in to to manange the CPU intensive computations. It ended
+up being pretty ungainly.
+
+Also, there are some nice formatting tools available and more coming
+into use. And many of them are hard (or maybe impossible) to use when
+Babel is doing the final report generation. I did use =brew= under
+Babel, but it was truly an awkward process.
+
+I see terrific possibilities presented by new (as of July 2012) R
+packages in development like =knitr= and [[https://github.com/daroczig/pander][=pander=]]. It is tempting to
+switch to those tools for my next project, but I want to retain the
+features of orgmode+Babel for my workflow. The new export engine (see
+[[http://orgmode.org/worg/dev/org-export-reference.html][Org Export Reference Documentation]]) offers the possibility to have a
+workstyle in which an orgmode master document contains a /subtree/
+with text and code blocks that when exported becomes an Sweave or brew
+style document that when run produces LaTeX, HTML, and/or some other
+markup language. By including caching options in those documents the
+development process becomes easy to organize, restarting work after a
+break is just a matter of rerunning the document to load the cached
+objects and libraries, then switching to the orgmode master to try out
+some new code, reorganize the presentation, and so on.
+
+
+* lisp setup
+  :PROPERTIES:
+  :eval:     never
+  :END:
+** Put ./contrib/lisp on your load path
+
+This works for my setup:
+
+#+name: set-My-Load-Path
+#+BEGIN_SRC emacs-lisp :results output silent
+  (add-to-list 'load-path "~/elisp/org-mode/contrib/lisp/")
+#+END_SRC
+
+** Load the new exporter files
+   
+   
+   
+   =e-ravel.el= will take care of this step, so if you go to the next
+   step - *extract e-ravel.el and load it* , it should /just work/.
+   
+   =org-element= and =org-export= are required and at least one of the
+   defined backends. Here I use =e-latex=:
+   #+name: loadup
+   #+begin_src emacs-lisp :results output silent
+  (require 'org-element)
+  (require 'org-export)
+  (require 'org-e-latex)
+   #+end_src
+   
+** extract e-ravel.el and load it
+   
+   These two lines should do the trick:
+   
+   #+BEGIN_SRC emacs-lisp
+(org-babel-tangle)
+(load-file "e-ravel.el")
+   #+END_SRC
+   
+* examples
+
+Some =*.org= files in this directory show how the available backends
+can be used. Check out
+
+ - =test-cases.org=
+ - =example-1-Rnw.org=
+
+* ravel
+  :PROPERTIES:
+  :eval:     never
+  :END:
+
+  :DEVNOTES:
+Things to thing about:
+- load, require, autoload, provide
+- Commentary and Code as per checkDoc
+- dexy does integration of documents, see [[http://www.dexy.it/faq/#how-is-dexy-different-to-sweave][Dexy FAQ]], maybe later ...
+
+- DONE: I have set up to combine :ravel and #+ATTR_RAVEL: then 
+ 
+- Save the header info as #+ATTR_R-HEADERS: then parse the header info in
+  the src block function and
+  possibly refer to its values in setting up the chunk.
+
+- exporting brew style to *.org might be an awesome capability. Here is how to do it:
+  - write the usual code including `:ravel <%[=] ... [{}][-]%>' arguments
+  - install a hook for org-export-before-parsing-hook that will
+    - (copy and) save the temp buffer
+    - run R and call brew( <the saved copy> )
+    - ad-deactivate as needed
+    - (stop "all done") or
+    - copy the saved buffer back to working buffer and continue. Under
+      this option, one can later use the saved buffer to export to
+      other formats
+  - then just export with any backend that supports brew
+
+
+Mostly DONE:
+- so here is what I am figuring out:
+  - need to advise org-babel-exp-do-export
+    - to strip results of R blocks
+    - to pre-format R src-blocks and inline src blocks
+    - to pre-format and possibly run non-R source blocks according to
+      the original parent (e.g. e-latex)
+  - advise org-export-as to
+    - add hook for pre-parsed buffer
+    - ad-activate org-babel-exp-do-export
+    - ad-do-it
+    - remove hook for pre-parsed buffer
+    - ad-deactivate
+    so that other back-ends are not tripped up
+  - define a universal src-block function
+  - define a universal inline-src-block function
+  - define a back-end specific src-block format
+  - define a back-end specific inline-src-block format
+  - for the non-R src block function, use the ancestral version
+  - for the non-R inline src block function, use ancestor
+  - ( assoc 'src-block (reverse org-e-rnw-translate-alist)) will find
+    the ancestor!!!!
+  - org-export-before-parsing-hook is handy - it can remove delimiters
+    I insert to subvert babel's machinations.
+:END:
+  
+  :DEVNOTES:
+
+Here is the elisp header for e-ravel.el
+
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  ;;; e-ravel.el --- Sweave/knit/brew document maker for orgmode
+  ;; Copyright (C) 2012  Charles C. Berry
+  
+  ;; This program is free software: you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+  
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+  
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  
+  ;;; Commentary: 
+  ;;              See ravel.org for details.
+  ;;
+  ;;; Code:
+  ;;
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (require 'org-element)
+  (require 'org-export)
+  (require 'org-e-latex)
+#+end_src
+
+#+END_SRC
+:END:
+  
+  
+** extending ravel
+
+*** existing backends
+
+Currently, backends for ~e-latex-noweb~ and ~e-latex-brew~ are
+available. A look (below) at the definitions of the style functions
+for these backends should guide further devlopment.
+
+*** new backends
+
+It is fairly easy to add more backends. There are these
+ingredients needed:
+
+1. chunk style function
+2. inline style function
+3. a call to setup up the template-alist
+
+The examples below should serve to show what is needed to create
+different chunk and inline styles.
+
+**** defining a derived backend
+
+This template will probably be the same for all output styles - Sweave,
+brew, knitr variants, etc. The actual definition of the styles
+requires two style specific functions be created:
+
+- org-ravel-chunk-style-BACKEND :: Is the src block chunk style to be used
+     for BACKEND, where 'BACKEND' is the name of the backend. The
+     arguments of this function are described in more detail
+- org-ravel-inline-style-BACKEND :: Is the inline src block style to be used
+     for BACKEND, where 'BACKEND' is the name of the backend.
+
+The template-alist must be specified as:
+
+: #+NAME: defineDerived
+: #+begin_src emacs-lisp :tangle e-ravel.el
+:     
+:   (org-export-define-derived-backend BACKEND PARENT
+:     :translate-alist ((src-block . org-ravel-src-block)
+:                       (inline-src-block . org-ravel-inline-src-block)
+:                       ))
+:   
+:   
+: #+end_src
+where 'BACKEND' is the name of the new backend and 'PARENT' is the
+name of the original backend, e.g. "e-latex".
+
+The derived backends will inherit their /family name/ and append the
+chunk style to it, e.g. ~e-latex-noweb~ for latex files using the
+traditional noweb style chunks.
+
+**** explicit specification of arguments in exported chunks
+
+Arguments that need to be passed to exported code chunks can be placed
+after a ~:ravel~ key in a ~#+begin_src R~ line. Or they can be given
+in ~#+ATTR_RAVEL:~ lines immediately before the src block. 
+
+Some care is needed. Arguments for some backends may conflict with
+other backends.It might help to prefix arguments with the name of
+their backend.
+ 
+*** using Babel header arguments in exported code chunks
+
+Babel header arguments are parsed and the alist of such arguments is
+made available to the ~org-ravel-chunk-style-BACKEND~ function as
+~r-headers-attr~. This will eventually allow translation of some
+native org-babel headers to exported chunk headers. For this to
+happen,
+
+#+BEGIN_SRC emacs-lisp
+  (defun org-ravel-chunk-style-e-latex-newstyle 
+    (label ravel r-headers-attr src-code)
+    ( ... ))
+#+END_SRC
+
+needs to inspect the alist of ~r-headers-attr~ and find those that can
+be (re-)rendered and add the necessary arguemtns to the output string
+in the header position along with the arguments provided by the
+~ravel~ argument.
+
+** e-latex-noweb backend
+*** template-alist
+:DEVNOTES:
+   to reset this backend after first execution
+   use (makunbound 'org-e-latex-noweb-translate-alist)
+:END:
+
+#+name: e-latex-noweb-translate-alist
+#+begin_src emacs-lisp :tangle e-ravel.el
+  (org-export-define-derived-backend e-latex-noweb e-latex
+    :translate-alist ((src-block . org-ravel-src-block)
+                      (inline-src-block . org-ravel-inline-src-block)
+                      ))
+#+end_src
+
+*** chunk style
+
+#+name: e-latex-noweb-chunk-style
+#+begin_src emacs-lisp :tangle e-ravel.el :results silent         
+  (defun org-ravel-chunk-style-e-latex-noweb 
+    (label ravel r-headers-attr src-code)
+    "Chunk style for noweb style.
+  LABEL is the chunk name, RAVEL is the collection of ravel args as
+  a string, R-HEADERS-ATTR is the collection of headers from Babel
+  as a string parseable by `org-babel-parse-header-arguments',
+  SRC-CODE is the code from the block."
+    (concat
+     "<<" label
+     (if (and ravel label) ",") ravel ">>=\n"
+     src-code
+     "@ %def\n"))
+#+end_src
+*** inline src style
+#+name: e-latex-noweb-inline-style
+#+BEGIN_SRC emacs-lisp  :tangle e-ravel.el :results silent
+  (defun org-ravel-inline-style-e-latex-noweb 
+    (inline-src-block contents info)
+    "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a
+  plist holding contextual information."
+    (format "\\Sexpr{ %s }" (org-element-property :value inline-src-block)))
+#+END_SRC
+** e-latex-brew backend
+*** brew document format
+    The [[http://cran.r-project.org/web/packages/brew/index.html][brew]] R package use "<%" and "%>" to delimit code chunks. Placing an equals sign (`=') after the first delimiter will result in the value of the expression being printed in place of the code chunk. Placing a minus sign (`-') before the last delimiter will suppress the line break after the code chunk.
+    
+    It is handy to be able to evaluate the code inside the delimiters during development and debugging using the ~C-c C-c~ key, but this can only be done on complete, syntactically correct R expressions. In orgmode, this can be achieved by letting the delimiters live outside of the code chunk as an extra argument. Here is an example
+    
+    
+:    #+begin_src R :ravel <% code %> 
+:      load("my-data.RData")
+:    #+end_src
+:
+:    #+RESULTS:
+:
+:
+:    #+begin_src R :ravel <%= code %>
+:      cat( print( ls() ), sep="\n")
+:    #+end_src
+    
+    The code in each chunk can be executed via ~C-c C-c~. On export, it is wrapped in the delimiters. The text =code= is deleted. (In fact, it need not be there at all.)
+    
+    One of the nifty features of ~brew~ is that the code chunks do not need to be complete expressions. Thus, one can use
+    
+    #+BEGIN_EXAMPLE
+          The alphabet:
+          <% for (i in letters) { %>
+          <%= c( i, toupper(i) ) %>
+          <% } %> 
+    #+END_EXAMPLE
+    to print the letters of the alphabet. In orgmode, the exporter becomes confused by code chunks like =for (i in letters) {=. Allowance for this idiom is made by placing the opening or closing curly brace just before the last delimiter (`[-]%>') like this =<% } -%>=. The curly brace will appear after the code (if any) in the chunk after export.
+
+*** template-alist
+#+name: e-latex-brew-translate-alist
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (org-export-define-derived-backend e-latex-brew e-latex
+     :translate-alist ((src-block . org-ravel-src-block)
+                       (inline-src-block . org-ravel-inline-src-block)
+                       ))  
+  
+#+END_SRC
+
+:DEVNOTES:
+ NO LONGER: need to revise advise org-export-as to check any/all derived templates
+
+via (member backend org-backends-to-skip-babel)
+:END:
+
+*** chunk style
+#+name: e-latex-brew-chunk-style
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (defun org-ravel-chunk-style-e-latex-brew 
+    (label ravel r-headers-attr src-code)
+    "Default chunk style for brew style.
+  LABEL is the chunk name,RAVEL is the collection of ravel args as a
+  string,R-HEADERS-ATTR is the collection of headers from Babel as
+  a string parseable by `org-babel-parse-header-arguments',SRC-CODE
+  is the code from the block."
+      (format (org-ravel-format-brew-spec ravel) src-code))
+#+END_SRC
+
+*** inline style
+#+name: e-latex-brew-inline-style
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (defun org-ravel-inline-style-e-latex-brew 
+    (inline-src-block contents info)
+    "Traditional brew style using the INLINE-SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a plist holding
+  contextual information."
+    (format (org-ravel-format-brew-spec
+             (or
+              (org-element-property :parameters inline-src-block)
+              "<%= code -%>"))
+            (org-element-property :value inline-src-block)))
+#+END_SRC
+    
+*** brew formatting :ravel arguments
+
+A function is needed to check the spec, escape percent signs, and
+return a format STRING that is suitable for brew.
+
+#+name: defun-brew-formatter
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+    (defun org-ravel-format-brew-spec (&optional spec)
+      "Check a brew SPEC, escape % signs, and add a %s spec."
+      (let
+          ((spec (or spec "<% %>")))
+        (if (string-match 
+             "<\\(%+\\)\\([=]?\\)\\(.+?\\)\\([{}]?[ ]*-?\\)\\(%+\\)>" 
+             spec)
+            (let (
+                  (opct (match-string 1 spec))
+                  (eqsign (match-string 2 spec))
+                  (filler (match-string 3 spec))
+                  (enddash (match-string 4 spec))
+                  (clpct (match-string 5 spec)))
+              (if (string= opct clpct)
+                  (concat "<" opct opct eqsign " %s " enddash clpct clpct ">")
+                (error "Percent signs do not balance:%s" spec)))
+          (error "Invalid spec:%s" spec))))
+    
+#+END_SRC
+
+#+RESULTS: defun-brew-formatter
+: org-ravel-format-brew-spec
+
+#+RESULTS:
+: format-brew-spec
+
+#+COMMENT: (org-ravel-format-brew-spec "<%= %s -%>")
+#+COMMENT: "<%%= %s -%%>"
+** support functions
+
+These functions should not be changed for individual backends.
+
+*** src block ancestors
+
+Non-R src blocks should use the src-block and inline-src-block functions of
+the parent (e.g. e-latex). This function helps to find them.
+
+#+name: defunAncestor
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+    (defun org-ravel-get-ancestor-fun (funkey &optional info)
+  "Ancestral definition of function.
+  Find  FUNKEY function in the `:translate-alist' property of INFO."
+      (let ((anfun
+             (cdr (assoc funkey (reverse (plist-get  info :translate-alist)))))
+            )
+        anfun))
+#+END_SRC
+
+#+COMMENT: (org-ravel-get-ancestor-fun 'src-block  `(:translate-alist   ,org-e-latex-noweb-translate-alist) )
+
+*** R src block transcoder
+
+This function looks for a function name org-ravel-chunk-style-BACKEND, where
+BACKEND is the name of the backend. If it funds one and if and R src
+block is being processed, then it calls that function with args (label
+ravel code). This function should not be modified by users.
+
+#+NAME: ravelWrapper
+#+begin_src emacs-lisp :tangle e-ravel.el
+      (defun org-ravel-src-block (src-block contents info)
+        "Transcode a SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a plist
+  holding contextual information.  If org-ravel-chunk-style-BACKEND
+  is defined, that will be called for R src blocks."
+        (let* ((lang (org-element-property :language src-block))
+               (label (org-element-property :name src-block))
+               (ravel-attr (org-element-property :attr_ravel src-block))
+               (r-headers-attr (org-element-property :attr_r-headers src-block))
+               (ravel (if ravel-attr
+                          (mapconcat #'identity ravel-attr ", ")))
+               (chunk-style-fun (intern (concat "org-ravel-chunk-style-" 
+                                                (symbol-name backend)))))
+          (if (and (string= lang "R") (fboundp chunk-style-fun))
+              (funcall chunk-style-fun label ravel r-headers-attr
+                       (car (org-export-unravel-code src-block)))
+            (funcall          
+             (org-ravel-get-ancestor-fun 'src-block info)
+             src-block contents info)
+            )))
+#+end_src
+
+*** R inline-src-block transcoder
+:DEVNOTES:
+- DONE :ravel support - I carry ":ravel xyz" forward from pre-process as
+  'xyz' for inline src blocks, so I can use it here
+:END:
+
+org-ravel-inline-src-block looks up org-ravel-inline-style-BACKEND, which
+does the actual formatting. This function shold not be modified by users.
+
+#+name: inlineTranscoder
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (defun org-ravel-inline-src-block (inline-src-block contents info)
+    "Transcode an INLINE-SRC-BLOCK element from Org to LaTeX.
+  CONTENTS holds the contents of the item.  INFO is a plist holding
+  contextual information.  Use default for parent backend except for R calls."
+    (let ((lang (org-element-property :language inline-src-block))
+          (ancestor-inline-src-block (org-ravel-get-ancestor-fun 'inline-src-block))
+          (inline-style-fun (intern (concat "org-ravel-inline-style-" 
+                                            (symbol-name backend))))
+          )
+      (if (and (string= lang "R") (fboundp inline-style-fun))
+          (funcall inline-style-fun inline-src-block contents info)
+        (funcall ancestor-inline-src-block inline-src-block contents info)
+        )))
+#+END_SRC
+*** advise for org-export-as
+
+
+There is no hook at the beginning of ~org-export-as~. So, to make this
+work, ~org-export-as~ is 'advise'd to ad-activate advise for
+org-babel-exp-do-export at the start, then ad-deactivate it at the
+end.
+
+**** defadvice-org-export-as
+:DEVNOTES:
+I am not sure, but I may need to add an unwind-protect to be sure
+ad-deactivate runs.
+The remove-hook might be superfluous - the hook seems harmless - but I
+can't make it buffer local until the temp buffer is created down in ad-do-it
+so to be cautious I do it explicitly.
+:END:
+
+#+name: defadvice-org-export-as
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (defadvice org-export-as (around org-ravel-export-as-advice protect)
+    "Activate advise for `org-babel-exp-do-export' in `org-export-as'.
+  This enables preproceesing of R inline src blocks and src blocks
+  by babel before parsing of the *.org buffer ."
+    (if (fboundp  (intern (concat "org-ravel-chunk-style-" (symbol-name backend))))
+        (progn
+          (add-hook 'org-export-before-parsing-hook '
+                    org-ravel-strip-SRC-hookfun)
+          (ad-activate 'org-babel-exp-do-export)
+          ad-do-it
+          (remove-hook 'org-export-before-parsing-hook ' org-ravel-strip-SRC-hookfun)
+          (ad-deactivate  'org-babel-exp-do-export)
+          )
+      ad-do-it))
+  
+  (ad-activate 'org-export-as)
+#+end_src
+
+#+RESULTS: defadvice-org-export-as
+: org-export-as
+
+**** org-ravel-strip-SRC-hookfun
+
+This hack works around the need to protect ~src_R~ calls until the
+export parser can see them.
+
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (defun org-ravel-strip-SRC-hookfun ()
+    "Strip delimiters: ==SRC< and >SRC==."
+      (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
+        (replace-match "\\1" nil nil)))
+#+END_SRC
+*** advice for org-babel-exp-do-export
+:TODOWHAT:
+ - DONE maybe add a line to handle regular src blocks here 
+ - WRONG /org-ravel-src-block can then be deleted and its entry
+   in :translate-alist removed/ WHY: the exporter expects to
+   see #+BEGIN blocks, so they need to be left as is. The :ravel arg
+   is added here.
+ - maybe defvar templates for the inline (DONE) and src block (NOT
+   USEFUL) output to allow easy customization
+ - DONE need to smartly remove #+results. babel gets this right, but the
+   new export engine misses some blocks
+ - DONE inline src block results may need removal, still.
+   - letting a temp version of org-babel-execute:R produce the formmating
+     inline code and neutering org-babel-examplize-region puts an
+     unescaped src_R in the buffer for parsing.
+   - src blocks are easier. The newline after them makes it possible to
+     call org-babel-remove-result and then return the formatted code
+ - DONE add [brew spec] to src_R when :ravel is non nil 
+:END:
+
+
+#+name: defadvice-do-export
+#+begin_src emacs-lisp :tangle e-ravel.el
+  (defadvice org-babel-exp-do-export  (around org-ravel-exp-do-export)
+    "Wrap the ravel src block template around body and clip results."
+    (let ((is-R (string= (nth 0 info) "R"))
+          (is-inline (eq type 'inline))
+          (export-val (or (cdr (assoc :exports (nth 2 info))) "code")))
+      (if is-R
+          ;; pass src block to the parser
+          (setq ad-return-value
+                (if is-inline
+                    ;; delimit src_R[]{} inside `==SRC<' and `>SRC=='
+                    ;; it will be stripped just before parsing
+                    ;; insert `:ravel' values, if any
+                    (flet 
+                        ((org-babel-examplize-region
+                          (x y z)
+                          (insert (format "==SRC<%s>SRC==" 
+                                          (prog1 (buffer-substring x y)
+                                            (delete-region x y)))))
+                         (org-babel-execute:R
+                          (body params)
+                          (let* ((ravelarg 
+                                  (cdr (assoc :ravel (nth 2 info))))
+                                 (nth-one (nth 1 info))
+                                 (srcRresult
+                                  (if ravelarg
+                                      (format "src_R[%s]{%s}" ravelarg nth-one)
+                                    (format "src_R{%s}"
+                                            nth-one ))))
+                            srcRresult)
+                          ))
+                      (let ((org-confirm-babel-evaluate nil))
+                        ad-do-it))
+                  ;; #+begin_src ... #+end_src block
+                  ;; omit if results type none
+                  (if (string= export-val "none")
+                      ""
+                    ;; prune out any in buffer results
+                    (org-babel-remove-result info)
+                    (let* ((headers (nth 2 info))
+                           (ravelarg (cdr (assoc :ravel headers)))
+                           (non-ravelargs
+                            (mapconcat 
+                             '(lambda (x) (format "%S %s" (car x) (cdr x)))
+                             (assq-delete-all :ravel headers) " ")))
+                      (format "%s%s#+BEGIN_SRC R \n%s\n#+END_SRC"
+                              (if ravelarg
+                                  (format "#+ATTR_RAVEL: %s\n" ravelarg) "")
+                              (if non-ravelargs
+                                  (format "#+ATTR_R-HEADERS: %s\n" 
+                                          non-ravelargs) "")
+                              (nth 1 info))))))
+        ;; not R so do default
+        ad-do-it)))
+#+END_SRC
+
+
+:DEVNOTES:
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+  (provide 'e-ravel)
+  
+  ;;; e-ravel.el ends here
+#+END_SRC
+:END:

@@ -1,0 +1,69 @@
+
+* headline 1
+
+Run these commands to see how differently the various exporters treat
+the src blocks. You need to type 'y' repeatedly in response to the
+query about evaluating the src blocks:
+
+:  M-: (org-export-to-buffer 'e-latex "latex buffer") RET
+:  M-: (org-export-to-buffer 'e-latex-noweb "noweb buffer") RET
+:  M-: (org-export-to-buffer 'e-latex-brew "brew buffer") RET
+:  M-: (ediff-buffers3 "latex buffer" "noweb buffer" "brew buffer") RET 
+
+then you need to type 'n' several times to step through the diffs and finally 'qy'
+to quit.
+
+** inline R call
+
+When e-latex-brew is used, the :ravel header is used in the inline src
+block. It is ignored for e-latex-noweb.
+
+One plus one equals src_R[:ravel <%= code %>]{1+1}.
+
+** inline elisp and python blocks are executed
+
+Two plus two equals src_emacs-lisp{(+ 2 2)}.
+
+A definition returns "src_emacs-lisp{(defun x (y) (* y y))} ".
+
+Three plus three equals src_python{return 3 + 3}.
+
+
+** R src block with no header args
+
+There is a results block that gets stripped on output with
+e-latex-noweb.  e-latex uses the ~:results code~ default and wraps the
+block in a verbatim environment.
+
+#+begin_src R 
+ 2^3
+#+end_src
+
+#+RESULTS:
+: 8
+
+** elisp src block and results
+
+This gets runs and both code and results are exported.
+
+#+begin_src emacs-lisp :exports both
+(+ 2 3)
+#+end_src
+
+#+RESULTS:
+: 5
+
+** named src block and results
+
+The results block is removed and the src block is wrapped in
+e-latex-noweb and e-latex-brew, but if this code block is not rerun
+e-latex leaves the old-results.
+
+#+name: illustrate-args
+#+begin_src R :exports results :fig yes :results output value :eval never
+a <- 3
+#+end_src
+
+#+RESULTS: illustrate-args
+: old-result
+

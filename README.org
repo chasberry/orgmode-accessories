@@ -3,3 +3,63 @@
 
 Add ons for orgmode
 
+* The other files here:
+
+-  ravel.org :: description and definition of backends to create
+                ~Sweave~ and ~brew~ style files 
+- example-1-Rnw.org :: includes an orgmode translation of example-1 from the
+     Sweave user's manual. Exporting with ~e-latex-noweb~ produces a
+     file very similar to the =*.Rnw= code.
+- test-cases.org :: this sets up to allow parallel exports using
+                    ~e-latex~ and two derived backends ~e-latex-noweb~
+                    and ~e-latex-brew~ and inspect the =diffs= between
+                    them.
+
+* Why Bother ?
+
+  
+** orgmode
+
+[[http://orgmode.org/index.html][Orgmode]] is /for keeping notes, maintaining TODO lists, doing project planning, and authoring with a fast and effective plain-text system./ The same org document can be used to create LaTeX, HTML, plain ASCII, and various other formats upon export.
+
+[[http://orgmode.org/worg/org-contrib/babel/index.html][Babel]] is /Org-mode's ability to/ /execute source code/ /within Org-mode documents/. It is powerful and flexible and a useful tool for generating reproducible research reports as outlined in [[http://www.jstatsoft.org/v46/i03][the report :]] Eric Schulte, Dan Davison, Thomas Dye, and Carsten Dominik. A Multi-Language Computing Environment for Literate Programming and Reproducible Research. Journal of Statistical Software. 46(3) Jan 2012. Source code blocks can be editted in place or in a language major-mode edit buffer containing the body of the code block. And for R blocks, ~ESS~ is fully functional.
+
+** R document/report Generators 
+
+There are many markup and report and document generating packages and
+functions for R. A useful overview of them is at [[http://cran.r-project.org/web/views/ReproducibleResearch.html][CRAN Task View for
+Reproducible Research]]
+
+Several to which this software is aimed are 
+
+   - Sweave
+   - brew 
+   - knitr
+
+** Putting orgmode and Sweave together
+
+Each approach (orgmode as report generator vs Sweave-like report
+generators) has its own strengths and weaknesses.
+
+orgmode makes it really easy to track things and to build code
+incrementally.
+
+Sweave has several /dependency aware/ caching systems in R that are
+simple and powerful. Also, there are some nice formatting tools
+available and more coming into use. And many of them are hard (or
+maybe impossible) to use when Babel is doing the final report
+generation. There are terrific possibilities presented by new (as of
+July 2012) R packages in development like [[http://yihui.name/knitr/][=knitr=]]  and [[https://github.com/daroczig/pander][=pander=]].
+
+** A new export engine
+
+The new orgmode export engine (see [[http://orgmode.org/worg/dev/org-export-reference.html][Org Export Reference Documentation]])
+ offers the possibility to have a workstyle in which an orgmode master
+ document contains a /subtree/ with text and code blocks that when
+ exported becomes an Sweave or brew style document that when run
+ produces LaTeX, HTML, and/or some other markup language. By including
+ caching options in those documents the development process becomes
+ easy to organize, restarting work after a break is just a matter of
+ rerunning the document to load the cached objects and libraries, then
+ switching to the orgmode master to try out some new code, reorganize
+ the presentation, and so on.

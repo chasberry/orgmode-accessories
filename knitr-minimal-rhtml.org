@@ -1,0 +1,100 @@
+#+title: A minimal knitr example in HTML
+#+AUTHOR:    Charles Berry
+#+EMAIL:     ccberry@ucsd.edu
+#+DATE:      2012-08-07 Tue
+
+* What is Up
+
+The next section is the "knitr-minimal.Rhtml' file from the [[https://github.com/yihui/knitr/blob/master/inst/examples/knitr-minimal.Rhtml][knitr demos page]],
+but modified to *.org format.
+
+Running this src block should turn it back into the original (or something close to it).
+#+BEGIN_SRC emacs-lisp
+  (save-excursion
+    (forward-line 4)
+    (search-forward " A minimal knitr example in HTML")
+      (org-export-to-file 'e-html-knitr "knitr-minimal.Rhtml" t nil t ))
+#+END_SRC
+
+#+RESULTS:
+: knitr-minimal.Rhtml
+
+should translate it back to Rhtml.
+
+
+
+* A minimal knitr example in HTML
+
+#+BEGIN_HTML
+<!DOCTYPE html>
+<head>
+  <title>A minimal knitr example in HTML</title>
+</head>
+#+END_HTML
+
+#+BEGIN_SRC R
+  opts_chunk$set(fig.width=5, fig.height=5, fig.path='ex-out-')
+#+END_SRC
+
+#+BEGIN_HTML
+<body>
+#+END_HTML
+This is a minimal example which shows *knitr*
+  working with HTML
+  pages. See [[https://github.com/downloads/yihui/knitr/knitr-minimal.html][here]]
+  for the output and
+  [[https://github.com/yihui/knitr/blob/master/inst/examples/knitr-minimal.Rhtml][here]]
+  for the source.
+
+Boring stuff as usual:
+  
+#+begin_src R 
+    ## a simple calculator
+    1+1
+    ## boring random numbers
+    set.seed(123)
+    rnorm(5)
+#+end_src
+
+We can also produce plots (centered by the
+  option ~fig.align~=~'center'~):
+
+#+begin_src R :ravel html-cars-scatter, message=FALSE, fig.align='center'
+    library(ggplot2)
+    plot(mpg~hp, mtcars)
+    qplot(hp, mpg, data=mtcars)+geom_smooth()
+#+end_src
+
+
+Errors, messages and warnings can be put into ~div~'s
+  with different ~class~ es:
+
+#+begin_src R 
+    sqrt(-1)  # warning
+    message('knitr says hello to HTML!')
+    1+'a'  # mission impossible
+#+end_src
+
+
+  In the end, let's show off a 3D plot from
+  the *rgl* package.
+
+#+begin_src R 
+    knit_hooks$set(rgl = hook_rgl)  # set up the hook first
+#+end_src
+
+
+#+name: fancy-rgl
+#+begin_src R :ravel rgl=TRUE, fig.align='center', fig.width=4, fig.height=4
+    if (require('rgl')) {
+    demo('bivar', package='rgl', echo=FALSE) 
+    par3d(zoom=.7)
+    }
+#+end_src
+
+  Well, everything seems to be working. Let's ask R what is the
+  value of \pi? Of course it is src_R{pi}.
+
+#+BEGIN_HTML
+</body>
+#+END_HTML

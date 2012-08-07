@@ -148,19 +148,20 @@ This works for my setup:
    defined backends. Here I use =e-latex=:
    #+name: loadup
    #+begin_src emacs-lisp :results output silent
-  (require 'org-element)
-  (require 'org-export)
-  (require 'org-e-latex)
+     (require 'org-element)
+     (require 'org-export)
+     (require 'org-e-latex)
+     (require 'org-e-html)
    #+end_src
    
 ** extract e-ravel.el and load it
    
    These two lines should do the trick:
    
-   #+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
 (org-babel-tangle)
 (load-file "e-ravel.el")
-   #+END_SRC
+#+END_SRC
    
 * examples
 
@@ -169,7 +170,7 @@ can be used. Check out
 
  - =test-cases.org=
  - =example-1-Rnw.org=
-
+ - =knitr-minimal-rhtml.org=
 * ravel
   :PROPERTIES:
   :eval:     never
@@ -181,6 +182,8 @@ Things to thing about:
 - Commentary and Code as per checkDoc
 - dexy does integration of documents, see [[http://www.dexy.it/faq/#how-is-dexy-different-to-sweave][Dexy FAQ]], maybe later ...
 
+- flet: use org-flet instead
+
 - DONE: I have set up to combine :ravel and #+ATTR_RAVEL: then 
  
 - Save the header info as #+ATTR_R-HEADERS: then parse the header info in
@@ -188,42 +191,48 @@ Things to thing about:
   possibly refer to its values in setting up the chunk.
 
 - exporting brew style to *.org might be an awesome capability. Here is how to do it:
-  - write the usual code including `:ravel <%[=] ... [{}][-]%>' arguments
-  - install a hook for org-export-before-parsing-hook that will
-    - (copy and) save the temp buffer
-    - run R and call brew( <the saved copy> )
-    - ad-deactivate as needed
-    - (stop "all done") or
-    - copy the saved buffer back to working buffer and continue. Under
-      this option, one can later use the saved buffer to export to
-      other formats
-  - then just export with any backend that supports brew
+  1. write the usual code including `:ravel <%[=] ... [{}][-]%>' arguments
+     - install a hook for org-export-before-parsing-hook that will
+     - (copy and) save the temp buffer
+     - run R and call brew( <the saved copy> )
+     - ad-deactivate as needed
+     - (stop "all done") or
+     - copy the saved buffer back to working buffer and continue. Under
+       this option, one can later use the saved buffer to export to
+       other formats
+     - then just export with any backend that supports brew
+  2. put brew delimiters in an *.org file
+     - run brew on that file and write another file
+     - export that file as usual, possibly letting babel work as usual
 
 
 Mostly DONE:
 - so here is what I am figuring out:
-  - need to advise org-babel-exp-do-export
+  - DONE need to advise org-babel-exp-do-export
     - to strip results of R blocks
     - to pre-format R src-blocks and inline src blocks
     - to pre-format and possibly run non-R source blocks according to
       the original parent (e.g. e-latex)
-  - advise org-export-as to
+  - DONE advise org-export-as to
     - add hook for pre-parsed buffer
     - ad-activate org-babel-exp-do-export
     - ad-do-it
     - remove hook for pre-parsed buffer
     - ad-deactivate
     so that other back-ends are not tripped up
-  - define a universal src-block function
-  - define a universal inline-src-block function
-  - define a back-end specific src-block format
-  - define a back-end specific inline-src-block format
-  - for the non-R src block function, use the ancestral version
-  - for the non-R inline src block function, use ancestor
-  - ( assoc 'src-block (reverse org-e-rnw-translate-alist)) will find
+  - DONE define a universal src-block function
+  - DONE define a universal inline-src-block function
+  - define a back-end specific src-block format [DONE for e-latex-brew
+    and e-latex-noweb]
+  - define a back-end specific inline-src-block format [LIKEWISE]
+  - DONE for the non-R src block function, use the ancestral version
+  - DONE for the non-R inline src block function, use ancestor
+  - NB ( assoc 'src-block (reverse org-e-rnw-translate-alist)) will find
     the ancestor!!!!
-  - org-export-before-parsing-hook is handy - it can remove delimiters
+  - NB org-export-before-parsing-hook is handy - it can remove delimiters
     I insert to subvert babel's machinations.
+  - need to add a knitr backend
+
 :END:
   
   :DEVNOTES:
@@ -345,6 +354,7 @@ in the header position along with the arguments provided by the
 ~ravel~ argument.
 
 ** e-latex-noweb backend
+This backend produces an Sweave noweb style document.
 *** template-alist
 :DEVNOTES:
    to reset this backend after first execution
@@ -495,6 +505,54 @@ return a format STRING that is suitable for brew.
 
 #+COMMENT: (org-ravel-format-brew-spec "<%= %s -%>")
 #+COMMENT: "<%%= %s -%%>"
+
+** e-html-knitr backend
+This produces an html style document as supported by [[http://yihui.name/knitr/][knitr.]] 
+*** template-alist
+:DEVNOTES:
+   to reset this backend after first execution
+   use (makunbound 'org-e-latex-noweb-translate-alist)
+:END:
+
+#+name: e-html-knitr-translate-alist
+#+begin_src emacs-lisp :tangle e-ravel.el
+  (org-export-define-derived-backend e-html-knitr e-html
+    :translate-alist ((src-block . org-ravel-src-block)
+                      (inline-src-block . org-ravel-inline-src-block)
+                      ))
+#+end_src
+
+*** chunk style
+
+#+name: e-html-knitr-chunk-style
+#+begin_src emacs-lisp :tangle e-ravel.el :results silent         
+    (defun org-ravel-chunk-style-e-html-knitr 
+      (label ravel r-headers-attr src-code)
+      "Chunk style for noweb style.
+    LABEL is the chunk name, RAVEL is the collection of ravel args as
+    a string, R-HEADERS-ATTR is the collection of headers from Babel
+    as a string parseable by `org-babel-parse-header-arguments',
+    SRC-CODE is the code from the block."
+      (concat
+       "<!--begin.rcode "
+       label
+       (if (and ravel label) ",") ravel "\n"
+       src-code
+       "end.rcode-->\n"))
+#+end_src
+*** inline src style
+#+name: e-html-knitr-inline-style
+#+BEGIN_SRC emacs-lisp  :tangle e-ravel.el :results silent
+  (defun org-ravel-inline-style-e-html-knitr 
+    (inline-src-block contents info)
+    "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a
+  plist holding contextual information."
+    (format "<!--rinline %s -->" (org-element-property :value inline-src-block)))
+#+END_SRC
+
+
+
 ** support functions
 
 These functions should not be changed for individual backends.
@@ -659,7 +717,7 @@ export parser can see them.
                     ;; delimit src_R[]{} inside `==SRC<' and `>SRC=='
                     ;; it will be stripped just before parsing
                     ;; insert `:ravel' values, if any
-                    (flet 
+                    (org-flet 
                         ((org-babel-examplize-region
                           (x y z)
                           (insert (format "==SRC<%s>SRC==" 
@@ -710,3 +768,4 @@ export parser can see them.
   ;;; e-ravel.el ends here
 #+END_SRC
 :END:
+

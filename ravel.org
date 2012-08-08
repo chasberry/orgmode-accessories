@@ -145,7 +145,7 @@ This works for my setup:
    step - *extract e-ravel.el and load it* , it should /just work/.
    
    =org-element= and =org-export= are required and at least one of the
-   defined backends. Here I use =e-latex=:
+   defined backends. Here I use =e-latex= and =e-html=:
    #+name: loadup
    #+begin_src emacs-lisp :results output silent
      (require 'org-element)
@@ -267,6 +267,7 @@ Here is the elisp header for e-ravel.el
   (require 'org-element)
   (require 'org-export)
   (require 'org-e-latex)
+  (require 'org-e-html)
 #+end_src
 
 #+END_SRC
@@ -277,7 +278,7 @@ Here is the elisp header for e-ravel.el
 
 *** existing backends
 
-Currently, backends for ~e-latex-noweb~ and ~e-latex-brew~ are
+Currently, backends for ~e-latex-noweb~, ~e-latex-brew~, and ~e-html-knitr~ are
 available. A look (below) at the definitions of the style functions
 for these backends should guide further devlopment.
 
@@ -511,7 +512,7 @@ This produces an html style document as supported by [[http://yihui.name/knitr/]
 *** template-alist
 :DEVNOTES:
    to reset this backend after first execution
-   use (makunbound 'org-e-latex-noweb-translate-alist)
+   use (makunbound 'org-e-html-knitr-translate-alist)
 :END:
 
 #+name: e-html-knitr-translate-alist
@@ -618,7 +619,7 @@ does the actual formatting. This function shold not be modified by users.
 #+name: inlineTranscoder
 #+BEGIN_SRC emacs-lisp :tangle e-ravel.el
   (defun org-ravel-inline-src-block (inline-src-block contents info)
-    "Transcode an INLINE-SRC-BLOCK element from Org to LaTeX.
+    "Transcode an INLINE-SRC-BLOCK element from Org to backend markup.
   CONTENTS holds the contents of the item.  INFO is a plist holding
   contextual information.  Use default for parent backend except for R calls."
     (let ((lang (org-element-property :language inline-src-block))

@@ -145,11 +145,10 @@ This works for my setup:
    step - *extract e-ravel.el and load it* , it should /just work/.
    
    =org-element= and =org-export= are required and at least one of the
-   defined backends. Here I use =e-latex= and =e-html=:
+   defined backends. Here I use =e-latex= and =e-html= (which require
+   those other files):
    #+name: loadup
    #+begin_src emacs-lisp :results output silent
-     (require 'org-element)
-     (require 'org-export)
      (require 'org-e-latex)
      (require 'org-e-html)
    #+end_src
@@ -171,7 +170,7 @@ can be used. Check out
  - =test-cases.org=
  - =example-1-Rnw.org=
  - =knitr-minimal-rhtml.org=
-* ravel
+* TODO ravel
   :PROPERTIES:
   :eval:     never
   :END:
@@ -182,7 +181,9 @@ Things to thing about:
 - Commentary and Code as per checkDoc
 - dexy does integration of documents, see [[http://www.dexy.it/faq/#how-is-dexy-different-to-sweave][Dexy FAQ]], maybe later ...
 
-- flet: use org-flet instead
+- DO flet: use org-flet instead - [2012-08-17 Fri] HUH? org-flet is
+  gone!!! Back to plain old flet. Push this to github along with other
+  new stuff.
 
 - DONE: I have set up to combine :ravel and #+ATTR_RAVEL: then 
  
@@ -274,13 +275,55 @@ Here is the elisp header for e-ravel.el
 :END:
   
   
-** extending ravel
+** using and extending ravel
 
 *** existing backends
 
 Currently, backends for ~e-latex-noweb~, ~e-latex-brew~, and ~e-html-knitr~ are
 available. A look (below) at the definitions of the style functions
-for these backends should guide further devlopment.
+for these backends should guide further devlopment. A look at the
+ ~*.org~ files in [[examples]] should provide a quickstart.
+ 
+*** using Babel header arguments in exported code chunks
+
+Before the document is parsed, Babel is run. R scr blocks are not
+evaluated. Instead they are passed on to the exporter as is except
+that when the ~:noweb yes~ header argument is given, the expanded src
+block is created and passed to the exporter. R scr blocks that have
+the ~:exports none~ header argument are not passed on. Src blocks in
+other languages are evaluated and exported as usual.
+
+Thus, a document can define many R src blocks and select a few to
+export by constructing a subtree with src blocks that include noweb
+references in them and for which ~:noweb yes~ is specified. Then, just
+that subtree is exported. 
+
+Babel header arguments are parsed and the alist of such arguments is
+made available to the ~org-ravel-chunk-style-BACKEND~ function as
+~r-headers-attr~. This will eventually allow translation of some
+native org-babel headers to exported chunk headers. For this to
+happen, the chunk style of a backend (say ~e-latex-newstyle~) 
+
+#+BEGIN_SRC emacs-lisp
+  (defun org-ravel-chunk-style-e-latex-newstyle 
+    (label ravel r-headers-attr src-code)
+    ( ... ))
+#+END_SRC
+
+needs to inspect the alist of ~r-headers-attr~ and find those that can
+be (re-)rendered and add the necessary arguments to the output string
+in the header position along with the arguments provided by the
+~ravel~ argument.
+
+*** explicit specification of arguments in exported chunks
+
+Arguments that need to be passed to exported code chunks can be placed
+after a ~:ravel~ key in a ~#+begin_src R~ line. Or they can be given
+in ~#+ATTR_RAVEL:~ lines immediately before the src block. 
+
+Some care is needed. Arguments for some backends may conflict with
+other backends. In future development, it might help to prefix
+arguments with the name of their backend.
 
 *** new backends
 
@@ -325,36 +368,25 @@ The derived backends will inherit their /family name/ and append the
 chunk style to it, e.g. ~e-latex-noweb~ for latex files using the
 traditional noweb style chunks.
 
-**** explicit specification of arguments in exported chunks
-
-Arguments that need to be passed to exported code chunks can be placed
-after a ~:ravel~ key in a ~#+begin_src R~ line. Or they can be given
-in ~#+ATTR_RAVEL:~ lines immediately before the src block. 
-
-Some care is needed. Arguments for some backends may conflict with
-other backends.It might help to prefix arguments with the name of
-their backend.
- 
-*** using Babel header arguments in exported code chunks
-
-Babel header arguments are parsed and the alist of such arguments is
-made available to the ~org-ravel-chunk-style-BACKEND~ function as
-~r-headers-attr~. This will eventually allow translation of some
-native org-babel headers to exported chunk headers. For this to
-happen,
-
-#+BEGIN_SRC emacs-lisp
-  (defun org-ravel-chunk-style-e-latex-newstyle 
-    (label ravel r-headers-attr src-code)
-    ( ... ))
-#+END_SRC
-
-needs to inspect the alist of ~r-headers-attr~ and find those that can
-be (re-)rendered and add the necessary arguemtns to the output string
-in the header position along with the arguments provided by the
-~ravel~ argument.
-
 ** e-latex-noweb backend
+:TODOWHAT:
+Sweave and knitr have their own ideas about styling documents. To add
+support for plain latex export, do like this:
+- add sweave-article as a faux class 
+   #+BEGIN_SRC emacs-lisp
+     (add-to-list 
+      'org-e-latex-classes 
+      (list "sweave-article"  
+            "\\documentclass[11pt]{article}\n[NO-DEFAULT-PACKAGES]" 
+            (cddr (car org-e-latex-classes))))
+   #+END_SRC
+- use
+  #+LaTeX_CLASS: sweave-header
+  #+LaTeX_HEADER: \usepackage{hyperref}
+  to invoke plainer export (the latter may be dropped if knitr, etc
+  provides hyperref)
+:END:
+
 This backend produces an Sweave noweb style document.
 *** template-alist
 :DEVNOTES:
@@ -685,6 +717,15 @@ export parser can see them.
 #+END_SRC
 *** advice for org-babel-exp-do-export
 :TODOWHAT:
+ - IN PROGRESS ( ngtest.org seems to work - do more checks before
+   push'ing to github) expanding noweb references
+   is possible - see org-babel-exp-code for setting up
+   org-babel-expand-noweb-references to do this.
+ - org-babel-examplize-region is 'flet'ed. IIUC, flet is setup to use
+   dynamic scope in emacs 24 (labels uses lexical scope). As long as
+   this holds, the scoping isues won't derail this approach in some
+   future org-mode release. However, if flet flet ever goes
+   'lexical', advice'ing the function is an alernative.
  - DONE maybe add a line to handle regular src blocks here 
  - WRONG /org-ravel-src-block can then be deleted and its entry
    in :translate-alist removed/ WHY: the exporter expects to
@@ -710,7 +751,8 @@ export parser can see them.
     "Wrap the ravel src block template around body and clip results."
     (let ((is-R (string= (nth 0 info) "R"))
           (is-inline (eq type 'inline))
-          (export-val (or (cdr (assoc :exports (nth 2 info))) "code")))
+          (export-val (or (cdr (assoc :exports (nth 2 info))) "code"))
+          (noweb-yes (string= "yes" (cdr (assoc :noweb (nth 2 info))))))
       (if is-R
           ;; pass src block to the parser
           (setq ad-return-value
@@ -718,26 +760,26 @@ export parser can see them.
                     ;; delimit src_R[]{} inside `==SRC<' and `>SRC=='
                     ;; it will be stripped just before parsing
                     ;; insert `:ravel' values, if any
-                    (org-flet 
-                        ((org-babel-examplize-region
-                          (x y z)
-                          (insert (format "==SRC<%s>SRC==" 
-                                          (prog1 (buffer-substring x y)
-                                            (delete-region x y)))))
-                         (org-babel-execute:R
-                          (body params)
-                          (let* ((ravelarg 
-                                  (cdr (assoc :ravel (nth 2 info))))
-                                 (nth-one (nth 1 info))
-                                 (srcRresult
-                                  (if ravelarg
-                                      (format "src_R[%s]{%s}" ravelarg nth-one)
-                                    (format "src_R{%s}"
-                                            nth-one ))))
-                            srcRresult)
-                          ))
-                      (let ((org-confirm-babel-evaluate nil))
-                        ad-do-it))
+                    (flet 
+                     ((org-babel-examplize-region
+                       (x y z)
+                       (insert (format "==SRC<%s>SRC==" 
+                                       (prog1 (buffer-substring x y)
+                                         (delete-region x y)))))
+                      (org-babel-execute:R
+                       (body params)
+                       (let* ((ravelarg 
+                               (cdr (assoc :ravel (nth 2 info))))
+                              (nth-one (nth 1 info))
+                              (srcRresult
+                               (if ravelarg
+                                   (format "src_R[%s]{%s}" ravelarg nth-one)
+                                 (format "src_R{%s}"
+                                         nth-one ))))
+                         srcRresult)
+                       ))
+                     (let ((org-confirm-babel-evaluate nil))
+                       ad-do-it))
                   ;; #+begin_src ... #+end_src block
                   ;; omit if results type none
                   (if (string= export-val "none")
@@ -756,12 +798,96 @@ export parser can see them.
                               (if non-ravelargs
                                   (format "#+ATTR_R-HEADERS: %s\n" 
                                           non-ravelargs) "")
-                              (nth 1 info))))))
+                              (if noweb-yes
+                                  (org-babel-expand-noweb-references
+                                   info
+                                   (find-file-noselect org-current-export-file)) 
+                                (nth 1 info)))))))
         ;; not R so do default
         ad-do-it)))
 #+END_SRC
 
 
+
+*** miscellaneous
+
+**** export as latex (sub-)document
+
+This function is helpful for making /child/ documents in ~knitr~ or
+making documents that omit all the packages inserted by the exporter,
+which Sweave or knitr may prefer.
+
+The flet'ed ~org-e-latex-template~ is a subset of the original
+version.
+
+#+BEGIN_SRC emacs-lisp  :tangle e-ravel.el
+  (defun org-ravel-export-e-latex-noweb (outfile &optional subtree only-contents)
+    "Export a document to OUTFILE.  If SUBTREE is non-nil, just
+  export the subtree. 
+  
+  ONLY-CONTENTS is treated as follows 
+          nil - create a complete document as per e-latex, 
+          t  -  copy the contents without an enclosing document environment,
+          \"Rnw\" - create an article documentclass with only hyperref as the default package,
+          anything else is inserted as a custom header."
+    (cond 
+     ;; t - contents and minimal comments only 
+     ((eq only-contents t)
+      (flet 
+          ((org-e-latex-template 
+            (contents info)
+            (concat
+             ;; Time-stamp.
+             (and (plist-get info :time-stamp-file)
+                  (format-time-string "%% Created %Y-%m-%d %a %H:%M\n"))
+             ;; Document's body.
+             contents
+             ;; Creator.
+             (let ((creator-info (plist-get info :with-creator)))
+               (cond
+                ((not creator-info) "")
+                ((eq creator-info 'comment)
+                 (format "%% %s\n" (plist-get info :creator)))
+                (t (concat (plist-get info :creator) "\n")))))))
+        (org-export-to-file 'e-latex-noweb outfile subtree)))
+     ;; "Rnw" or string to use as custom header
+     ((or 
+       (and (string= "Rnw" only-contents) 
+            (setq only-contents 
+                  "\\documentclass{article}\n[NO-DEFAULT-PACKAGES]\n\\usepackage{hyperref}"))
+       only-contents)
+      (let ((org-e-latex-classes 
+             (list
+              (list "article"
+                    only-contents
+                    (cddr (assoc "article" org-e-latex-classes))))))
+        (org-export-to-file 'e-latex-noweb outfile subtree)))
+     ;; nil - default export
+     ((not only-contents)
+      (org-export-to-file 'e-latex-noweb outfile subtree))))
+  
+#+END_SRC
+
+
+**** insert src block name as chunk
+
+This helps when you have a src block you wish to include in an Sweave
+style document. Typically it would be called from inside a src block
+to add a noweb chunk. It will prompt for the name of the chunk.
+
+#+BEGIN_SRC emacs-lisp
+  (defun org-ravel-insert-src-block-name-as-chunk ()
+    "insert src block name in << >>."
+  (interactive)
+   (let
+       ((bname
+         (org-icompleting-read
+          "source-block name: " (org-babel-src-block-names) nil t)))
+     (insert (format "<<%s>>" bname))))
+#+END_SRC
+
+
+** COMMENT provide e-ravel
 :DEVNOTES:
 #+BEGIN_SRC emacs-lisp :tangle e-ravel.el
   (provide 'e-ravel)
@@ -769,4 +895,3 @@ export parser can see them.
   ;;; e-ravel.el ends here
 #+END_SRC
 :END:
-

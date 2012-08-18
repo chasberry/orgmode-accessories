@@ -6,7 +6,7 @@ Add ons for orgmode
 * The other files here:
 
 - ravel.org :: description and definition of backends to create
-               ~Sweave~ and ~brew~ style files 
+               ~Sweave~, ~brew~, and ~html-knitr~ style files 
 - example-1-Rnw.org :: includes an orgmode translation of example-1 from the
      Sweave user's manual. Exporting with ~e-latex-noweb~ produces a
      file very similar to the =*.Rnw= code.

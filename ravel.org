@@ -821,51 +821,52 @@ The flet'ed ~org-e-latex-template~ is a subset of the original
 version.
 
 #+BEGIN_SRC emacs-lisp  :tangle e-ravel.el
-  (defun org-ravel-export-e-latex-noweb (outfile &optional subtree only-contents)
-    "Export a document to OUTFILE.  If SUBTREE is non-nil, just
-  export the subtree. 
-  
-  ONLY-CONTENTS is treated as follows 
-          nil - create a complete document as per e-latex, 
-          t  -  copy the contents without an enclosing document environment,
-          \"Rnw\" - create an article documentclass with only hyperref as the default package,
-          anything else is inserted as a custom header."
-    (cond 
-     ;; t - contents and minimal comments only 
-     ((eq only-contents t)
-      (flet 
-          ((org-e-latex-template 
-            (contents info)
-            (concat
-             ;; Time-stamp.
-             (and (plist-get info :time-stamp-file)
-                  (format-time-string "%% Created %Y-%m-%d %a %H:%M\n"))
-             ;; Document's body.
-             contents
-             ;; Creator.
-             (let ((creator-info (plist-get info :with-creator)))
-               (cond
-                ((not creator-info) "")
-                ((eq creator-info 'comment)
-                 (format "%% %s\n" (plist-get info :creator)))
-                (t (concat (plist-get info :creator) "\n")))))))
-        (org-export-to-file 'e-latex-noweb outfile subtree)))
-     ;; "Rnw" or string to use as custom header
-     ((or 
-       (and (string= "Rnw" only-contents) 
-            (setq only-contents 
-                  "\\documentclass{article}\n[NO-DEFAULT-PACKAGES]\n\\usepackage{hyperref}"))
-       only-contents)
-      (let ((org-e-latex-classes 
-             (list
-              (list "article"
-                    only-contents
-                    (cddr (assoc "article" org-e-latex-classes))))))
-        (org-export-to-file 'e-latex-noweb outfile subtree)))
-     ;; nil - default export
-     ((not only-contents)
-      (org-export-to-file 'e-latex-noweb outfile subtree))))
-  
+    (defun org-ravel-export-e-latex-noweb (outfile &optional subtree only-contents)
+      "Export a document to OUTFILE.  If SUBTREE is non-nil, just
+    export the subtree. 
+    
+    ONLY-CONTENTS is treated as follows 
+            nil - create a complete document as per e-latex, 
+            t  -  copy the contents without an enclosing document environment,
+            \"Rnw\" - create an article documentclass with only hyperref as the default package,
+            anything else is inserted as a custom header."
+      (cond 
+       ;; t - contents and minimal comments only 
+       ((eq only-contents t)
+        (flet 
+            ((org-e-latex-template 
+              (contents info)
+              (concat
+               ;; Time-stamp.
+               (and (plist-get info :time-stamp-file)
+                    (format-time-string "%% Created %Y-%m-%d %a %H:%M\n"))
+               ;; Document's body.
+               contents
+               ;; Creator.
+               (let ((creator-info (plist-get info :with-creator)))
+                 (cond
+                  ((not creator-info) "")
+                  ((eq creator-info 'comment)
+                   (format "%% %s\n" (plist-get info :creator)))
+                  (t (concat (plist-get info :creator) "\n")))))))
+          (org-export-to-file 'e-latex-noweb outfile subtree)))
+       ;; "Rnw" or string to use as custom header
+       ((or 
+         (and (string= "Rnw" only-contents) 
+              (setq only-contents 
+                    "\\documentclass{article}\n[NO-DEFAULT-PACKAGES]\n\\usepackage{hyperref}"))
+         only-contents)
+        (let ((org-e-latex-classes 
+               (list
+                (append (list
+                         "article"
+                         only-contents)
+                        (cddr (assoc "article" org-e-latex-classes))))))
+          (org-export-to-file 'e-latex-noweb outfile subtree)))
+       ;; nil - default export
+       ((not only-contents)
+        (org-export-to-file 'e-latex-noweb outfile subtree))))
+    
 #+END_SRC
 
 
@@ -875,7 +876,7 @@ This helps when you have a src block you wish to include in an Sweave
 style document. Typically it would be called from inside a src block
 to add a noweb chunk. It will prompt for the name of the chunk.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
   (defun org-ravel-insert-src-block-name-as-chunk ()
     "insert src block name in << >>."
   (interactive)

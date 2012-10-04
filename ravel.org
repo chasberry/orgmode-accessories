@@ -27,16 +27,16 @@ If you are browsing ~github~, you
 should probably look at the file ~ravel-org.md~ which is formatted for viewing
 (and omits lots of details that are usually not of interest). 
 
-If you have downloaded a copy, it is best to view it using [[orgmode]].
+If you have downloaded a copy, it is best to view it using [[orgmode][orgmode]]
   
 ** quickstart guide
 
 If you already know ~orgmode~ and either ~knitr~, ~Sweave~, or
 ~brew~, you can just
 
-- skip to [[lisp setup]]
-- browse one or more [[examples]]
-- review [[what ravel does]].
+- skip to [[lisp setup]["lisp setup"]]
+- browse one or more [[examples][examples]]
+- review the section [[what ravel does]["what ravel does"]]
 
 ** orgmode
 

@@ -11,18 +11,18 @@ If you are browsing `github`, you
 should probably look at the file `ravel-org.md` which is formatted for viewing
 (and omits lots of details that are usually not of interest). 
 
-If you have downloaded a copy, it is best to view it using 1.3.
+If you have downloaded a copy, it is best to view it using orgmode
 
 ## quickstart guide
 
 If you already know `orgmode` and either `knitr`, `Sweave`, or
 `brew`, you can just
 
--   skip to 2
+-   skip to "lisp setup"
 
--   browse one or more 3
+-   browse one or more examples
 
--   review 4.1.1.
+-   review the section "what ravel does"
 
 ## orgmode
 

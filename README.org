@@ -11,7 +11,8 @@ Add ons for orgmode
                file is *too* *big* to generate a blob, so either
   - click on the ~raw~ button if you see an error message when trying
     to view it and save the text
-  - download [[https://raw.github.com/chasberry/orgmode-accessories/master/ravel.org][the raw code]] and view it in emacs orgmode
+  - download ~https://raw.github.com/chasberry/orgmode-accessories/master/ravel.org~
+    and view it in emacs orgmode
   - or ~git clone~ the repository and view the file (using emacs
     orgmode for the best viewing)  
 - example-1-Rnw.org :: includes an orgmode translation of example-1 from the

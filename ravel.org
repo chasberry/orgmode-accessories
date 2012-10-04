@@ -638,11 +638,7 @@ return a format STRING that is suitable for brew.
     
 #+END_SRC
 
-#+RESULTS: defun-brew-formatter
-: org-ravel-format-brew-spec
 
-#+RESULTS:
-: format-brew-spec
 
 #+COMMENT: (org-ravel-format-brew-spec "<%= %s -%>")
 #+COMMENT: "<%%= %s -%%>"

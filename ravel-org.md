@@ -474,10 +474,6 @@ return a format STRING that is suitable for brew.
                 (error "Percent signs do not balance:%s" spec)))
           (error "Invalid spec:%s" spec))))
 
-<pre class="example">
-format-brew-spec
-</pre>
-
 ## e-html-knitr backend
 
 This produces an html style document as supported by [knitr.](http://yihui.name/knitr/) 

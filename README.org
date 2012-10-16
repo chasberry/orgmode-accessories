@@ -8,7 +8,7 @@ Add ons for orgmode
 - ravel-org.md :: a ~markdown~ (and easily viewed) version of ~ravel.org~
 - ravel.org :: description and definition of backends to create
                ~Sweave~, ~brew~, and ~html-knitr~ style files. This
-               file is *too* *big* to generate a blob, so either
+               file is *too big* to generate a blob, so either
   - click on the ~raw~ button if you see an error message when trying
     to view it and save the text
   - download ~https://raw.github.com/chasberry/orgmode-accessories/master/ravel.org~

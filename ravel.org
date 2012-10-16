@@ -27,7 +27,7 @@ If you are browsing ~github~, you
 should probably look at the file ~ravel-org.md~ which is formatted for viewing
 (and omits lots of details that are usually not of interest). 
 
-If you have downloaded a copy, it is best to view it using [[orgmode][orgmode]]
+If you have downloaded a copy of ~ravel.org~, it is best to view it using [[orgmode][orgmode]]
   
 ** quickstart guide
 
@@ -145,6 +145,7 @@ some new code, reorganize the presentation, and so on.
 * lisp setup
   :PROPERTIES:
   :eval:     never
+  :CUSTOM_ID: lispset
   :END:
 
 *Warning:* Once the new exporter is replaces the old exporter, the
@@ -342,9 +343,9 @@ Currently, backends are avaiable for
 - ~e-beamer-noweb~ :: beamer Sweave or knitr slides
 - ~e-html-knitr~ :: HTML knitr documents
 
-A look at the ~*.org~ files in [[examples]] should provide a quickstart.
-A look (below) at the definitions of the style functions
-for these backends should guide further devlopment. 
+A look at the ~*.org~ files in [[examples][the examples section]] should provide a
+quickstart.  A look (below) at the definitions of the style functions
+for these backends should guide further devlopment.
  
 *** using Babel header arguments in exported code chunks
 
@@ -689,7 +690,6 @@ This produces an html style document as supported by [[http://yihui.name/knitr/]
 #+END_SRC
 
 
-    
 ** support functions
    
    These functions should not be changed for individual backends.
@@ -768,7 +768,13 @@ ravel code). This function should not be modified by users.
         (funcall ancestor-inline-src-block inline-src-block contents info)
         )))
     #+END_SRC
-*** advise for org-export-as
+*** TODO advise for org-export-as
+:DEVNOTES:
+the inline src block handling can be broken by lines like
+	\pi xyz src_R{pi}
+for example. The fix is to delete the 'src_R' from srcRresult, then
+add it back in the replace-match in org-ravel-string-SRC-hookfun
+:END:
     
     
     There is no hook at the beginning of ~org-export-as~. So, to make this
@@ -817,7 +823,7 @@ export parser can see them.
   (defun org-ravel-strip-SRC-hookfun ( backend )
     "Strip delimiters: ==SRC< and >SRC==. BACKEND is ignored."
       (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
-        (replace-match "\\1" nil nil)))
+        (replace-match "src_R\\1" nil nil)))
 #+END_SRC
 *** advice for org-babel-exp-do-export
 :TODOWHAT:
@@ -877,8 +883,8 @@ export parser can see them.
                               (nth-one (nth 1 info))
                               (srcRresult
                                (if ravelarg
-                                   (format "src_R[%s]{%s}" ravelarg nth-one)
-                                 (format "src_R{%s}"
+                                   (format "[%s]{%s}" ravelarg nth-one)
+                                 (format "{%s}"
                                          nth-one ))))
                          srcRresult)
                        ))
@@ -932,12 +938,12 @@ version.
   ONLY-CONTENTS is treated as follows 
           nil - create a complete document as per e-latex, 
           t or 1 -  copy the contents without an enclosing 
-		document environment,
-	  2-6 - like t, but treat highest level heading as subsection, 
-		subsubsection, paragraph, subparagraph, or enumerate,
+                document environment,
+          2-6 - like t, but treat highest level heading as subsection, 
+                subsubsection, paragraph, subparagraph, or enumerate,
          \"Rnw\" - create an article documentclass with only hyperref as the 
-		default package, 
-	  any other string is inserted as a custom header."
+                default package, 
+          any other string is inserted as a custom header."
     (cond
      ;; t - contents and minimal comments only 
      ((member only-contents '(t 1 2 3 4 5 6))
@@ -961,8 +967,8 @@ version.
                (cur-latex-class (assoc "article" org-e-latex-classes))
                (org-e-latex-classes 
                 (list (append
-                 (butlast cur-latex-class 5)
-                 (last cur-latex-class (- 6 nsection)))))) 
+                       (butlast cur-latex-class 5)
+                       (last cur-latex-class (- 6 nsection)))))) 
           (org-export-to-file 'e-latex-noweb outfile subtree))))
       ;; "Rnw" or string to use as custom header
      ((or 

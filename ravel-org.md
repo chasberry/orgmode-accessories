@@ -11,7 +11,7 @@ If you are browsing `github`, you
 should probably look at the file `ravel-org.md` which is formatted for viewing
 (and omits lots of details that are usually not of interest). 
 
-If you have downloaded a copy, it is best to view it using orgmode
+If you have downloaded a copy of `ravel.org`, it is best to view it using orgmode
 
 ## quickstart guide
 
@@ -225,9 +225,9 @@ Currently, backends are avaiable for
 
 -   **`e-html-knitr`:** HTML knitr documents
 
-A look at the `*.org` files in 3 should provide a quickstart.
-A look (below) at the definitions of the style functions
-for these backends should guide further devlopment. 
+A look at the `*.org` files in the examples section should provide a
+quickstart.  A look (below) at the definitions of the style functions
+for these backends should guide further devlopment.
 
 ### using Babel header arguments in exported code chunks
 
@@ -609,7 +609,7 @@ end.
         (defun org-ravel-strip-SRC-hookfun ( backend )
           "Strip delimiters: ==SRC< and >SRC==. BACKEND is ignored."
             (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
-              (replace-match "\\1" nil nil)))
+              (replace-match "src_R\\1" nil nil)))
 
 ### advice for org-babel-exp-do-export
 
@@ -639,8 +639,8 @@ end.
                                 (nth-one (nth 1 info))
                                 (srcRresult
                                  (if ravelarg
-                                     (format "src_R[%s]{%s}" ravelarg nth-one)
-                                   (format "src_R{%s}"
+                                     (format "[%s]{%s}" ravelarg nth-one)
+                                   (format "{%s}"
                                            nth-one ))))
                            srcRresult)
                          ))

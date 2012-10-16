@@ -25,8 +25,12 @@ Running this command:
   (save-excursion
     (let ((org-export-latex-default-packages-alist nil))
       (progn (search-forward "Sweave Example 1")
+             (forward-line 1)
       (org-export-to-file 'e-latex-noweb "example-1-fromOrg.Rnw" t ))))
 #+END_SRC
+
+#+RESULTS:
+: example-1-fromOrg.Rnw
 
 should translate it back to Sweave.
 

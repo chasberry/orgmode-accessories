@@ -749,11 +749,11 @@ ravel code). This function should not be modified by users.
   'xyz' for inline src blocks, so I can use it here
 :END:
     
-    org-ravel-inline-src-block looks up org-ravel-inline-style-BACKEND, which
-    does the actual formatting. This function should not be modified by users.
+org-ravel-inline-src-block looks up org-ravel-inline-style-BACKEND, which
+does the actual formatting. This function should not be modified by users.
     
-    #+name: inlineTranscoder
-    #+BEGIN_SRC emacs-lisp :tangle e-ravel.el
+#+name: inlineTranscoder
+#+BEGIN_SRC emacs-lisp :tangle e-ravel.el
   (defun org-ravel-inline-src-block (inline-src-block contents info)
     "Transcode an INLINE-SRC-BLOCK element from Org to backend markup.
   CONTENTS holds the contents of the item.  INFO is a plist holding
@@ -767,7 +767,7 @@ ravel code). This function should not be modified by users.
           (funcall inline-style-fun inline-src-block contents info)
         (funcall ancestor-inline-src-block inline-src-block contents info)
         )))
-    #+END_SRC
+#+END_SRC
 *** TODO advise for org-export-as
 :DEVNOTES:
 the inline src block handling can be broken by lines like
@@ -793,20 +793,21 @@ so to be cautious I do it explicitly.
 
 #+name: defadvice-org-export-as
 #+BEGIN_SRC emacs-lisp :tangle e-ravel.el
-  (defadvice org-export-as (around org-ravel-export-as-advice protect)
-    "Activate advise for `org-babel-exp-do-export' in `org-export-as'.
-  This enables preproceesing of R inline src blocks and src blocks
-  by babel before parsing of the *.org buffer ."
-    (if (fboundp  (intern (concat "org-ravel-chunk-style-" (symbol-name backend))))
-        (progn
-          (add-hook 'org-export-before-parsing-hook '
-                    org-ravel-strip-SRC-hookfun)
-          (ad-activate 'org-babel-exp-do-export)
-          ad-do-it
-          (remove-hook 'org-export-before-parsing-hook ' org-ravel-strip-SRC-hookfun)
-          (ad-deactivate  'org-babel-exp-do-export)
-          )
-      ad-do-it))
+   (defadvice org-export-as (around org-ravel-export-as-advice protect)
+     "Activate advise for `org-babel-exp-do-export' in `org-export-as'.
+   This enables preproceesing of R inline src blocks and src blocks
+   by babel before parsing of the *.org buffer ."
+     (if (fboundp  (intern (concat "org-ravel-chunk-style-" (symbol-name backend))))
+         (progn
+           (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+           (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+           (ad-activate 'org-babel-exp-do-export)
+           ad-do-it
+           (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+           (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+           (ad-deactivate  'org-babel-exp-do-export)
+           )
+       ad-do-it))
   
   (ad-activate 'org-export-as)
 #+end_src
@@ -816,15 +817,41 @@ so to be cautious I do it explicitly.
 
 **** org-ravel-strip-SRC-hookfun
 
-This hack works around the need to protect ~src_R~ calls until the
-export parser can see them.
+This hack works around the need to protect ~src_R~ calls from Babel until the
+export parser can see them. Also see [[*advice%20for%20org-babel-exp-do-export][advice for org-babel-exp-do-export]]
 
 #+BEGIN_SRC emacs-lisp :tangle e-ravel.el
-  (defun org-ravel-strip-SRC-hookfun ( backend )
-    "Strip delimiters: ==SRC< and >SRC==. BACKEND is ignored."
-      (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
-        (replace-match "src_R\\1" nil nil)))
+
+(defun org-ravel-strip-SRC-hookfun ( backend )
+  "Strip delimiters: ==SRC< and >SRC==. BACKEND is ignored."
+  (progn
+    (goto-char (point-min))
+    (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
+      (replace-match "src_R\\1" nil nil))))
+
+#+end_src
+
+
+**** org-ravel-strip-header-hookfun
+
+This hack works around the need to protect #+ATTR... lines from Babel
+until the export parser can see them. Also see [[*advice%20for%20org-babel-exp-do-export][advice for org-babel-exp-do-export]]
+
+#+begin_src emacs-lisp :tangle e-ravel.el
+  
+ 
+(defun org-ravel-strip-header-hookfun ( backend )
+  "Strip #+header: ==<STRIP>==. BACKEND is ignored."
+   (progn
+    (goto-char (point-min))
+    (while (re-search-forward 
+	    "^[         ]*#\\+headers?:[        ]*==<STRIP>==[ ]\\([^\n]*\\)$" 
+	    nil t)
+      (replace-match "\\1" nil nil))))
+
 #+END_SRC
+
+
 *** advice for org-babel-exp-do-export
 :TODOWHAT:
  - IN PROGRESS ( ngtest.org seems to work - do more checks before
@@ -851,7 +878,14 @@ export parser can see them.
      unescaped src_R in the buffer for parsing.
    - src blocks are easier. The newline after them makes it possible to
      call org-babel-remove-result and then return the formatted code
- - DONE add [brew spec] to src_R when :ravel is non nil 
+ - DONE add [brew spec] to src_R when :ravel is non nil
+ - comment from [[file:~/elisp/org-mode/contrib/lisp/org-export.el::%3B%3B%20TODO:%20Setting%20`org-current-export-file'%20is%20required%20by][org-export.el: TODO:`org-current-export-file']] 
+   ;; TODO: Setting `org-current-export-file' is required by
+	   ;; Org Babel to properly resolve noweb references.  Once
+	   ;; "org-exp.el" is removed, modify
+	   ;; `org-export-blocks-preprocess' so it accepts the value
+	   ;; as an argument instead.
+   Once this happens, I'll have to change the reference to it. 
 :END:
 
 
@@ -904,14 +938,14 @@ export parser can see them.
                              (assq-delete-all :ravel headers) " ")))
                       (format "%s%s#+BEGIN_SRC R \n%s\n#+END_SRC"
                               (if ravelarg
-                                  (format "#+ATTR_RAVEL: %s\n" ravelarg) "")
+                                  (format "#+header: ==<STRIP>== #+ATTR_RAVEL: %s\n" ravelarg) "")
                               (if non-ravelargs
-                                  (format "#+ATTR_R-HEADERS: %s\n" 
+                                  (format "#+header: ==<STRIP>== #+ATTR_R-HEADERS: %s\n" 
                                           non-ravelargs) "")
                               (if noweb-yes
                                   (org-babel-expand-noweb-references
                                    info
-                                   (find-file-noselect org-current-export-file)) 
+                                   (org-babel-exp-get-export-buffer))
                                 (nth 1 info)))))))
         ;; not R so do default
         ad-do-it)))

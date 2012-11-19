@@ -24,7 +24,8 @@ Running this command:
 #+BEGIN_SRC emacs-lisp
   (save-excursion
     (let ((org-export-latex-default-packages-alist nil))
-      (progn (search-forward "Sweave Example 1")
+      (progn (forward-line 5)
+             (search-forward "Sweave Example 1")
              (forward-line 1)
       (org-export-to-file 'e-latex-noweb "example-1-fromOrg.Rnw" t ))))
 #+END_SRC

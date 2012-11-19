@@ -25,6 +25,19 @@ Add ons for orgmode
 - knitr-minimal-rhtml.org :: includes an orgmode translation of
      =knitr-minimal.Rhtml= from the [[http://yihui.name/knitr/demos][the knitr demos page]]
 
+* Bugs?
+
+- The new exporter and Babel are moving targets.
+- There are my own misunderstandings and mistakes.  
+
+
+So bugs happen. Please let me know if you encounter a bug or if
+something seems to break that once worked as that might indicate a
+change in the exporter or Babel that I need to keep up with.
+
+The example ~*.org~ files should always work! 
+
+
 * Why Bother ?
 
   

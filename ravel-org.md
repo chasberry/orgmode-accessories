@@ -391,7 +391,7 @@ disarm Sweave/knitr's processing of it)
 
 ### brew document format
 
-The [brew](http://cran.r-project.org/web/packages/brew/index.html) R package use "<%" and "%>" to delimit code chunks. Placing an equals sign (\=') after the first delimiter will result in the value of the expression being printed in place of the code chunk. Placing a minus sign (&shy;') before the last delimiter will suppress the line break after the code chunk.
+The [brew](http://cran.r-project.org/web/packages/brew/index.html) R package use "<%" and "%>" to delimit code chunks. Placing an equals sign (\`=') after the first delimiter will result in the value of the expression being printed in place of the code chunk. Placing a minus sign (\`-') before the last delimiter will suppress the line break after the code chunk.
 
 It is handy to be able to evaluate the code inside the delimiters during development and debugging using the `C-c C-c` key, but this can only be done on complete, syntactically correct R expressions. In orgmode, this can be achieved by letting the delimiters live outside of the code chunk as an extra argument. Here is an example
 
@@ -418,7 +418,7 @@ One of the nifty features of `brew` is that the code chunks do not need to be co
     <%= c( i, toupper(i) ) %>
     <% } %> 
 
-to print the letters of the alphabet. In orgmode, the exporter becomes confused by code chunks like `for (i in letters) {`. Allowance for this idiom is made by placing the opening or closing curly brace just before the last delimiter (\[-]%>') like this `<% } -%>`. The curly brace will appear after the code (if any) in the chunk after export.
+to print the letters of the alphabet. In orgmode, the exporter becomes confused by code chunks like `for (i in letters) {`. Allowance for this idiom is made by placing the opening or closing curly brace just before the last delimiter (\`[-]%>') like this `<% } -%>`. The curly brace will appear after the code (if any) in the chunk after export.
 
 ### template-alist
 
@@ -510,7 +510,6 @@ This produces an html style document as supported by [knitr.](http://yihui.name/
     plist holding contextual information."
       (format "<!--rinline %s -->" (org-element-property :value inline-src-block)))
 
-
 ## support functions
 
 These functions should not be changed for individual backends.
@@ -561,21 +560,21 @@ ravel code). This function should not be modified by users.
 org-ravel-inline-src-block looks up org-ravel-inline-style-BACKEND, which
 does the actual formatting. This function should not be modified by users.
 
-        (defun org-ravel-inline-src-block (inline-src-block contents info)
-          "Transcode an INLINE-SRC-BLOCK element from Org to backend markup.
+    (defun org-ravel-inline-src-block (inline-src-block contents info)
+      "Transcode an INLINE-SRC-BLOCK element from Org to backend markup.
     CONTENTS holds the contents of the item.  INFO is a plist holding
     contextual information.  Use default for parent backend except for R calls."
-          (let ((lang (org-element-property :language inline-src-block))
-                (ancestor-inline-src-block (org-ravel-get-ancestor-fun 'inline-src-block))
-                (inline-style-fun (intern (concat "org-ravel-inline-style-" 
-                                                  (symbol-name backend))))
-                )
-            (if (and (string= lang "R") (fboundp inline-style-fun))
-                (funcall inline-style-fun inline-src-block contents info)
-              (funcall ancestor-inline-src-block inline-src-block contents info)
-              )))
+      (let ((lang (org-element-property :language inline-src-block))
+            (ancestor-inline-src-block (org-ravel-get-ancestor-fun 'inline-src-block))
+            (inline-style-fun (intern (concat "org-ravel-inline-style-" 
+                                              (symbol-name backend))))
+            )
+        (if (and (string= lang "R") (fboundp inline-style-fun))
+            (funcall inline-style-fun inline-src-block contents info)
+          (funcall ancestor-inline-src-block inline-src-block contents info)
+          )))
 
-### advise for org-export-as
+### TODO advise for org-export-as
 
 There is no hook at the beginning of `org-export-as`. So, to make this
 work, `org-export-as` is 'advise'd to ad-activate advise for
@@ -584,32 +583,52 @@ end.
 
 1.  defadvice-org-export-as
 
-        (defadvice org-export-as (around org-ravel-export-as-advice protect)
-          "Activate advise for `org-babel-exp-do-export' in `org-export-as'.
-        This enables preproceesing of R inline src blocks and src blocks
-        by babel before parsing of the *.org buffer ."
-          (if (fboundp  (intern (concat "org-ravel-chunk-style-" (symbol-name backend))))
-              (progn
-                (add-hook 'org-export-before-parsing-hook '
-                          org-ravel-strip-SRC-hookfun)
-                (ad-activate 'org-babel-exp-do-export)
-                ad-do-it
-                (remove-hook 'org-export-before-parsing-hook ' org-ravel-strip-SRC-hookfun)
-                (ad-deactivate  'org-babel-exp-do-export)
-                )
-            ad-do-it))
+         (defadvice org-export-as (around org-ravel-export-as-advice protect)
+           "Activate advise for `org-babel-exp-do-export' in `org-export-as'.
+         This enables preproceesing of R inline src blocks and src blocks
+         by babel before parsing of the *.org buffer ."
+           (if (fboundp  (intern (concat "org-ravel-chunk-style-" (symbol-name backend))))
+               (progn
+                 (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+                 (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+                 (ad-activate 'org-babel-exp-do-export)
+                 ad-do-it
+                 (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+                 (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+                 (ad-deactivate  'org-babel-exp-do-export)
+                 )
+             ad-do-it))
         
         (ad-activate 'org-export-as)
 
 2.  org-ravel-strip-SRC-hookfun
 
-    This hack works around the need to protect `src_R` calls until the
-    export parser can see them.
+    This hack works around the need to protect `src_R` calls from Babel until the
+    export parser can see them. Also see advice for org-babel-exp-do-export
     
+        
         (defun org-ravel-strip-SRC-hookfun ( backend )
           "Strip delimiters: ==SRC< and >SRC==. BACKEND is ignored."
+          (progn
+            (goto-char (point-min))
             (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
-              (replace-match "src_R\\1" nil nil)))
+              (replace-match "src_R\\1" nil nil))))
+
+3.  org-ravel-strip-header-hookfun
+
+    This hack works around the need to protect #+ATTR&hellip; lines from Babel
+    until the export parser can see them. Also see advice for org-babel-exp-do-export
+    
+        
+        
+        (defun org-ravel-strip-header-hookfun ( backend )
+          "Strip #+header: ==<STRIP>==. BACKEND is ignored."
+           (progn
+            (goto-char (point-min))
+            (while (re-search-forward 
+                    "^[         ]*#\\+headers?:[        ]*==<STRIP>==[ ]\\([^\n]*\\)$" 
+                    nil t)
+              (replace-match "\\1" nil nil))))
 
 ### advice for org-babel-exp-do-export
 
@@ -660,14 +679,14 @@ end.
                                (assq-delete-all :ravel headers) " ")))
                         (format "%s%s#+BEGIN_SRC R \n%s\n#+END_SRC"
                                 (if ravelarg
-                                    (format "#+ATTR_RAVEL: %s\n" ravelarg) "")
+                                    (format "#+header: ==<STRIP>== #+ATTR_RAVEL: %s\n" ravelarg) "")
                                 (if non-ravelargs
-                                    (format "#+ATTR_R-HEADERS: %s\n" 
+                                    (format "#+header: ==<STRIP>== #+ATTR_R-HEADERS: %s\n" 
                                             non-ravelargs) "")
                                 (if noweb-yes
                                     (org-babel-expand-noweb-references
                                      info
-                                     (find-file-noselect org-current-export-file)) 
+                                     (org-babel-exp-get-export-buffer))
                                   (nth 1 info)))))))
           ;; not R so do default
           ad-do-it)))
@@ -720,8 +739,8 @@ end.
                      (cur-latex-class (assoc "article" org-e-latex-classes))
                      (org-e-latex-classes 
                       (list (append
-                       (butlast cur-latex-class 5)
-                       (last cur-latex-class (- 6 nsection)))))) 
+                             (butlast cur-latex-class 5)
+                             (last cur-latex-class (- 6 nsection)))))) 
                 (org-export-to-file 'e-latex-noweb outfile subtree))))
             ;; "Rnw" or string to use as custom header
            ((or 

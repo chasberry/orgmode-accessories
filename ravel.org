@@ -732,8 +732,9 @@ ravel code). This function should not be modified by users.
                (r-headers-attr (org-element-property :attr_r-headers src-block))
                (ravel (if ravel-attr
                           (mapconcat #'identity ravel-attr ", ")))
+               (bkend (plist-get info :back-end))
                (chunk-style-fun (intern (concat "org-ravel-chunk-style-" 
-                                                (symbol-name backend)))))
+                                                (symbol-name bkend)))))
           (if (and (string= lang "R") (fboundp chunk-style-fun))
               (funcall chunk-style-fun label ravel r-headers-attr
                        (car (org-export-unravel-code src-block)))
@@ -761,7 +762,8 @@ does the actual formatting. This function should not be modified by users.
     (let ((lang (org-element-property :language inline-src-block))
           (ancestor-inline-src-block (org-ravel-get-ancestor-fun 'inline-src-block))
           (inline-style-fun (intern (concat "org-ravel-inline-style-" 
-                                            (symbol-name backend))))
+                                            (symbol-name 
+                                             (plist-get info :back-end)))))
           )
       (if (and (string= lang "R") (fboundp inline-style-fun))
           (funcall inline-style-fun inline-src-block contents info)

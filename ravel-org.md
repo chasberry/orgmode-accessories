@@ -5,13 +5,17 @@
 
 ## browsing this file
 
-`ravel.org` is an orgmode file. 
+`ox-ravel.org` is an orgmode file. 
+
+(`ravel.org` is the version that supports the development setup before
+the February 2013 merge of the new exporter into the master. Refer to
+it if you still use that version of `orgmode`.)
 
 If you are browsing `github`, you
 should probably look at the file `ravel-org.md` which is formatted for viewing
 (and omits lots of details that are usually not of interest). 
 
-If you have downloaded a copy of `ravel.org`, it is best to view it using orgmode
+If you have downloaded a copy of `ox-ravel.org`, it is best to view it using orgmode
 
 ## quickstart guide
 
@@ -133,35 +137,33 @@ some new code, reorganize the presentation, and so on.
 # lisp setup
 
 
-**Warning:** Once the new exporter is replaces the old exporter, the
-naming convention `prefix-e-suffix` will drop the 'e-'. If you create scripts that
-use functions or backend names with 'e-', you will need to drop that
-once the new exporter goes live.
+**Warning:** As of <span class="timestamp-wrapper"><span class="timestamp">[2013-02-06 Wed]</span></span> the new exporter replaced the old
+exporter in the git master. `ox-ravel.org` works with that
+version. `ravel.org` is deprecated and will fail to work with the
+new git or the next formal release of `orgmode`.
 
-## Put ./contrib/lisp on your load path
-
-This works for my setup:
-
-    (add-to-list 'load-path "~/elisp/org-mode/contrib/lisp/")
 
 ## Load the new exporter files
 
-`e-ravel.el` will take care of this step, so if you go to the next
-step - **extract e-ravel.el and load it** , it should *just work*.
+`ox-ravel.el` will take care of this step, so if you go to the next
+step - **extract ox-ravel.el and load it** , it should *just work*.
 
-`org-element` and `org-export` are required and at least one of the
-defined backends. Here I use `e-latex` and `e-html` (which require
-those other files):
+`ox` is required and at least one of the
+defined backends. Here I use `latex`, `html`, and `md`:
 
-    (require 'org-e-latex)
-    (require 'org-e-html)
+    (require 'ox-latex)
+    (require 'ox-html)
+    (require 'ox-md)
 
-## extract e-ravel.el and load it
+## extract ox-ravel.el and load it
 
 These two lines should do the trick:
 
     (org-babel-tangle)
-    (load-file "e-ravel.el")
+    (load-file "ox-ravel.el")
+
+Eventually, move `ox-ravel.el` into your load path, e.g. `~/.emacs.d/` or `~/elisp/`
+and add `(require 'ox-ravel)` to your startup.
 
 # examples
 
@@ -184,13 +186,23 @@ can be used. Check out
 ### what ravel does
 
 `ravel` allows exporting `*.org` files or subtrees in them to several
-reproducible research formats: `brew`, `Sweave`, and `knitr`.
+reproducible research formats: `brew`, `Sweave`, and several `knitr`
+formats (brew, Rnw, Rmd, and Rhtml).
 
-It does this by exporting the file or subtree in a suitable format
-(currently LaTeX or HTML), but with differences from the usual export
-mechanism in which the source code (aka src blocks) are evaluated by
-orgmode's Babel engine and (optionally) code and/or results are passed
-to the exporter.
+With `ox-ravel-el` loaded and the point in a `*.org` buffer, 
+
+    M-x org-export-dispatch RET
+
+will pop up a menu of choices. Among these are keys to allow export to
+one of the formats supported by `ravel`. Alternatively, the user can
+execute elisp code using the `org-export-to-file` and
+`org-export-to-buffer` functions.
+
+`ravel` exports the file or subtree in a suitable format
+(currently LaTeX, HTML, or Markdown), but with differences from the
+usual export mechanism in which the source code (aka src blocks) are
+evaluated by orgmode's Babel engine and (optionally) code and/or
+results are passed to the exporter.
 
 Before the document is parsed, Babel is run. However, R scr blocks are
 not evaluated. Instead they are passed on to the exporter as is except
@@ -217,34 +229,21 @@ of the '<% &hellip; %>' code delimiters.
 
 Currently, backends are avaiable for 
 
--   **`e-latex-noweb`:** LaTeX Sweave or knitr documents
+-   **`latex-noweb`:** LaTeX Sweave or knitr documents
 
--   **`e-latex-brew`:** LaTeX brew documents
+-   **`latex-brew`:** LaTeX brew templates
 
--   **`e-beamer-noweb`:** beamer Sweave or knitr slides
+-   **`beamer-noweb`:** beamer Sweave or knitr slides
 
--   **`e-html-knitr`:** HTML knitr documents
+-   **`html-knitr`:** HTML knitr documents
+
+-   **`md-knitr`:** Markdown knitr documents
+
+-   **`md-brew`:** Markdown brew templates
 
 A look at the `*.org` files in the examples section should provide a
 quickstart.  A look (below) at the definitions of the style functions
 for these backends should guide further devlopment.
-
-### using Babel header arguments in exported code chunks
-
-Babel header arguments are parsed and (the alist of such arguments is)
-made available to the `org-ravel-chunk-style-BACKEND` function as
-`r-headers-attr`. This will eventually allow translation of some
-native org-babel headers to exported chunk headers. For this to
-happen, the chunk style of a backend (say `e-latex-newstyle`) such as this
-
-    (defun org-ravel-chunk-style-e-latex-newstyle 
-      (label ravel r-headers-attr src-code)
-      ( ... ))
-
-needs to inspect the alist of `r-headers-attr` and find those that can
-be (re-)rendered and add the necessary arguments to the output string
-in the header position along with the arguments provided by the
-`ravel` argument.
 
 ### explicit specification of arguments in exported chunks
 
@@ -256,6 +255,23 @@ Some care is needed. Arguments for some backends may conflict with
 other backends. In future development, it might help to prefix
 arguments with the name of their backend.
 
+### using Babel header arguments in exported code chunks
+
+Babel header arguments are parsed and (the alist of such arguments is)
+made available to the `org-ravel-chunk-style-BACKEND` function as
+`r-headers-attr`. This will eventually allow translation of some
+native org-babel headers to exported chunk headers. For this to
+happen, the chunk style of a backend (say `latex-newstyle`) such as this
+
+    (defun org-ravel-chunk-style-latex-newstyle 
+      (label ravel r-headers-attr src-code)
+      ( ... ))
+
+needs to inspect the alist of `r-headers-attr` and find those that can
+be (re-)rendered and add the necessary arguments to the output string
+in the header position along with the arguments provided by the
+`ravel` argument.
+
 ### new backends
 
 It is fairly easy to add more backends. There are these
@@ -265,7 +281,9 @@ ingredients needed:
 
 2.  inline style function
 
-3.  a call to setup up the template-alist
+3.  a call to setup up the derived backend
+
+4.  (optionally) a function to work with the `org-export-dispatch` menu
 
 The examples below should serve to show what is needed to create
 different chunk and inline styles.
@@ -285,40 +303,48 @@ different chunk and inline styles.
     
     The template-alist must be specified as:
     
-    <pre class="example">
-    #+NAME: defineDerived
-    #+begin_src emacs-lisp :tangle e-ravel.el
-        
-      (org-export-define-derived-backend BACKEND PARENT
-        :translate-alist ((src-block . org-ravel-src-block)
-                          (inline-src-block . org-ravel-inline-src-block)
-                          ))
-      
-      
-    #+end_src
-    </pre>
+        #+NAME: defineDerived
+        #+begin_src emacs-lisp :tangle ox-ravel.el
+            
+          (org-export-define-derived-backend BACKEND PARENT
+            :translate-alist ((src-block . org-ravel-src-block)
+                              (inline-src-block . org-ravel-inline-src-block)
+                              ))
+          
+          
+        #+end_src
     
     where 'BACKEND' is the name of the new backend and 'PARENT' is the
-    name of the original backend, e.g. "e-latex".
+    name of the original backend, e.g. "latex".
     
-    The derived backends will inherit their *family name* and append the
-    chunk style to it, e.g. `e-latex-noweb` for latex files using the
+    The derived backends can inherit their *family name* and append the
+    chunk style to it, e.g. `latex-noweb` for latex files using the
     traditional noweb style chunks.
+    
+    Optionally, a `:menu-entry` list can be added to make use of the menu
+    based `org-export-dispatch` function. See the examples and the
+    docstring for `org-export-define-backend` for more information.
+    
+    The parent of the derived backend must be loaded to enable access to
+    its functions when the derived backend is executed. The `require`
+    statements in the lisp setup (See section 2)
 
-## e-latex-noweb backend
+## latex-noweb backend
 
 This backend produces an Sweave noweb style document.
 
 ### template-alist
 
-    (org-export-define-derived-backend e-latex-noweb e-latex
+    (org-export-define-derived-backend latex-noweb latex
       :translate-alist ((src-block . org-ravel-src-block)
-                        (inline-src-block . org-ravel-inline-src-block)
-                        ))
+                        (inline-src-block . org-ravel-inline-src-block))
+      :menu-entry
+      (?l 1
+          ((?r "As Rnw File" org-ravel-latex-noweb-dispatch))))
 
 ### chunk style
 
-    (defun org-ravel-chunk-style-e-latex-noweb 
+    (defun org-ravel-chunk-style-latex-noweb 
       (label ravel r-headers-attr src-code)
       "Chunk style for noweb style.
     LABEL is the chunk name, RAVEL is the collection of ravel args as
@@ -333,14 +359,68 @@ This backend produces an Sweave noweb style document.
 
 ### inline src style
 
-    (defun org-ravel-inline-style-e-latex-noweb 
+    (defun org-ravel-inline-style-latex-noweb 
       (inline-src-block contents info)
       "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
     CONTENTS holds the contents of the item.  INFO is a
     plist holding contextual information."
       (format "\\Sexpr{ %s }" (org-element-property :value inline-src-block)))
 
-## e-beamer-noweb backend
+### export dispatcher
+
+See the help string for `org-export-dispatch`, which invokes this
+function. The `l r` menu options invoke ravel dispatch to produce a
+Rnw file. The file name is the basename of the buffer file or for
+subtree export the `EXPORT_FILE_NAME` property is used, if it is
+set. In short:
+
+-   To turn a buffer into knitr Rnw file, type
+    
+        M-x org-export-dispatch RET l r
+
+-   For a subtree, place point under its headline, type
+    
+        M-x org-export-dispatch RET C-s l r
+
+
+    (defun org-ravel-latex-noweb-dispatch 
+      (&optional async subtreep visible-only body-only ext-plist)
+    "Execute menu selection. See org-export.el for meaning of ASYNC,
+          SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+    (interactive)
+    (if async
+        (message "No async allowed.")
+      (let
+          ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
+           (org-export-to-file 'latex-noweb 
+                               outfile subtreep visible-only 
+                               body-only ext-plist))))
+
+
+The `minimalRnw` class provides a simple header for the `article`
+documentclass. It is suitable for `knitr` runs.
+
+To use this header, put
+
+    #+LaTeX_CLASS: minimalRnw
+
+near  the top of the file or as an `EXPORT_LATEX_CLASS` property in a
+subtree.
+
+    (unless 
+        (assoc "minimalRnw" org-latex-classes)
+      (let    
+          ((art-class (assoc "article" org-latex-classes))
+           (headstring "\\documentclass{article}\n[NO-DEFAULT-PACKAGES]\n\\usepackage{hyperref}"))
+        (add-to-list 'org-latex-classes
+                     (append 
+                      (list "minimalRnw"
+                            headstring)
+                      (cddr 
+                       (assoc "article" 
+                              org-latex-classes))))))
+
+## beamer-noweb backend
 
 ### template alist
 
@@ -348,29 +428,20 @@ Note here the :latex-class is forced to "beamer" by default - I hate
 using LATEX<sub>CLASS</sub> in the file as it bleeds into subtrees that are not
 being exported.
 
-    (org-export-define-derived-backend e-beamer-noweb e-beamer
+    (org-export-define-derived-backend beamer-noweb beamer
       :translate-alist ((src-block . org-ravel-src-block)
-                        (inline-src-block . org-ravel-inline-src-block)
-                        ))
-
-### augment latex-classes
-
-    (unless
-        (assoc "beamer" org-e-latex-classes)
-      (add-to-list 
-       'org-e-latex-classes  
-       (append (list
-                "beamer"
-                "\\documentclass[11pt]{beamer}")
-               (cddr (assoc "article" org-e-latex-classes)))))
+                        (inline-src-block . org-ravel-inline-src-block))
+      :menu-entry
+      (?l 1
+          ((?s "As Rnw Beamer" org-ravel-beamer-noweb-dispatch))))
 
 ### chunk style
 
-This adds "%" before the code chunk to defeat e-beamer's tinkering
+This adds "%" before the code chunk to defeat beamer's tinkering
 with contents which would add a space before a chunk (and thereby
 disarm Sweave/knitr's processing of it)
 
-    (defun org-ravel-chunk-style-e-beamer-noweb
+    (defun org-ravel-chunk-style-beamer-noweb
        (label ravel r-headers-attr src-code)
        "Chunk style for noweb style.
      LABEL is the chunk name, RAVEL is the collection of ravel args as
@@ -385,51 +456,115 @@ disarm Sweave/knitr's processing of it)
 
 ### inline src style
 
-    (defalias 'org-ravel-inline-style-e-beamer-noweb 'org-ravel-inline-style-e-latex-noweb)
+    (defalias 'org-ravel-inline-style-beamer-noweb 'org-ravel-inline-style-latex-noweb)
 
-## e-latex-brew backend
+### export dispatcher
+
+See the comments for `latex-noweb`.
+
+-   To turn a buffer into knitr beamer file, type
+    
+        M-x org-export-dispatch RET l s
+
+-   For a subtree, place point under its headline, type
+    
+        M-x org-export-dispatch RET C-s l s
+
+
+    (defun org-ravel-beamer-noweb-dispatch 
+      (&optional async subtreep visible-only body-only ext-plist)
+    "Execute menu selection. See org-export.el for meaning of ASYNC,
+          SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+    (interactive)
+    (if async
+        (message "No async allowed.")
+      (let
+          ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
+           (org-export-to-file 'beamer-noweb 
+                               outfile subtreep visible-only 
+                               body-only ext-plist))))
+
+
+The `minimalRnw` class provides a simple header for the `article`
+documentclass. It is suitable for `knitr` runs.
+
+To use this header, put
+
+    #+LaTeX_CLASS: beamer
+
+near  the top of the file or as an `EXPORT_LATEX_CLASS` property in a
+subtree.
+
+    (unless
+        (assoc "beamer" org-latex-classes)
+      (add-to-list 
+       'org-latex-classes  
+       (append (list
+                "beamer"
+                "\\documentclass[11pt]{beamer}")
+               (cddr (assoc "article" org-latex-classes)))))
+
+## latex-brew backend
 
 ### brew document format
 
-The [brew](http://cran.r-project.org/web/packages/brew/index.html) R package use "<%" and "%>" to delimit code chunks. Placing an equals sign (\`=') after the first delimiter will result in the value of the expression being printed in place of the code chunk. Placing a minus sign (\`-') before the last delimiter will suppress the line break after the code chunk.
 
-It is handy to be able to evaluate the code inside the delimiters during development and debugging using the `C-c C-c` key, but this can only be done on complete, syntactically correct R expressions. In orgmode, this can be achieved by letting the delimiters live outside of the code chunk as an extra argument. Here is an example
+The [brew](http://cran.r-project.org/web/packages/brew/index.html) R package use "<%" and "%>" to delimit code
+chunks. Placing an equals sign (\`=') after the first delimiter
+will result in the value of the expression being printed in place
+of the code chunk. Placing a minus sign (\`-') before the last
+delimiter will suppress the line break after the code chunk.
+
+It is handy to be able to evaluate the code inside the delimiters
+during development and debugging using the `C-c C-c` key, but this
+can only be done on complete, syntactically correct R
+expressions. In orgmode, this can be achieved by letting the
+delimiters live outside of the code chunk as an extra
+argument. Here is an example
 
 
-<pre class="example">
-#+begin_src R :ravel &lt;% code %&gt; 
-  load("my-data.RData")
-#+end_src
+    #+begin_src R :ravel <% code %> 
+      load("my-data.RData")
+    #+end_src
+    
+    #+RESULTS:
+    
+    
+    #+begin_src R :ravel <%= code %>
+      cat( print( ls() ), sep="\n")
+    #+end_src
 
-#+RESULTS:
+The code in each chunk can be executed via `C-c C-c`. On export,
+it is wrapped in the delimiters. The text `code` is deleted. (In
+fact, it need not be there at all.)
 
-
-#+begin_src R :ravel &lt;%= code %&gt;
-  cat( print( ls() ), sep="\n")
-#+end_src
-</pre>
-
-The code in each chunk can be executed via `C-c C-c`. On export, it is wrapped in the delimiters. The text `code` is deleted. (In fact, it need not be there at all.)
-
-One of the nifty features of `brew` is that the code chunks do not need to be complete expressions. Thus, one can use
+One of the nifty features of `brew` is that the code chunks do not
+need to be complete expressions. Thus, one can use
 
     The alphabet:
     <% for (i in letters) { %>
     <%= c( i, toupper(i) ) %>
     <% } %> 
 
-to print the letters of the alphabet. In orgmode, the exporter becomes confused by code chunks like `for (i in letters) {`. Allowance for this idiom is made by placing the opening or closing curly brace just before the last delimiter (\`[-]%>') like this `<% } -%>`. The curly brace will appear after the code (if any) in the chunk after export.
+to print the letters of the alphabet. In orgmode, the exporter
+becomes confused by code chunks like `for (i in letters)
+    {`. Allowance for this idiom is made by placing the opening or
+closing curly brace just before the last delimiter (\`[-]%>') like
+this `<% } -%>`. The curly brace will appear after the code (if
+any) in the chunk after export.
 
 ### template-alist
 
-    (org-export-define-derived-backend e-latex-brew e-latex
+    (org-export-define-derived-backend latex-brew latex
        :translate-alist ((src-block . org-ravel-src-block)
-                         (inline-src-block . org-ravel-inline-src-block)
-                         ))  
+                         (inline-src-block . org-ravel-inline-src-block))
+       :menu-entry
+       (?l 2
+          ((?w "As Brew File" org-ravel-latex-brew-dispatch))))
 
 ### chunk style
 
-    (defun org-ravel-chunk-style-e-latex-brew 
+    (defun org-ravel-chunk-style-latex-brew 
       (label ravel r-headers-attr src-code)
       "Default chunk style for brew style.
     LABEL is the chunk name,RAVEL is the collection of ravel args as a
@@ -440,7 +575,7 @@ to print the letters of the alphabet. In orgmode, the exporter becomes confused 
 
 ### inline style
 
-    (defun org-ravel-inline-style-e-latex-brew 
+    (defun org-ravel-inline-style-latex-brew 
       (inline-src-block contents info)
       "Traditional brew style using the INLINE-SRC-BLOCK element.
     CONTENTS holds the contents of the item.  INFO is a plist holding
@@ -474,20 +609,48 @@ return a format STRING that is suitable for brew.
                 (error "Percent signs do not balance:%s" spec)))
           (error "Invalid spec:%s" spec))))
 
-## e-html-knitr backend
+### export dispatcher
+
+See the comments for `latex-noweb`. The `minimalRnw` class can be
+used here, too.
+
+-   To turn a buffer into latex brew file, type
+    
+        M-x org-export-dispatch RET l w
+
+-   For a subtree, place point under its headline, type
+    
+        M-x org-export-dispatch RET C-s l w
+
+    (defun org-ravel-latex-brew-dispatch 
+      (&optional async subtreep visible-only body-only ext-plist)
+    "Execute menu selection. See org-export.el for meaning of ASYNC,
+          SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+    (interactive)
+    (if async
+        (message "No async allowed.")
+      (let
+          ((outfile  (org-export-output-file-name ".brew" subtreep)))
+           (org-export-to-file 'latex-brew 
+                               outfile subtreep visible-only 
+                               body-only ext-plist))))
+
+## html-knitr backend
 
 This produces an html style document as supported by [knitr.](http://yihui.name/knitr/) 
 
 ### template-alist
 
-    (org-export-define-derived-backend e-html-knitr e-html
+    (org-export-define-derived-backend html-knitr html
       :translate-alist ((src-block . org-ravel-src-block)
-                        (inline-src-block . org-ravel-inline-src-block)
-                        ))
+                        (inline-src-block . org-ravel-inline-src-block))
+       :menu-entry
+       (?h 3
+          ((?r "As Rhtml File" org-ravel-html-knitr-dispatch))))
 
 ### chunk style
 
-    (defun org-ravel-chunk-style-e-html-knitr 
+    (defun org-ravel-chunk-style-html-knitr 
       (label ravel r-headers-attr src-code)
       "Chunk style for noweb style.
     LABEL is the chunk name, RAVEL is the collection of ravel args as
@@ -503,12 +666,158 @@ This produces an html style document as supported by [knitr.](http://yihui.name/
 
 ### inline src style
 
-    (defun org-ravel-inline-style-e-html-knitr 
+    (defun org-ravel-inline-style-html-knitr 
       (inline-src-block contents info)
       "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
     CONTENTS holds the contents of the item.  INFO is a
     plist holding contextual information."
       (format "<!--rinline %s -->" (org-element-property :value inline-src-block)))
+
+### export dispatcher
+
+See the comments for `latex-noweb`.
+
+-   To turn a buffer into Rhtml file, type
+    
+        M-x org-export-dispatch RET h r
+
+-   For a subtree, place point under its headline, type
+    
+        M-x org-export-dispatch RET C-s h r
+
+    (defun org-ravel-html-knitr-dispatch 
+      (&optional async subtreep visible-only body-only ext-plist)
+    "Execute menu selection. See org-export.el for meaning of ASYNC,
+          SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+    (interactive)
+    (if async
+        (message "No async allowed.")
+      (let
+          ((outfile  (org-export-output-file-name ".Rhtml" subtreep)))
+           (org-export-to-file 'html-knitr 
+                               outfile subtreep visible-only 
+                               body-only ext-plist))))
+
+## md-knitr backend
+
+This backend produces a Markdown style document as supported by [knitr.](http://yihui.name/knitr/) 
+
+### template-alist
+
+    (org-export-define-derived-backend md-knitr md
+      :translate-alist ((src-block . org-ravel-src-block)
+                        (inline-src-block . org-ravel-inline-src-block))
+      :menu-entry
+      (?m 4
+          ((?r "As Rmd (Markdown) File" org-ravel-md-knitr-dispatch))))
+
+### chunk style
+
+    (defun org-ravel-chunk-style-md-knitr 
+      (label ravel r-headers-attr src-code)
+      "Chunk style for markdown.
+    LABEL is the chunk name, RAVEL is the collection of ravel args as
+    a string, R-HEADERS-ATTR is the collection of headers from Babel
+    as a string parseable by `org-babel-parse-header-arguments',
+    SRC-CODE is the code from the block."
+      (concat
+       "```{r "
+       label
+       (if (and ravel label) ",") ravel "}\n"
+       src-code
+       "```\n"))
+
+### inline src style
+
+    (defun org-ravel-inline-style-md-knitr 
+      (inline-src-block contents info)
+      "Markdown style Sexpr using the INLINE-SRC-BLOCK element.
+    CONTENTS holds the contents of the item.  INFO is a
+    plist holding contextual information."
+      (format "`r %s`" (org-element-property :value inline-src-block)))
+
+### export dispatcher
+
+See the comments for `latex-noweb`.
+
+-   To turn a buffer into Markdown `rmd` file, type
+    
+        M-x org-export-dispatch RET m r
+
+-   For a subtree, place point under its headline, type
+    
+        M-x org-export-dispatch RET C-s m r
+
+    (defun org-ravel-md-knitr-dispatch 
+      (&optional async subtreep visible-only body-only ext-plist)
+    "Execute menu selection. See org-export.el for meaning of ASYNC,
+          SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+    (interactive)
+    (if async
+        (message "No async allowed.")
+      (let
+          ((outfile  (org-export-output-file-name ".Rmd" subtreep)))
+           (org-export-to-file 'md-knitr 
+                               outfile subtreep visible-only 
+                               body-only ext-plist))))
+
+
+## md-brew backend
+
+This backend produces a Markdown style [brew](http://cran.r-project.org/web/packages/brew/index.html) template. There are
+notes about the use of the template above in the
+brew document format (See section 4.4.1) section.
+
+### template-alist
+
+    (org-export-define-derived-backend md-brew md
+      :translate-alist ((src-block . org-ravel-src-block)
+                        (inline-src-block . org-ravel-inline-src-block))
+      :menu-entry
+      (?m 4
+          ((?w "As brew (Markdown) File" org-ravel-md-brew-dispatch))))
+
+### chunk style
+
+The function `org-ravel-chunk-style-latex-brew` (defined above)
+works.
+
+    (defalias 'org-ravel-chunk-style-md-brew  
+      'org-ravel-chunk-style-latex-brew)
+
+### inline src style
+
+The function `org-ravel-inline-style-latex-brew` (defined above)
+works.
+
+    (defalias 'org-ravel-inline-style-md-brew  
+      'org-ravel-inline-style-latex-brew)
+
+### export dispatcher
+
+See the comments for `latex-brew`.
+
+-   To turn a buffer into a Markdown `brew` template file, type
+    
+        M-x org-export-dispatch RET m w
+
+-   For a subtree, place point under its headline, type
+    
+        M-x org-export-dispatch RET C-s m w
+
+    (defun org-ravel-md-brew-dispatch 
+      (&optional async subtreep visible-only body-only ext-plist)
+    "Execute menu selection. See org-export.el for meaning of ASYNC,
+          SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+    (interactive)
+    (if async
+        (message "No async allowed.")
+      (let
+          ((outfile  (org-export-output-file-name ".brew" subtreep)))
+           (org-export-to-file 'md-brew 
+                               outfile subtreep visible-only 
+                               body-only ext-plist))))
+
 
 ## support functions
 
@@ -517,15 +826,18 @@ These functions should not be changed for individual backends.
 ### src block ancestors
 
 Non-R src blocks should use the src-block and inline-src-block functions of
-the parent (e.g. e-latex). This function helps to find them.
+the parent (e.g. latex). This function helps to find them.
+
 
       (defun org-ravel-get-ancestor-fun (funkey &optional info)
     "Ancestral definition of function.
-    Find  FUNKEY function in the `:translate-alist' property of INFO."
-        (let ((anfun
-               (cdr (assoc funkey (reverse (plist-get  info :translate-alist)))))
-              )
-          anfun))
+    Find  second or sole FUNKEY function in the `:translate-alist' property of INFO."
+    (let* ((tr-list (plist-get  info :translate-alist))
+           (newfun-pair (assoc funkey tr-list))
+           (new-and-rest (memq newfun-pair tr-list)))
+      (or
+       (cdr (assoc funkey (cdr new-and-rest)))
+       (cdr newfun-pair))))
 
 ### R src block transcoder
 
@@ -566,7 +878,8 @@ does the actual formatting. This function should not be modified by users.
     CONTENTS holds the contents of the item.  INFO is a plist holding
     contextual information.  Use default for parent backend except for R calls."
       (let ((lang (org-element-property :language inline-src-block))
-            (ancestor-inline-src-block (org-ravel-get-ancestor-fun 'inline-src-block))
+            (ancestor-inline-src-block 
+             (org-ravel-get-ancestor-fun 'inline-src-block info))
             (inline-style-fun (intern (concat "org-ravel-inline-style-" 
                                               (symbol-name 
                                                (plist-get info :back-end)))))
@@ -576,7 +889,7 @@ does the actual formatting. This function should not be modified by users.
           (funcall ancestor-inline-src-block inline-src-block contents info)
           )))
 
-### TODO advise for org-export-as
+### advise for org-export-as
 
 There is no hook at the beginning of `org-export-as`. So, to make this
 work, `org-export-as` is 'advise'd to ad-activate advise for
@@ -660,7 +973,7 @@ end.
                                 (nth-one (nth 1 info))
                                 (srcRresult
                                  (if ravelarg
-                                     (format "[%s]{%s}" ravelarg nth-one)
+                                     (format "[ %s ]{%s}" ravelarg nth-one)
                                    (format "{%s}"
                                            nth-one ))))
                            srcRresult)
@@ -696,70 +1009,9 @@ end.
 
 ### miscellaneous
 
-1.  export as latex (sub-)document
+1.  minimal exporter
 
-    This function is helpful for making *child* documents in `knitr` or
-    making documents that omit all the packages inserted by the exporter,
-    which Sweave or knitr may prefer.
-    
-    The flet'ed `org-e-latex-template` is a subset of the original
-    version.
-    
-        (defun org-ravel-export-e-latex-noweb (outfile &optional subtree only-contents)
-          "Export a document to OUTFILE.  If SUBTREE is non-nil, just
-        export the subtree. Use article format.
-        
-        ONLY-CONTENTS is treated as follows 
-                nil - create a complete document as per e-latex, 
-                t or 1 -  copy the contents without an enclosing 
-                      document environment,
-                2-6 - like t, but treat highest level heading as subsection, 
-                      subsubsection, paragraph, subparagraph, or enumerate,
-               \"Rnw\" - create an article documentclass with only hyperref as the 
-                      default package, 
-                any other string is inserted as a custom header."
-          (cond
-           ;; t - contents and minimal comments only 
-           ((member only-contents '(t 1 2 3 4 5 6))
-            (flet 
-                ((org-e-latex-template 
-                  (contents info)
-                  (concat
-                   ;; Time-stamp.
-                   (and (plist-get info :time-stamp-file)
-                        (format-time-string "%% Created %Y-%m-%d %a %H:%M\n"))
-                   ;; Document's body.
-                   contents
-                   ;; Creator.
-                   (let ((creator-info (plist-get info :with-creator)))
-                     (cond
-                      ((not creator-info) "")
-                      ((eq creator-info 'comment)
-                       (format "%% %s\n" (plist-get info :creator)))
-                      (t (concat (plist-get info :creator) "\n")))))))
-              (let* ((nsection (if (eq only-contents t) 1 only-contents))
-                     (cur-latex-class (assoc "article" org-e-latex-classes))
-                     (org-e-latex-classes 
-                      (list (append
-                             (butlast cur-latex-class 5)
-                             (last cur-latex-class (- 6 nsection)))))) 
-                (org-export-to-file 'e-latex-noweb outfile subtree))))
-            ;; "Rnw" or string to use as custom header
-           ((or 
-             (and (string= "Rnw" only-contents) 
-                  (setq only-contents 
-                        "\\documentclass{article}\n[NO-DEFAULT-PACKAGES]\n\\usepackage{hyperref}"))
-             only-contents)
-            (let ((org-e-latex-classes 
-                   (list
-                    (append (list
-                             "article"
-                             only-contents)
-                            (cddr (assoc "article" org-e-latex-classes))))))
-              (org-export-to-file 'e-latex-noweb outfile subtree)))
-           ;; nil - default export
-           ((not only-contents)
-            (org-export-to-file 'e-latex-noweb outfile subtree))))
+
 
 2.  insert src block name as chunk
 

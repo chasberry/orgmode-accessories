@@ -13,15 +13,13 @@ Running this src block should turn it back into the original (or something close
   (save-excursion
     (forward-line 4)
     (search-forward " A minimal knitr example in HTML")
-      (org-export-to-file 'e-html-knitr "knitr-minimal.Rhtml" t nil t ))
+      (org-export-to-file 'html-knitr "knitr-minimal.Rhtml" t nil t ))
 #+END_SRC
 
 #+RESULTS:
 : knitr-minimal.Rhtml
 
 should translate it back to Rhtml.
-
-
 
 * A minimal knitr example in HTML
 
@@ -39,6 +37,7 @@ should translate it back to Rhtml.
 #+BEGIN_HTML
 <body>
 #+END_HTML
+
 This is a minimal example which shows *knitr*
   working with HTML
   pages. See [[https://github.com/downloads/yihui/knitr/knitr-minimal.html][here]]
@@ -47,7 +46,7 @@ This is a minimal example which shows *knitr*
   for the source.
 
 Boring stuff as usual:
-  
+
 #+begin_src R 
     ## a simple calculator
     1+1

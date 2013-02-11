@@ -5,9 +5,9 @@ Run these commands to see how differently the various exporters treat
 the src blocks. You need to type 'y' repeatedly in response to the
 query about evaluating the src blocks:
 
-:  M-: (org-export-to-buffer 'e-latex "latex buffer") RET
-:  M-: (org-export-to-buffer 'e-latex-noweb "noweb buffer") RET
-:  M-: (org-export-to-buffer 'e-latex-brew "brew buffer") RET
+:  M-: (org-export-to-buffer 'latex "latex buffer") RET
+:  M-: (org-export-to-buffer 'latex-noweb "noweb buffer") RET
+:  M-: (org-export-to-buffer 'latex-brew "brew buffer") RET
 :  M-: (ediff-buffers3 "latex buffer" "noweb buffer" "brew buffer") RET 
 
 then you need to type 'n' several times to step through the diffs and finally 'qy'

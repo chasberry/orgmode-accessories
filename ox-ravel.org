@@ -1,4 +1,4 @@
-#+TITLE:     ravel.org
+#+TITLE:     ox-ravel.org
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
@@ -21,13 +21,17 @@
   :END:
 ** browsing this file
 
-~ravel.org~ is an orgmode file. 
+~ox-ravel.org~ is an orgmode file. 
+
+(~ravel.org~ is the version that supports the development setup before
+the February 2013 merge of the new exporter into the master. Refer to
+it if you still use that version of ~orgmode~.)
 
 If you are browsing ~github~, you
 should probably look at the file ~ravel-org.md~ which is formatted for viewing
 (and omits lots of details that are usually not of interest). 
 
-If you have downloaded a copy of ~ravel.org~, it is best to view it using [[orgmode][orgmode]]
+If you have downloaded a copy of ~ox-ravel.org~, it is best to view it using [[orgmode][orgmode]]
   
 ** quickstart guide
 
@@ -148,10 +152,11 @@ some new code, reorganize the presentation, and so on.
   :CUSTOM_ID: lispset
   :END:
   
-  *Warning:* Once the new exporter is replaces the old exporter, the
-  naming convention ~prefix-e-suffix~ will drop the 'e-'. If you create scripts that
-  use functions or backend names with 'e-', you will need to drop that
-  once the new exporter goes live.
+  *Warning:* As of [2013-02-06 Wed] the new exporter replaced the old
+  exporter in the git master. ~ox-ravel.org~ works with that
+  version. ~ravel.org~ is deprecated and will fail to work with the
+  new git or the next formal release of ~orgmode~.
+  
   
 ** Load the new exporter files
    
@@ -163,24 +168,24 @@ some new code, reorganize the presentation, and so on.
    =ox= is required and at least one of the
    defined backends. Here I use =latex=, =html=, and =md=:
 
-   #+name: loadup
-   #+BEGIN_SRC emacs-lisp 
-   (require 'ox-latex)
-   (require 'ox-html)
-   (require 'ox-md)
-   #+END_SRC
+#+name: loadup
+#+begin_src emacs-lisp :results output silent
+  (require 'ox-latex)
+  (require 'ox-html)
+  (require 'ox-md)
+#+end_src
    
 ** extract ox-ravel.el and load it
    
    These two lines should do the trick:
    
-   #+BEGIN_SRC emacs-lisp 
-   (org-babel-tangle)
-   (load-file "ox-ravel.el")
-   #+END_SRC
+#+BEGIN_SRC emacs-lisp
+(org-babel-tangle)
+(load-file "ox-ravel.el")
+#+END_SRC
    
    Eventually, move =ox-ravel.el= into your load path, e.g. =~/.emacs.d/= or =~/elisp/=
-   and add ~(load "ox-ravel")~ to your startup.
+   and add ~(require 'ox-ravel)~ to your startup.
 
 * examples
 
@@ -266,40 +271,40 @@ Mostly DONE:
 
 Here is the elisp header for ox-ravel.el
 
-#+BEGIN_SRC emacs-lisp 
-;;; ox-ravel.el --- Sweave/knit/brew document maker for orgmode
-;; Copyright (C) 2012  Charles C. Berry
-
-;; This program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-;;; Commentary: 
-;;              See ravel.org for details.
-;;
-;;; Code:
-;;
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  ;;; ox-ravel.el --- Sweave/knit/brew document maker for orgmode
+  ;; Copyright (C) 2012  Charles C. Berry
+  
+  ;; This program is free software: you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+  
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+  
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  
+  ;;; Commentary: 
+  ;;              See ravel.org for details.
+  ;;
+  ;;; Code:
+  ;;
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp 
-(require 'ox-latex)
-(require 'ox-html)
-(require 'ox-beamer)
-(require 'org-md)
-#+END_SRC
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (require 'ox-latex)
+  (require 'ox-html)
+  (require 'ox-beamer)
+  (require 'org-md)
+#+end_src
 
 #+END_SRC
 :END:
-  
+
   
 ** using and extending ravel
    
@@ -309,7 +314,7 @@ Here is the elisp header for ox-ravel.el
 reproducible research formats: ~brew~, ~Sweave~, and several ~knitr~
 formats (brew, Rnw, Rmd, and Rhtml).
 
-With ~ravel-el~ loaded and the point in a =*.org= buffer, 
+With ~ox-ravel-el~ loaded and the point in a =*.org= buffer, 
 
 : M-x org-export-dispatch RET
 
@@ -378,10 +383,10 @@ made available to the ~org-ravel-chunk-style-BACKEND~ function as
 native org-babel headers to exported chunk headers. For this to
 happen, the chunk style of a backend (say ~latex-newstyle~) such as this
 
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-chunk-style-latex-newstyle 
-  (label ravel r-headers-attr src-code)
-  ( ... ))
+#+BEGIN_SRC emacs-lisp
+  (defun org-ravel-chunk-style-latex-newstyle 
+    (label ravel r-headers-attr src-code)
+    ( ... ))
 #+END_SRC
 
 needs to inspect the alist of ~r-headers-attr~ and find those that can
@@ -446,12 +451,12 @@ statements in the [[#lispset][lisp setup]]
 Sweave and knitr have their own ideas about styling documents. To add
 support for plain latex export, do like this:
 - add sweave-article as a faux class 
-   #+BEGIN_SRC emacs-lisp 
-   (add-to-list 
-    'org-latex-classes 
-    (list "sweave-article"  
-	  "\\documentclass[11pt]{article}\n[NO-DEFAULT-PACKAGES]" 
-	  (cddr (car org-latex-classes))))
+   #+BEGIN_SRC emacs-lisp
+     (add-to-list 
+      'org-latex-classes 
+      (list "sweave-article"  
+            "\\documentclass[11pt]{article}\n[NO-DEFAULT-PACKAGES]" 
+            (cddr (car org-latex-classes))))
    #+END_SRC
 - use
   #+LaTeX_CLASS: sweave-header
@@ -468,41 +473,41 @@ This backend produces an Sweave noweb style document.
 :END:
 
 #+name: latex-noweb-translate-alist
-#+BEGIN_SRC emacs-lisp 
-(org-export-define-derived-backend latex-noweb latex
-  :translate-alist ((src-block . org-ravel-src-block)
-		    (inline-src-block . org-ravel-inline-src-block))
-  :menu-entry
-  (?l 1
-      ((?r "As Rnw File" org-ravel-latex-noweb-dispatch))))
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el
+  (org-export-define-derived-backend latex-noweb latex
+    :translate-alist ((src-block . org-ravel-src-block)
+                      (inline-src-block . org-ravel-inline-src-block))
+    :menu-entry
+    (?l 1
+        ((?r "As Rnw File" org-ravel-latex-noweb-dispatch))))
+#+end_src
 
 *** chunk style
 
 #+name: latex-noweb-chunk-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-chunk-style-latex-noweb 
-  (label ravel r-headers-attr src-code)
-  "Chunk style for noweb style.
-LABEL is the chunk name, RAVEL is the collection of ravel args as
-a string, R-HEADERS-ATTR is the collection of headers from Babel
-as a string parseable by `org-babel-parse-header-arguments',
-SRC-CODE is the code from the block."
-  (concat
-   "<<" label
-   (if (and ravel label) ",") ravel ">>=\n"
-   src-code
-   "@ %def\n"))
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el :results silent         
+  (defun org-ravel-chunk-style-latex-noweb 
+    (label ravel r-headers-attr src-code)
+    "Chunk style for noweb style.
+  LABEL is the chunk name, RAVEL is the collection of ravel args as
+  a string, R-HEADERS-ATTR is the collection of headers from Babel
+  as a string parseable by `org-babel-parse-header-arguments',
+  SRC-CODE is the code from the block."
+    (concat
+     "<<" label
+     (if (and ravel label) ",") ravel ">>=\n"
+     src-code
+     "@ %def\n"))
+#+end_src
 *** inline src style
 #+name: latex-noweb-inline-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-inline-style-latex-noweb 
-  (inline-src-block contents info)
-  "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
-CONTENTS holds the contents of the item.  INFO is a
-plist holding contextual information."
-  (format "\\Sexpr{ %s }" (org-element-property :value inline-src-block)))
+#+BEGIN_SRC emacs-lisp  :tangle ox-ravel.el :results silent
+  (defun org-ravel-inline-style-latex-noweb 
+    (inline-src-block contents info)
+    "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a
+  plist holding contextual information."
+    (format "\\Sexpr{ %s }" (org-element-property :value inline-src-block)))
 #+END_SRC
 *** export dispatcher
     
@@ -519,20 +524,20 @@ plist holding contextual information."
   : M-x org-export-dispatch RET C-s l r
   
   
-    #+name: latex-Rnw-dispatcher
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-latex-noweb-dispatch 
-  (&optional async subtreep visible-only body-only ext-plist)
-"Execute menu selection. See org-export.el for meaning of ASYNC,
-      SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
-(interactive)
-(if async
-    (message "No async allowed.")
-  (let
-      ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
-       (org-export-to-file 'latex-noweb 
-			   outfile subtreep visible-only 
-			   body-only ext-plist))))
+#+name: latex-Rnw-dispatcher
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :results silent
+  (defun org-ravel-latex-noweb-dispatch 
+    (&optional async subtreep visible-only body-only ext-plist)
+  "Execute menu selection. See org-export.el for meaning of ASYNC,
+        SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+  (interactive)
+  (if async
+      (message "No async allowed.")
+    (let
+        ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
+         (org-export-to-file 'latex-noweb 
+                             outfile subtreep visible-only 
+                             body-only ext-plist))))
 #+END_SRC
     
     
@@ -544,22 +549,23 @@ plist holding contextual information."
     near  the top of the file or as an =EXPORT_LATEX_CLASS= property in a
     subtree.
     
-#+BEGIN_SRC emacs-lisp 
-(unless 
-    (assoc "minimalRnw" org-latex-classes)
-  (let    
-      ((art-class (assoc "article" org-latex-classes))
-       (headstring "\\documentclass{article}\n[NO-DEFAULT-PACKAGES]\n\\usepackage{hyperref}"))
-    (add-to-list 'org-latex-classes
-		 (append 
-		  (list "minimalRnw"
-			headstring)
-		  (cddr 
-		   (assoc "article" 
-			  org-latex-classes))))))
-
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :results silent
+  (unless 
+      (assoc "minimalRnw" org-latex-classes)
+    (let    
+        ((art-class (assoc "article" org-latex-classes))
+         (headstring "\\documentclass{article}\n[NO-DEFAULT-PACKAGES]\n\\usepackage{hyperref}"))
+      (add-to-list 'org-latex-classes
+                   (append 
+                    (list "minimalRnw"
+                          headstring)
+                    (cddr 
+                     (assoc "article" 
+                            org-latex-classes))))))
+    
 #+END_SRC
     
+
 ** beamer-noweb backend
 *** template alist
 :DEVNOTES:
@@ -572,14 +578,14 @@ using LATEX_CLASS in the file as it bleeds into subtrees that are not
 being exported.
 
 #+name: beamer-noweb-translate-alist
-#+BEGIN_SRC emacs-lisp 
-(org-export-define-derived-backend beamer-noweb beamer
-  :translate-alist ((src-block . org-ravel-src-block)
-		    (inline-src-block . org-ravel-inline-src-block))
-  :menu-entry
-  (?l 1
-      ((?s "As Rnw Beamer" org-ravel-beamer-noweb-dispatch))))
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el
+  (org-export-define-derived-backend beamer-noweb beamer
+    :translate-alist ((src-block . org-ravel-src-block)
+                      (inline-src-block . org-ravel-inline-src-block))
+    :menu-entry
+    (?l 1
+        ((?s "As Rnw Beamer" org-ravel-beamer-noweb-dispatch))))
+#+end_src
 
 *** chunk style
 
@@ -588,28 +594,28 @@ with contents which would add a space before a chunk (and thereby
 disarm Sweave/knitr's processing of it)
 
 #+name: beamer-noweb-chunk-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-chunk-style-beamer-noweb
-   (label ravel r-headers-attr src-code)
-   "Chunk style for noweb style.
- LABEL is the chunk name, RAVEL is the collection of ravel args as
- a string, R-HEADERS-ATTR is the collection of headers from Babel
- as a string parseable by `org-babel-parse-header-arguments',
- SRC-CODE is the code from the block."
-   (concat
-    "%\n<<" label
-    (if (and ravel label) ",") ravel ">>=\n"
-    src-code
-    "@ %def\n"))
-
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el :results silent
+   (defun org-ravel-chunk-style-beamer-noweb
+      (label ravel r-headers-attr src-code)
+      "Chunk style for noweb style.
+    LABEL is the chunk name, RAVEL is the collection of ravel args as
+    a string, R-HEADERS-ATTR is the collection of headers from Babel
+    as a string parseable by `org-babel-parse-header-arguments',
+    SRC-CODE is the code from the block."
+      (concat
+       "%\n<<" label
+       (if (and ravel label) ",") ravel ">>=\n"
+       src-code
+       "@ %def\n"))
+  
+#+end_src
 
 *** inline src style
 
 #+name: beamer-noweb-inline-style
-#+BEGIN_SRC emacs-lisp 
-(defalias 'org-ravel-inline-style-beamer-noweb 'org-ravel-inline-style-latex-noweb)
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el :results silent         
+  (defalias 'org-ravel-inline-style-beamer-noweb 'org-ravel-inline-style-latex-noweb)
+#+end_src
 *** export dispatcher
 
 See the comments for ~latex-noweb~.
@@ -622,19 +628,19 @@ See the comments for ~latex-noweb~.
 
 
 #+name: beamer-Rnw-dispatcher
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-beamer-noweb-dispatch 
-  (&optional async subtreep visible-only body-only ext-plist)
-"Execute menu selection. See org-export.el for meaning of ASYNC,
-      SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
-(interactive)
-(if async
-    (message "No async allowed.")
-  (let
-      ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
-       (org-export-to-file 'beamer-noweb 
-			   outfile subtreep visible-only 
-			   body-only ext-plist))))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :results silent
+  (defun org-ravel-beamer-noweb-dispatch 
+    (&optional async subtreep visible-only body-only ext-plist)
+  "Execute menu selection. See org-export.el for meaning of ASYNC,
+        SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+  (interactive)
+  (if async
+      (message "No async allowed.")
+    (let
+        ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
+         (org-export-to-file 'beamer-noweb 
+                             outfile subtreep visible-only 
+                             body-only ext-plist))))
 #+END_SRC
 
 
@@ -646,15 +652,15 @@ To use this header, put
 near  the top of the file or as an =EXPORT_LATEX_CLASS= property in a
 subtree.
 
-#+BEGIN_SRC emacs-lisp 
-(unless
-    (assoc "beamer" org-latex-classes)
-  (add-to-list 
-   'org-latex-classes  
-   (append (list
-	    "beamer"
-	    "\\documentclass[11pt]{beamer}")
-	   (cddr (assoc "article" org-latex-classes)))))
+#+begin_src emacs-lisp :tangle ox-ravel.el
+  (unless
+      (assoc "beamer" org-latex-classes)
+    (add-to-list 
+     'org-latex-classes  
+     (append (list
+              "beamer"
+              "\\documentclass[11pt]{beamer}")
+             (cddr (assoc "article" org-latex-classes)))))
 #+END_SRC
 
 ** latex-brew backend
@@ -694,12 +700,12 @@ subtree.
     One of the nifty features of ~brew~ is that the code chunks do not
     need to be complete expressions. Thus, one can use
     
-    #+BEGIN_EXAMPLE
-          The alphabet:
-          <% for (i in letters) { %>
-          <%= c( i, toupper(i) ) %>
-          <% } %> 
-    #+END_EXAMPLE
+#+BEGIN_EXAMPLE
+      The alphabet:
+      <% for (i in letters) { %>
+      <%= c( i, toupper(i) ) %>
+      <% } %> 
+#+END_EXAMPLE
     to print the letters of the alphabet. In orgmode, the exporter
     becomes confused by code chunks like =for (i in letters)
     {=. Allowance for this idiom is made by placing the opening or
@@ -714,14 +720,14 @@ subtree.
 :END:
 
 #+name: latex-brew-translate-alist
-#+BEGIN_SRC emacs-lisp 
-(org-export-define-derived-backend latex-brew latex
-   :translate-alist ((src-block . org-ravel-src-block)
-		     (inline-src-block . org-ravel-inline-src-block))
-   :menu-entry
-   (?l 2
-      ((?w "As Brew File" org-ravel-latex-brew-dispatch))))
-
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (org-export-define-derived-backend latex-brew latex
+     :translate-alist ((src-block . org-ravel-src-block)
+                       (inline-src-block . org-ravel-inline-src-block))
+     :menu-entry
+     (?l 2
+        ((?w "As Brew File" org-ravel-latex-brew-dispatch))))
+  
 #+END_SRC
 
 :DEVNOTES:
@@ -731,30 +737,30 @@ subtree.
 
 *** chunk style
 #+name: latex-brew-chunk-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-chunk-style-latex-brew 
-  (label ravel r-headers-attr src-code)
-  "Default chunk style for brew style.
-LABEL is the chunk name,RAVEL is the collection of ravel args as a
-string,R-HEADERS-ATTR is the collection of headers from Babel as
-a string parseable by `org-babel-parse-header-arguments',SRC-CODE
-is the code from the block."
-    (format (org-ravel-format-brew-spec ravel) src-code))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (defun org-ravel-chunk-style-latex-brew 
+    (label ravel r-headers-attr src-code)
+    "Default chunk style for brew style.
+  LABEL is the chunk name,RAVEL is the collection of ravel args as a
+  string,R-HEADERS-ATTR is the collection of headers from Babel as
+  a string parseable by `org-babel-parse-header-arguments',SRC-CODE
+  is the code from the block."
+      (format (org-ravel-format-brew-spec ravel) src-code))
 #+END_SRC
 
 *** inline style
 #+name: latex-brew-inline-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-inline-style-latex-brew 
-  (inline-src-block contents info)
-  "Traditional brew style using the INLINE-SRC-BLOCK element.
-CONTENTS holds the contents of the item.  INFO is a plist holding
-contextual information."
-  (format (org-ravel-format-brew-spec
-	   (or
-	    (org-element-property :parameters inline-src-block)
-	    "<%= code -%>"))
-	  (org-element-property :value inline-src-block)))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (defun org-ravel-inline-style-latex-brew 
+    (inline-src-block contents info)
+    "Traditional brew style using the INLINE-SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a plist holding
+  contextual information."
+    (format (org-ravel-format-brew-spec
+             (or
+              (org-element-property :parameters inline-src-block)
+              "<%= code -%>"))
+            (org-element-property :value inline-src-block)))
 #+END_SRC
     
 *** brew formatting :ravel arguments
@@ -763,25 +769,25 @@ A function is needed to check the spec, escape percent signs, and
 return a format STRING that is suitable for brew.
 
 #+name: defun-brew-formatter
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-format-brew-spec (&optional spec)
-  "Check a brew SPEC, escape % signs, and add a %s spec."
-  (let
-      ((spec (or spec "<% %>")))
-    (if (string-match 
-	 "<\\(%+\\)\\([=]?\\)\\(.+?\\)\\([{}]?[ ]*-?\\)\\(%+\\)>" 
-	 spec)
-	(let (
-	      (opct (match-string 1 spec))
-	      (eqsign (match-string 2 spec))
-	      (filler (match-string 3 spec))
-	      (enddash (match-string 4 spec))
-	      (clpct (match-string 5 spec)))
-	  (if (string= opct clpct)
-	      (concat "<" opct opct eqsign " %s " enddash clpct clpct ">")
-	    (error "Percent signs do not balance:%s" spec)))
-      (error "Invalid spec:%s" spec))))
-
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+    (defun org-ravel-format-brew-spec (&optional spec)
+      "Check a brew SPEC, escape % signs, and add a %s spec."
+      (let
+          ((spec (or spec "<% %>")))
+        (if (string-match 
+             "<\\(%+\\)\\([=]?\\)\\(.+?\\)\\([{}]?[ ]*-?\\)\\(%+\\)>" 
+             spec)
+            (let (
+                  (opct (match-string 1 spec))
+                  (eqsign (match-string 2 spec))
+                  (filler (match-string 3 spec))
+                  (enddash (match-string 4 spec))
+                  (clpct (match-string 5 spec)))
+              (if (string= opct clpct)
+                  (concat "<" opct opct eqsign " %s " enddash clpct clpct ">")
+                (error "Percent signs do not balance:%s" spec)))
+          (error "Invalid spec:%s" spec))))
+    
 #+END_SRC
 
 
@@ -801,19 +807,19 @@ used here, too.
   : M-x org-export-dispatch RET C-s l w
 
 #+name: latex-brew-dispatcher
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-latex-brew-dispatch 
-  (&optional async subtreep visible-only body-only ext-plist)
-"Execute menu selection. See org-export.el for meaning of ASYNC,
-      SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
-(interactive)
-(if async
-    (message "No async allowed.")
-  (let
-      ((outfile  (org-export-output-file-name ".brew" subtreep)))
-       (org-export-to-file 'latex-brew 
-			   outfile subtreep visible-only 
-			   body-only ext-plist))))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :results silent
+  (defun org-ravel-latex-brew-dispatch 
+    (&optional async subtreep visible-only body-only ext-plist)
+  "Execute menu selection. See org-export.el for meaning of ASYNC,
+        SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+  (interactive)
+  (if async
+      (message "No async allowed.")
+    (let
+        ((outfile  (org-export-output-file-name ".brew" subtreep)))
+         (org-export-to-file 'latex-brew 
+                             outfile subtreep visible-only 
+                             body-only ext-plist))))
 #+END_SRC
 
 ** html-knitr backend
@@ -825,43 +831,43 @@ used here, too.
 :END:
 
 #+name: html-knitr-translate-alist
-#+BEGIN_SRC emacs-lisp 
-(org-export-define-derived-backend html-knitr html
-  :translate-alist ((src-block . org-ravel-src-block)
-		    (inline-src-block . org-ravel-inline-src-block))
-   :menu-entry
-   (?h 3
-      ((?r "As Rhtml File" org-ravel-html-knitr-dispatch))))
+#+begin_src emacs-lisp :tangle ox-ravel.el
+  (org-export-define-derived-backend html-knitr html
+    :translate-alist ((src-block . org-ravel-src-block)
+                      (inline-src-block . org-ravel-inline-src-block))
+     :menu-entry
+     (?h 3
+        ((?r "As Rhtml File" org-ravel-html-knitr-dispatch))))
 
-#+END_SRC
+#+end_src
 
 *** chunk style
 
 #+name: html-knitr-chunk-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-chunk-style-html-knitr 
-  (label ravel r-headers-attr src-code)
-  "Chunk style for noweb style.
-LABEL is the chunk name, RAVEL is the collection of ravel args as
-a string, R-HEADERS-ATTR is the collection of headers from Babel
-as a string parseable by `org-babel-parse-header-arguments',
-SRC-CODE is the code from the block."
-  (concat
-   "<!--begin.rcode "
-   label
-   (if (and ravel label) ",") ravel "\n"
-   src-code
-   "end.rcode-->\n"))
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el :results silent         
+    (defun org-ravel-chunk-style-html-knitr 
+      (label ravel r-headers-attr src-code)
+      "Chunk style for noweb style.
+    LABEL is the chunk name, RAVEL is the collection of ravel args as
+    a string, R-HEADERS-ATTR is the collection of headers from Babel
+    as a string parseable by `org-babel-parse-header-arguments',
+    SRC-CODE is the code from the block."
+      (concat
+       "<!--begin.rcode "
+       label
+       (if (and ravel label) ",") ravel "\n"
+       src-code
+       "end.rcode-->\n"))
+#+end_src
 *** inline src style
 #+name: html-knitr-inline-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-inline-style-html-knitr 
-  (inline-src-block contents info)
-  "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
-CONTENTS holds the contents of the item.  INFO is a
-plist holding contextual information."
-  (format "<!--rinline %s -->" (org-element-property :value inline-src-block)))
+#+BEGIN_SRC emacs-lisp  :tangle ox-ravel.el :results silent
+  (defun org-ravel-inline-style-html-knitr 
+    (inline-src-block contents info)
+    "Traditional Sweave style Sexpr using the INLINE-SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a
+  plist holding contextual information."
+    (format "<!--rinline %s -->" (org-element-property :value inline-src-block)))
 #+END_SRC
 
 *** export dispatcher
@@ -874,21 +880,23 @@ plist holding contextual information."
 - For a subtree, place point under its headline, type
   : M-x org-export-dispatch RET C-s h r
   
-    #+name: html-knitr-dispatcher
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-html-knitr-dispatch 
-  (&optional async subtreep visible-only body-only ext-plist)
-"Execute menu selection. See org-export.el for meaning of ASYNC,
-      SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
-(interactive)
-(if async
-    (message "No async allowed.")
-  (let
-      ((outfile  (org-export-output-file-name ".Rhtml" subtreep)))
-       (org-export-to-file 'html-knitr 
-			   outfile subtreep visible-only 
-			   body-only ext-plist))))
+#+name: html-knitr-dispatcher
+#+BEGIN_SRC emacs-lisp  :tangle ox-ravel.el :results silent
+  (defun org-ravel-html-knitr-dispatch 
+    (&optional async subtreep visible-only body-only ext-plist)
+  "Execute menu selection. See org-export.el for meaning of ASYNC,
+        SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+  (interactive)
+  (if async
+      (message "No async allowed.")
+    (let
+        ((outfile  (org-export-output-file-name ".Rhtml" subtreep)))
+         (org-export-to-file 'html-knitr 
+                             outfile subtreep visible-only 
+                             body-only ext-plist))))
 #+END_SRC
+
+
 ** md-knitr backend
    This backend produces a Markdown style document as supported by [[http://yihui.name/knitr/][knitr.]] 
 *** template-alist
@@ -898,45 +906,45 @@ plist holding contextual information."
 :END:
 
 #+name: md-knitr-translate-alist
-#+BEGIN_SRC emacs-lisp 
-(org-export-define-derived-backend md-knitr md
-  :translate-alist ((src-block . org-ravel-src-block)
-		    (inline-src-block . org-ravel-inline-src-block))
-  :menu-entry
-  (?m 4
-      ((?r "As Rmd (Markdown) File" org-ravel-md-knitr-dispatch))))
-
-
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el
+    (org-export-define-derived-backend md-knitr md
+      :translate-alist ((src-block . org-ravel-src-block)
+                        (inline-src-block . org-ravel-inline-src-block))
+      :menu-entry
+      (?m 4
+          ((?r "As Rmd (Markdown) File" org-ravel-md-knitr-dispatch))))
+  
+    
+#+end_src
 
 
 *** chunk style
 
 #+name: md-knitr-chunk-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-chunk-style-md-knitr 
-  (label ravel r-headers-attr src-code)
-  "Chunk style for markdown.
-LABEL is the chunk name, RAVEL is the collection of ravel args as
-a string, R-HEADERS-ATTR is the collection of headers from Babel
-as a string parseable by `org-babel-parse-header-arguments',
-SRC-CODE is the code from the block."
-  (concat
-   "```{r "
-   label
-   (if (and ravel label) ",") ravel "}\n"
-   src-code
-   "```\n"))
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el :results silent         
+    (defun org-ravel-chunk-style-md-knitr 
+      (label ravel r-headers-attr src-code)
+      "Chunk style for markdown.
+    LABEL is the chunk name, RAVEL is the collection of ravel args as
+    a string, R-HEADERS-ATTR is the collection of headers from Babel
+    as a string parseable by `org-babel-parse-header-arguments',
+    SRC-CODE is the code from the block."
+      (concat
+       "```{r "
+       label
+       (if (and ravel label) ",") ravel "}\n"
+       src-code
+       "```\n"))
+#+end_src
 *** inline src style
 #+name: md-knitr-inline-style
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-inline-style-md-knitr 
-  (inline-src-block contents info)
-  "Markdown style Sexpr using the INLINE-SRC-BLOCK element.
-CONTENTS holds the contents of the item.  INFO is a
-plist holding contextual information."
-  (format "`r %s`" (org-element-property :value inline-src-block)))
+#+BEGIN_SRC emacs-lisp  :tangle ox-ravel.el :results silent
+  (defun org-ravel-inline-style-md-knitr 
+    (inline-src-block contents info)
+    "Markdown style Sexpr using the INLINE-SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a
+  plist holding contextual information."
+    (format "`r %s`" (org-element-property :value inline-src-block)))
 #+END_SRC
 
 *** export dispatcher
@@ -949,22 +957,24 @@ plist holding contextual information."
 - For a subtree, place point under its headline, type
   : M-x org-export-dispatch RET C-s m r
   
-    #+name: md-knitr-dispatcher
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-md-knitr-dispatch 
-  (&optional async subtreep visible-only body-only ext-plist)
-"Execute menu selection. See org-export.el for meaning of ASYNC,
-      SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
-(interactive)
-(if async
-    (message "No async allowed.")
-  (let
-      ((outfile  (org-export-output-file-name ".Rmd" subtreep)))
-       (org-export-to-file 'md-knitr 
-			   outfile subtreep visible-only 
-			   body-only ext-plist))))
+#+name: md-knitr-dispatcher
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :results silent
+  (defun org-ravel-md-knitr-dispatch 
+    (&optional async subtreep visible-only body-only ext-plist)
+  "Execute menu selection. See org-export.el for meaning of ASYNC,
+        SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+  (interactive)
+  (if async
+      (message "No async allowed.")
+    (let
+        ((outfile  (org-export-output-file-name ".Rmd" subtreep)))
+         (org-export-to-file 'md-knitr 
+                             outfile subtreep visible-only 
+                             body-only ext-plist))))
 #+END_SRC
     
+
+
 ** md-brew backend
    This backend produces a Markdown style [[http://cran.r-project.org/web/packages/brew/index.html][brew]] template. There are
    notes about the use of the template above in the
@@ -976,15 +986,15 @@ plist holding contextual information."
 :END:
 
 #+name: md-knitr-translate-alist
-#+BEGIN_SRC emacs-lisp 
-(org-export-define-derived-backend md-brew md
-  :translate-alist ((src-block . org-ravel-src-block)
-		    (inline-src-block . org-ravel-inline-src-block))
-  :menu-entry
-  (?m 4
-      ((?w "As brew (Markdown) File" org-ravel-md-brew-dispatch))))
-
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el
+    (org-export-define-derived-backend md-brew md
+      :translate-alist ((src-block . org-ravel-src-block)
+                        (inline-src-block . org-ravel-inline-src-block))
+      :menu-entry
+      (?m 4
+          ((?w "As brew (Markdown) File" org-ravel-md-brew-dispatch))))
+  
+#+end_src
 
 
 *** chunk style
@@ -993,9 +1003,9 @@ The function ~org-ravel-chunk-style-latex-brew~ (defined above)
 works.
 
 #+name: md-brew-chunk-style
-#+BEGIN_SRC emacs-lisp 
-(defalias 'org-ravel-chunk-style-md-brew  
-  'org-ravel-chunk-style-latex-brew)
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (defalias 'org-ravel-chunk-style-md-brew  
+    'org-ravel-chunk-style-latex-brew)
 #+END_SRC
 
 *** inline src style
@@ -1004,9 +1014,9 @@ The function ~org-ravel-inline-style-latex-brew~ (defined above)
 works.
 
 #+name: md-brew-chunk-style
-#+BEGIN_SRC emacs-lisp 
-(defalias 'org-ravel-inline-style-md-brew  
-  'org-ravel-inline-style-latex-brew)
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (defalias 'org-ravel-inline-style-md-brew  
+    'org-ravel-inline-style-latex-brew)
 #+END_SRC
 
 *** export dispatcher
@@ -1020,19 +1030,19 @@ works.
   : M-x org-export-dispatch RET C-s m w
   
 #+name: md-brew-dispatcher
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-md-brew-dispatch 
-  (&optional async subtreep visible-only body-only ext-plist)
-"Execute menu selection. See org-export.el for meaning of ASYNC,
-      SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
-(interactive)
-(if async
-    (message "No async allowed.")
-  (let
-      ((outfile  (org-export-output-file-name ".brew" subtreep)))
-       (org-export-to-file 'md-brew 
-			   outfile subtreep visible-only 
-			   body-only ext-plist))))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :results silent
+  (defun org-ravel-md-brew-dispatch 
+    (&optional async subtreep visible-only body-only ext-plist)
+  "Execute menu selection. See org-export.el for meaning of ASYNC,
+        SUBTREEP, VISIBLE-ONLY and BODY-ONLY."
+  (interactive)
+  (if async
+      (message "No async allowed.")
+    (let
+        ((outfile  (org-export-output-file-name ".brew" subtreep)))
+         (org-export-to-file 'md-brew 
+                             outfile subtreep visible-only 
+                             body-only ext-plist))))
 #+END_SRC
     
 
@@ -1053,17 +1063,17 @@ the parent (e.g. latex). This function helps to find them.
 
 
 #+name: defunAncestor
-#+BEGIN_SRC emacs-lisp 
-  (defun org-ravel-get-ancestor-fun (funkey &optional info)
-"Ancestral definition of function.
-Find  second or sole FUNKEY function in the `:translate-alist' property of INFO."
-(let* ((tr-list (plist-get  info :translate-alist))
-       (newfun-pair (assoc funkey tr-list))
-       (new-and-rest (memq newfun-pair tr-list)))
-  (or
-   (cdr (assoc funkey (cdr new-and-rest)))
-   (cdr newfun-pair))))
-
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+    (defun org-ravel-get-ancestor-fun (funkey &optional info)
+  "Ancestral definition of function.
+  Find  second or sole FUNKEY function in the `:translate-alist' property of INFO."
+  (let* ((tr-list (plist-get  info :translate-alist))
+         (newfun-pair (assoc funkey tr-list))
+         (new-and-rest (memq newfun-pair tr-list)))
+    (or
+     (cdr (assoc funkey (cdr new-and-rest)))
+     (cdr newfun-pair))))
+  
 #+END_SRC
 
 #+COMMENT: 
@@ -1078,29 +1088,29 @@ block is being processed, then it calls that function with args (label
 ravel code). This function should not be modified by users.
 
 #+NAME: ravelWrapper
-#+BEGIN_SRC emacs-lisp 
-    (defun org-ravel-src-block (src-block contents info)
-      "Transcode a SRC-BLOCK element.
-CONTENTS holds the contents of the item.  INFO is a plist
-holding contextual information.  If org-ravel-chunk-style-BACKEND
-is defined, that will be called for R src blocks."
-      (let* ((lang (org-element-property :language src-block))
-	     (label (org-element-property :name src-block))
-	     (ravel-attr (org-element-property :attr_ravel src-block))
-	     (r-headers-attr (org-element-property :attr_r-headers src-block))
-	     (ravel (if ravel-attr
-			(mapconcat #'identity ravel-attr ", ")))
-	     (bkend (plist-get info :back-end))
-	     (chunk-style-fun (intern (concat "org-ravel-chunk-style-" 
-					      (symbol-name bkend)))))
-	(if (and (string= lang "R") (fboundp chunk-style-fun))
-	    (funcall chunk-style-fun label ravel r-headers-attr
-		     (car (org-export-unravel-code src-block)))
-	  (funcall          
-	   (org-ravel-get-ancestor-fun 'src-block info)
-	   src-block contents info)
-	  )))
-#+END_SRC
+#+begin_src emacs-lisp :tangle ox-ravel.el
+      (defun org-ravel-src-block (src-block contents info)
+        "Transcode a SRC-BLOCK element.
+  CONTENTS holds the contents of the item.  INFO is a plist
+  holding contextual information.  If org-ravel-chunk-style-BACKEND
+  is defined, that will be called for R src blocks."
+        (let* ((lang (org-element-property :language src-block))
+               (label (org-element-property :name src-block))
+               (ravel-attr (org-element-property :attr_ravel src-block))
+               (r-headers-attr (org-element-property :attr_r-headers src-block))
+               (ravel (if ravel-attr
+                          (mapconcat #'identity ravel-attr ", ")))
+               (bkend (plist-get info :back-end))
+               (chunk-style-fun (intern (concat "org-ravel-chunk-style-" 
+                                                (symbol-name bkend)))))
+          (if (and (string= lang "R") (fboundp chunk-style-fun))
+              (funcall chunk-style-fun label ravel r-headers-attr
+                       (car (org-export-unravel-code src-block)))
+            (funcall          
+             (org-ravel-get-ancestor-fun 'src-block info)
+             src-block contents info)
+            )))
+#+end_src
 
 *** R inline-src-block transcoder
     :DEVNOTES:
@@ -1112,27 +1122,27 @@ org-ravel-inline-src-block looks up org-ravel-inline-style-BACKEND, which
 does the actual formatting. This function should not be modified by users.
     
 #+name: inlineTranscoder
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-inline-src-block (inline-src-block contents info)
-  "Transcode an INLINE-SRC-BLOCK element from Org to backend markup.
-CONTENTS holds the contents of the item.  INFO is a plist holding
-contextual information.  Use default for parent backend except for R calls."
-  (let ((lang (org-element-property :language inline-src-block))
-	(ancestor-inline-src-block 
-	 (org-ravel-get-ancestor-fun 'inline-src-block info))
-	(inline-style-fun (intern (concat "org-ravel-inline-style-" 
-					  (symbol-name 
-					   (plist-get info :back-end)))))
-	)
-    (if (and (string= lang "R") (fboundp inline-style-fun))
-	(funcall inline-style-fun inline-src-block contents info)
-      (funcall ancestor-inline-src-block inline-src-block contents info)
-      )))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (defun org-ravel-inline-src-block (inline-src-block contents info)
+    "Transcode an INLINE-SRC-BLOCK element from Org to backend markup.
+  CONTENTS holds the contents of the item.  INFO is a plist holding
+  contextual information.  Use default for parent backend except for R calls."
+    (let ((lang (org-element-property :language inline-src-block))
+          (ancestor-inline-src-block 
+           (org-ravel-get-ancestor-fun 'inline-src-block info))
+          (inline-style-fun (intern (concat "org-ravel-inline-style-" 
+                                            (symbol-name 
+                                             (plist-get info :back-end)))))
+          )
+      (if (and (string= lang "R") (fboundp inline-style-fun))
+          (funcall inline-style-fun inline-src-block contents info)
+        (funcall ancestor-inline-src-block inline-src-block contents info)
+        )))
 #+END_SRC
 *** advise for org-export-as
 :DEVNOTES:
 the inline src block handling can be broken by lines like
-	\pi xyz 
+	\pi xyz src_R{pi}
 for example. The fix is to delete the 'src_R' from srcRresult, then
 add it back in the replace-match in org-ravel-string-SRC-hookfun
 :END:
@@ -1153,32 +1163,35 @@ so to be cautious I do it explicitly.
 :END:
 
 #+name: defadvice-org-export-as
-#+BEGIN_SRC emacs-lisp 
- (defadvice org-export-as (around org-ravel-export-as-advice protect)
-   "Activate advise for `org-babel-exp-do-export' in `org-export-as'.
- This enables preproceesing of R inline src blocks and src blocks
- by babel before parsing of the *.org buffer ."
-   (if (fboundp  (intern (concat "org-ravel-chunk-style-" (symbol-name backend))))
-       (progn
-	 (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
-	 (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
-	 (ad-activate 'org-babel-exp-do-export)
-	 ad-do-it
-	 (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
-	 (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
-	 (ad-deactivate  'org-babel-exp-do-export)
-	 )
-     ad-do-it))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+   (defadvice org-export-as (around org-ravel-export-as-advice protect)
+     "Activate advise for `org-babel-exp-do-export' in `org-export-as'.
+   This enables preproceesing of R inline src blocks and src blocks
+   by babel before parsing of the *.org buffer ."
+     (if (fboundp  (intern (concat "org-ravel-chunk-style-" (symbol-name backend))))
+         (progn
+           (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+           (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+           (ad-activate 'org-babel-exp-do-export)
+           ad-do-it
+           (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+           (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+           (ad-deactivate  'org-babel-exp-do-export)
+           )
+       ad-do-it))
+  
+  (ad-activate 'org-export-as)
+#+end_src
 
-(ad-activate 'org-export-as)
-#+END_SRC
+#+RESULTS: defadvice-org-export-as
+: org-export-as
 
 **** org-ravel-strip-SRC-hookfun
 
 This hack works around the need to protect ~src_R~ calls from Babel until the
 export parser can see them. Also see [[*advice%20for%20org-babel-exp-do-export][advice for org-babel-exp-do-export]]
 
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
 
 (defun org-ravel-strip-SRC-hookfun ( backend )
   "Strip delimiters: ==SRC< and >SRC==. BACKEND is ignored."
@@ -1187,7 +1200,7 @@ export parser can see them. Also see [[*advice%20for%20org-babel-exp-do-export][
     (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
       (replace-match "src_R\\1" nil nil))))
 
-#+END_SRC
+#+end_src
 
 
 **** org-ravel-strip-header-hookfun
@@ -1195,9 +1208,9 @@ export parser can see them. Also see [[*advice%20for%20org-babel-exp-do-export][
 This hack works around the need to protect #+ATTR... lines from Babel
 until the export parser can see them. Also see [[*advice%20for%20org-babel-exp-do-export][advice for org-babel-exp-do-export]]
 
-#+BEGIN_SRC emacs-lisp 
-
-
+#+begin_src emacs-lisp :tangle ox-ravel.el
+  
+ 
 (defun org-ravel-strip-header-hookfun ( backend )
   "Strip #+header: ==<STRIP>==. BACKEND is ignored."
    (progn
@@ -1249,65 +1262,65 @@ until the export parser can see them. Also see [[*advice%20for%20org-babel-exp-d
 
 #+name: defadvice-do-export
 
-#+BEGIN_SRC emacs-lisp 
-(defadvice org-babel-exp-do-export  (around org-ravel-exp-do-export)
-  "Wrap the ravel src block template around body and clip results."
-  (let ((is-R (string= (nth 0 info) "R"))
-	(is-inline (eq type 'inline))
-	(export-val (or (cdr (assoc :exports (nth 2 info))) "code"))
-	(noweb-yes (string= "yes" (cdr (assoc :noweb (nth 2 info))))))
-    (if is-R
-	;; pass src block to the parser
-	(setq ad-return-value
-	      (if is-inline
-		  ;; delimit src_R[]{} inside `==SRC<' and `>SRC=='
-		  ;; it will be stripped just before parsing
-		  ;; insert `:ravel' values, if any
-		  (flet 
-		   ((org-babel-examplize-region
-		     (x y z)
-		     (insert (format "==SRC<%s>SRC==" 
-				     (prog1 (buffer-substring x y)
-				       (delete-region x y)))))
-		    (org-babel-execute:R
-		     (body params)
-		     (let* ((ravelarg 
-			     (cdr (assoc :ravel (nth 2 info))))
-			    (nth-one (nth 1 info))
-			    (srcRresult
-			     (if ravelarg
-				 (format "[ %s ]{%s}" ravelarg nth-one)
-			       (format "{%s}"
-				       nth-one ))))
-		       srcRresult)
-		     ))
-		   (let ((org-confirm-babel-evaluate nil))
-		     ad-do-it))
-		;; #+begin_src ... #+end_src block
-		;; omit if results type none
-		(if (string= export-val "none")
-		    ""
-		  ;; prune out any in buffer results
-		  (org-babel-remove-result info)
-		  (let* ((headers (nth 2 info))
-			 (ravelarg (cdr (assoc :ravel headers)))
-			 (non-ravelargs
-			  (mapconcat 
-			   '(lambda (x) (format "%S %s" (car x) (cdr x)))
-			   (assq-delete-all :ravel headers) " ")))
-		    (format "%s%s#+BEGIN_SRC R \n%s\n#+END_SRC"
-			    (if ravelarg
-				(format "#+header: ==<STRIP>== #+ATTR_RAVEL: %s\n" ravelarg) "")
-			    (if non-ravelargs
-				(format "#+header: ==<STRIP>== #+ATTR_R-HEADERS: %s\n" 
-					non-ravelargs) "")
-			    (if noweb-yes
-				(org-babel-expand-noweb-references
-				 info
-				 (org-babel-exp-get-export-buffer))
-			      (nth 1 info)))))))
-      ;; not R so do default
-      ad-do-it)))
+#+begin_src emacs-lisp :tangle ox-ravel.el
+  (defadvice org-babel-exp-do-export  (around org-ravel-exp-do-export)
+    "Wrap the ravel src block template around body and clip results."
+    (let ((is-R (string= (nth 0 info) "R"))
+          (is-inline (eq type 'inline))
+          (export-val (or (cdr (assoc :exports (nth 2 info))) "code"))
+          (noweb-yes (string= "yes" (cdr (assoc :noweb (nth 2 info))))))
+      (if is-R
+          ;; pass src block to the parser
+          (setq ad-return-value
+                (if is-inline
+                    ;; delimit src_R[]{} inside `==SRC<' and `>SRC=='
+                    ;; it will be stripped just before parsing
+                    ;; insert `:ravel' values, if any
+                    (flet 
+                     ((org-babel-examplize-region
+                       (x y z)
+                       (insert (format "==SRC<%s>SRC==" 
+                                       (prog1 (buffer-substring x y)
+                                         (delete-region x y)))))
+                      (org-babel-execute:R
+                       (body params)
+                       (let* ((ravelarg 
+                               (cdr (assoc :ravel (nth 2 info))))
+                              (nth-one (nth 1 info))
+                              (srcRresult
+                               (if ravelarg
+                                   (format "[ %s ]{%s}" ravelarg nth-one)
+                                 (format "{%s}"
+                                         nth-one ))))
+                         srcRresult)
+                       ))
+                     (let ((org-confirm-babel-evaluate nil))
+                       ad-do-it))
+                  ;; #+begin_src ... #+end_src block
+                  ;; omit if results type none
+                  (if (string= export-val "none")
+                      ""
+                    ;; prune out any in buffer results
+                    (org-babel-remove-result info)
+                    (let* ((headers (nth 2 info))
+                           (ravelarg (cdr (assoc :ravel headers)))
+                           (non-ravelargs
+                            (mapconcat 
+                             '(lambda (x) (format "%S %s" (car x) (cdr x)))
+                             (assq-delete-all :ravel headers) " ")))
+                      (format "%s%s#+BEGIN_SRC R \n%s\n#+END_SRC"
+                              (if ravelarg
+                                  (format "#+header: ==<STRIP>== #+ATTR_RAVEL: %s\n" ravelarg) "")
+                              (if non-ravelargs
+                                  (format "#+header: ==<STRIP>== #+ATTR_R-HEADERS: %s\n" 
+                                          non-ravelargs) "")
+                              (if noweb-yes
+                                  (org-babel-expand-noweb-references
+                                   info
+                                   (org-babel-exp-get-export-buffer))
+                                (nth 1 info)))))))
+        ;; not R so do default
+        ad-do-it)))
 #+END_SRC
 
 
@@ -1324,23 +1337,23 @@ This helps when you have a src block you wish to include in an Sweave
 style document. Typically it would be called from inside a src block
 to add a noweb chunk. It will prompt for the name of the chunk.
 
-#+BEGIN_SRC emacs-lisp 
-(defun org-ravel-insert-src-block-name-as-chunk ()
-  "insert src block name in << >>."
-(interactive)
- (let
-     ((bname
-       (org-icompleting-read
-	"source-block name: " (org-babel-src-block-names) nil t)))
-   (insert (format "<<%s>>" bname))))
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (defun org-ravel-insert-src-block-name-as-chunk ()
+    "insert src block name in << >>."
+  (interactive)
+   (let
+       ((bname
+         (org-icompleting-read
+          "source-block name: " (org-babel-src-block-names) nil t)))
+     (insert (format "<<%s>>" bname))))
 #+END_SRC
 
 
 ** COMMENT provide ravel
 :DEVNOTES:
-#+BEGIN_SRC emacs-lisp 
-(provide 'ox-ravel)
-
-;;; ox-ravel.el ends here
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+  (provide 'ox-ravel)
+  
+  ;;; ox-ravel.el ends here
 #+END_SRC
 :END:

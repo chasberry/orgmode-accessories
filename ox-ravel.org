@@ -1349,7 +1349,7 @@ to add a noweb chunk. It will prompt for the name of the chunk.
 #+END_SRC
 
 
-** COMMENT provide ravel
+** provide ravel						   :noexport:
 :DEVNOTES:
 #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
   (provide 'ox-ravel)

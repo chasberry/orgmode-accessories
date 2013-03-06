@@ -467,10 +467,6 @@ support for plain latex export, do like this:
 
 This backend produces an Sweave noweb style document.
 *** template-alist
-:DEVNOTES:
-   to reset this backend after first execution
-   use (makunbound 'org-latex-noweb-translate-alist)
-:END:
 
 #+name: latex-noweb-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
@@ -568,10 +564,6 @@ This backend produces an Sweave noweb style document.
 
 ** beamer-noweb backend
 *** template alist
-:DEVNOTES:
-   to reset this backend after first execution
-   use (makunbound 'org-beamer-noweb-translate-alist)
-:END:
 
 Note here the :latex-class is forced to "beamer" by default - I hate
 using LATEX_CLASS in the file as it bleeds into subtrees that are not
@@ -714,10 +706,7 @@ subtree.
     any) in the chunk after export.
 
 *** template-alist
-:DEVNOTES:
-   to reset this backend after first execution
-   use (makunbound 'org-latex-brew-translate-alist)
-:END:
+
 
 #+name: latex-brew-translate-alist
 #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
@@ -825,10 +814,7 @@ used here, too.
 ** html-knitr backend
    This produces an html style document as supported by [[http://yihui.name/knitr/][knitr.]] 
 *** template-alist
-:DEVNOTES:
-   to reset this backend after first execution
-   use (makunbound 'org-html-knitr-translate-alist)
-:END:
+
 
 #+name: html-knitr-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
@@ -900,10 +886,7 @@ used here, too.
 ** md-knitr backend
    This backend produces a Markdown style document as supported by [[http://yihui.name/knitr/][knitr.]] 
 *** template-alist
-:DEVNOTES:
-   to reset this backend after first execution
-   use (makunbound 'org-md-knitr-translate-alist)
-:END:
+
 
 #+name: md-knitr-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
@@ -1172,12 +1155,13 @@ so to be cautious I do it explicitly.
          (progn
            (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
            (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+           (ad-enable-advice 'org-babel-exp-do-export 'around 'org-ravel-exp-do-export)
            (ad-activate 'org-babel-exp-do-export)
            ad-do-it
+           (ad-disable-advice 'org-babel-exp-do-export 'around 'org-ravel-exp-do-export)
+           (ad-activate 'org-babel-exp-do-export)
            (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
-           (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
-           (ad-deactivate  'org-babel-exp-do-export)
-           )
+           (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun))
        ad-do-it))
   
   (ad-activate 'org-export-as)
@@ -1185,6 +1169,49 @@ so to be cautious I do it explicitly.
 
 #+RESULTS: defadvice-org-export-as
 : org-export-as
+
+#+name: alt-to-advise-org-export-as
+#+BEGIN_SRC emacs-lisp 
+  ;; activate advise for org-babel-exp-do-export
+  
+  ;; temporarily disable advise for org-export-as - eventually never
+  ;; enable it in the first place
+  
+  (ad-disable-advice 'org-export-as 'around 'org-ravel-export-as-advice)
+   (ad-activate 'org-export-as)
+  
+  (defvar ravel-backends 
+    '(latex-noweb beamer-noweb latex-brew html-knitr md-knitr md-brew)
+    "List of ravel-backend symbols.")
+  
+  (add-hook 'org-export-before-processing-hook 'org-ravel-before-proc-hook)
+   
+  (defun org-ravel-before-proc-hook (backend)
+    (and
+     (member backend ravel-backends)
+     (progn (
+             ad-enable-advice 'org-babel-exp-do-export 'around 
+                              'org-ravel-exp-do-export)
+            (ad-activate 'org-babel-exp-do-export))))
+  
+  (add-hook 'org-export-before-parsing-hook 
+            (lambda (backend)
+              (and
+               (member backend ravel-backends)
+               (progn 
+                 (ad-disable-advice 'org-babel-exp-do-export 'around 
+                                    'org-ravel-exp-do-export)
+                 (ad-activate 'org-babel-exp-do-export)
+                 (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+                 (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+               ))))
+  
+  ;; filter final output ??
+  ;; (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
+  ;; (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun))
+  
+#+end_src
+
 
 **** org-ravel-strip-SRC-hookfun
 

@@ -1,0 +1,323 @@
+#+DESCRIPTION: Dummy Filters for Orgmode Exporter
+
+#+AUTHOR: Charles C. Berry
+#+DATE: 05 Feb 2013
+
+
+
+* Marking Up Elements to be Exported
+  
+** Filters in the Exporter
+
+The exporter in =ox.el= has more than 50 elements that can be
+filtered. Developers can write filters for new backends, and users can
+write filters to customize output to thier individual needs.
+
+** Understanding Elements and Filters
+
+Figuring out how to craft a filter to customize output requires
+detailed knowledge of what the elements are and how they are rendered
+by a backend. It can be fairly difficult to sort this out and keep it
+all in mind by just reading the code.
+
+One way to understand an element and the markup applied to it by an
+export backend is to write a filter that will mark the element.
+
+For example, the function
+
+#+BEGIN_SRC emacs-lisp
+ (defun ox-mrkup-filter-bold
+    (text back-end info)
+    "Markup TEXT as <bold>TEXT</bold>. Ignore BACK-END and INFO."
+    (format "<bold>%s</bold>" text))
+#+END_SRC
+
+will show a bold element inside the tags ~<bold>~ and ~</bold>~.
+
+Using that filter with the latex backend will render
+
+#+begin_src org
+  This text should be in *BOLD*.
+#+end_src
+
+as
+
+#+BEGIN_LaTeX
+  This text should be in <bold>\textbf{BOLD}</bold>.
+#+END_LaTeX
+
+
+** A Complete Set of Filter Functions
+
+
+Here is a complete set of filter functions to provide markup tags. 
+
+#+begin_src emacs-lisp
+  (defun ox-mrkup-filter-bold
+    (text back-end info)
+    "Markup TEXT as <bold>TEXT</bold>. Ignore BACK-END and INFO."
+    (format "<bold>%s</bold>" text))
+  (defun ox-mrkup-filter-babel-call
+    (text back-end info)
+    (format "<bbl>%s</bbl>" text))
+  (defun ox-mrkup-filter-center-block
+    (text back-end info)
+    (format "<cnt>%s</cnt>" text))
+  (defun ox-mrkup-filter-clock
+    (text back-end info)
+    (format "<clck>%s</clck>" text))
+  (defun ox-mrkup-filter-code
+    (text back-end info)
+    (format "<code>%s</code>" text))
+  (defun ox-mrkup-filter-comment
+    (text back-end info)
+    (format "<cmmn>%s</cmmn>" text))
+  (defun ox-mrkup-filter-comment-block
+    (text back-end info)
+    (format "<cmm>%s</cmm>" text))
+  (defun ox-mrkup-filter-diary-sexp
+    (text back-end info)
+    (format "<dry>%s</dry>" text))
+  (defun ox-mrkup-filter-drawer
+    (text back-end info)
+    (format "<drwr>%s</drwr>" text))
+  (defun ox-mrkup-filter-dynamic-block
+    (text back-end info)
+    (format "<dyn>%s</dyn>" text))
+  (defun ox-mrkup-filter-entity
+    (text back-end info)
+    (format "<entt>%s</entt>" text))
+  (defun ox-mrkup-filter-example-block
+    (text back-end info)
+    (format "<exm>%s</exm>" text))
+  (defun ox-mrkup-filter-export-block
+    (text back-end info)
+    (format "<exprt-b>%s</exprt-b>" text))
+  (defun ox-mrkup-filter-export-snippet
+    (text back-end info)
+    (format "<exprt-s>%s</exprt-s>" text))
+  (defun ox-mrkup-filter-final-output
+    (text back-end info)
+    (format "<fnl>%s</fnl>" text))
+  (defun ox-mrkup-filter-fixed-width
+    (text back-end info)
+    (format "<fxd>%s</fxd>" text))
+  (defun ox-mrkup-filter-footnote-definition
+    (text back-end info)
+    (format "<ftnt-d>%s</ftnt-d>" text))
+  (defun ox-mrkup-filter-footnote-reference
+    (text back-end info)
+    (format "<ftnt-r>%s</ftnt-r>" text))
+  (defun ox-mrkup-filter-headline
+    (text back-end info)
+    (format "<hdln>%s</hdln>" text))
+  (defun ox-mrkup-filter-horizontal-rule
+    (text back-end info)
+    (format "<hrz>%s</hrz>" text))
+  (defun ox-mrkup-filter-inline-babel-call
+    (text back-end info)
+    (format "<inln-b>%s</inln-b>" text))
+  (defun ox-mrkup-filter-inline-src-block
+    (text back-end info)
+    (format "<inln-s>%s</inln-s>" text))
+  (defun ox-mrkup-filter-inlinetask
+    (text back-end info)
+    (format "<inln>%s</inln>" text))
+  (defun ox-mrkup-filter-italic
+    (text back-end info)
+    (format "<itlc>%s</itlc>" text))
+  (defun ox-mrkup-filter-item
+    (text back-end info)
+    (format "<item>%s</item>" text))
+  (defun ox-mrkup-filter-keyword
+    (text back-end info)
+    (format "<kywr>%s</kywr>" text))
+  (defun ox-mrkup-filter-latex-environment
+    (text back-end info)
+    (format "<ltx-n>%s</ltx-n>" text))
+  (defun ox-mrkup-filter-latex-fragment
+    (text back-end info)
+    (format "<ltx-f>%s</ltx-f>" text))
+  (defun ox-mrkup-filter-line-break
+    (text back-end info)
+    (format "<ln-b>%s</ln-b>" text))
+  (defun ox-mrkup-filter-link
+    (text back-end info)
+    (format "<link>%s</link>" text))
+  (defun ox-mrkup-filter-macro
+    (text back-end info)
+    (format "<macr>%s</macr>" text))
+  (defun ox-mrkup-filter-node-property
+    (text back-end info)
+    (format "<nd-p>%s</nd-p>" text))
+  ;; dont (defun ox-mrkup-filter-options ...)
+  (defun ox-mrkup-filter-paragraph
+    (text back-end info)
+    (format "<prgr>%s</prgr>" text))
+  ;; dont (defun ox-mrkup-filter-parse-tree ...)
+  (defun ox-mrkup-filter-plain-list
+    (text back-end info)
+    (format "<pln-l>%s</pln-l>" text))
+  (defun ox-mrkup-filter-plain-text
+    (text back-end info)
+    (format "<pln-t>%s</pln-t>" text))
+  (defun ox-mrkup-filter-planning
+    (text back-end info)
+    (format "<plnn>%s</plnn>" text))
+  (defun ox-mrkup-filter-property-drawer
+    (text back-end info)
+    (format "<prp>%s</prp>" text))
+  (defun ox-mrkup-filter-quote-block
+    (text back-end info)
+    (format "<qt-b>%s</qt-b>" text))
+  (defun ox-mrkup-filter-quote-section
+    (text back-end info)
+    (format "<qt-s>%s</qt-s>" text))
+  (defun ox-mrkup-filter-radio-target
+    (text back-end info)
+    (format "<rd-t>%s</rd-t>" text))
+  (defun ox-mrkup-filter-section
+    (text back-end info)
+    (format "<sctn>%s</sctn>" text))
+  (defun ox-mrkup-filter-special-block
+    (text back-end info)
+    (format "<spc>%s</spc>" text))
+  (defun ox-mrkup-filter-src-block
+    (text back-end info)
+    (format "<src>%s</src>" text))
+  (defun ox-mrkup-filter-statistics-cookie
+    (text back-end info)
+    (format "<stt>%s</stt>" text))
+  (defun ox-mrkup-filter-strike-through
+    (text back-end info)
+    (format "<str>%s</str>" text))
+  (defun ox-mrkup-filter-subscript
+    (text back-end info)
+    (format "<sbsc>%s</sbsc>" text))
+  (defun ox-mrkup-filter-superscript
+    (text back-end info)
+    (format "<sprs>%s</sprs>" text))
+  (defun ox-mrkup-filter-table
+    (text back-end info)
+    (format "<tabl>%s</tabl>" text))
+  (defun ox-mrkup-filter-table-cell
+    (text back-end info)
+    (format "<tbl-c>%s</tbl-c>" text))
+  (defun ox-mrkup-filter-table-row
+    (text back-end info)
+    (format "<tbl-r>%s</tbl-r>" text))
+  (defun ox-mrkup-filter-target
+    (text back-end info)
+    (format "<trgt>%s</trgt>" text))
+  (defun ox-mrkup-filter-timestamp
+    (text back-end info)
+    (format "<tmst>%s</tmst>" text))
+  (defun ox-mrkup-filter-underline
+    (text back-end info)
+    (format "<undr>%s</undr>" text))
+  (defun ox-mrkup-filter-verbatim
+    (text back-end info)
+    (format "<vrbt>%s</vrbt>" text))
+  (defun ox-mrkup-filter-verse-block
+    (text back-end info)
+    (format "<vrs>%s</vrs>" text))
+#+end_src
+
+
+** A LaTeX Backend Example
+
+Here is a derived backend that will use those tags. This backend takes
+~latex~ as its parent, but other backends could be used as well.
+It is called ~latex2~ and can be used like this:
+
+: M-: (org-export-to-buffer 'latex2 "latex-buffer-marked")
+
+or 
+
+: M-: (org-export-to-file 'latex2 "latex-file-marked.tex")
+
+
+For many purposes only a subset of these might be needed. So the code could be edi
+
+#+begin_src emacs-lisp
+  (require 'ox-latex)
+  (org-export-define-derived-backend latex2 latex
+    :filters-alist 
+    ((:filter-bold . ox-mrkup-filter-bold)
+     (:filter-babel-call . ox-mrkup-filter-babel-call)
+     (:filter-center-block . ox-mrkup-filter-center-block)
+     (:filter-clock . ox-mrkup-filter-clock)
+     (:filter-code . ox-mrkup-filter-code)
+     (:filter-comment . ox-mrkup-filter-comment)
+     (:filter-comment-block . ox-mrkup-filter-comment-block)
+     (:filter-diary-sexp . ox-mrkup-filter-diary-sexp)
+     (:filter-drawer . ox-mrkup-filter-drawer)
+     (:filter-dynamic-block . ox-mrkup-filter-dynamic-block)
+     (:filter-entity . ox-mrkup-filter-entity)
+     (:filter-example-block . ox-mrkup-filter-example-block)
+     (:filter-export-block . ox-mrkup-filter-export-block)
+     (:filter-export-snippet . ox-mrkup-filter-export-snippet)
+     (:filter-final-output . ox-mrkup-filter-final-output)
+     (:filter-fixed-width . ox-mrkup-filter-fixed-width)
+     (:filter-footnote-definition . ox-mrkup-filter-footnote-definition)
+     (:filter-footnote-reference . ox-mrkup-filter-footnote-reference)
+     (:filter-headline . ox-mrkup-filter-headline)
+     (:filter-horizontal-rule . ox-mrkup-filter-horizontal-rule)
+     (:filter-inline-babel-call . ox-mrkup-filter-inline-babel-call)
+     (:filter-inline-src-block . ox-mrkup-filter-inline-src-block)
+     (:filter-inlinetask . ox-mrkup-filter-inlinetask)
+     (:filter-italic . ox-mrkup-filter-italic)
+     (:filter-item . ox-mrkup-filter-item)
+     (:filter-keyword . ox-mrkup-filter-keyword)
+     (:filter-latex-environment . ox-mrkup-filter-latex-environment)
+     (:filter-latex-fragment . ox-mrkup-filter-latex-fragment)
+     (:filter-line-break . ox-mrkup-filter-line-break)
+     (:filter-link . ox-mrkup-filter-link)
+     (:filter-macro . ox-mrkup-filter-macro)
+     (:filter-node-property . ox-mrkup-filter-node-property)
+     ;;   omit filter with different args  
+     ;;   (:filter-options . ox-mrkup-filter-options)
+     (:filter-paragraph . ox-mrkup-filter-paragraph)
+     ;;   omit filter with different args  
+     ;;   (:filter-parse-tree . ox-mrkup-filter-parse-tree)
+     (:filter-plain-list . ox-mrkup-filter-plain-list)
+     (:filter-plain-text . ox-mrkup-filter-plain-text)
+     (:filter-planning . ox-mrkup-filter-planning)
+     (:filter-property-drawer . ox-mrkup-filter-property-drawer)
+     (:filter-quote-block . ox-mrkup-filter-quote-block)
+     (:filter-quote-section . ox-mrkup-filter-quote-section)
+     (:filter-radio-target . ox-mrkup-filter-radio-target)
+     (:filter-section . ox-mrkup-filter-section)
+     (:filter-special-block . ox-mrkup-filter-special-block)
+     (:filter-src-block . ox-mrkup-filter-src-block)
+     (:filter-statistics-cookie . ox-mrkup-filter-statistics-cookie)
+     (:filter-strike-through . ox-mrkup-filter-strike-through)
+     (:filter-subscript . ox-mrkup-filter-subscript)
+     (:filter-superscript . ox-mrkup-filter-superscript)
+     (:filter-table . ox-mrkup-filter-table)
+     (:filter-table-cell . ox-mrkup-filter-table-cell)
+     (:filter-table-row . ox-mrkup-filter-table-row)
+     (:filter-target . ox-mrkup-filter-target)
+     (:filter-timestamp . ox-mrkup-filter-timestamp)
+     (:filter-underline . ox-mrkup-filter-underline)
+     (:filter-verbatim . ox-mrkup-filter-verbatim)
+     (:filter-verse-block . ox-mrkup-filter-verse-block)))
+#+END_SRC
+
+** Options for Adding Filters
+
+Users can add filter functions to the lists in ~org-export-filters-alist~
+and subsequent exports will apply those functions accordingly.
+
+Alternatively, writing a derived backend in which the ~:filters-alist~
+contains an entry such as:
+
+:  (:filter-bold . ox-mrkup-filter-bold)
+
+will result in bold elements being filterd through that function. 
+
+The advantage of using a derived backend to experiment with filters is
+that ~org-export-filters-alist~ is not filled with functions that will
+need to be removed once the experiments have eneded.
+
+

@@ -53,15 +53,14 @@ will show a bold element inside the tags ~<bold>~ and ~</bold>~.
 
 Using that filter with the latex backend will render
 
+
 #+begin_src org
   This text should be in *BOLD*.
 #+end_src
 
 as
 
-#+BEGIN_LaTeX
-  This text should be in <bold>\textbf{BOLD}</bold>.
-#+END_LaTeX
+:  This text should be in <bold>\textbf{BOLD}</bold>.
 
 
 ** A Complete Set of Filter Functions
@@ -254,7 +253,8 @@ or
 : M-: (org-export-to-file 'latex2 "latex-file-marked.tex")
 
 
-For many purposes only a subset of these might be needed. So the code could be edi
+For many purposes only a subset of these might be needed. So the code
+could be editted to purpose.
 
 #+begin_src emacs-lisp
   (require 'ox-latex)

@@ -1172,6 +1172,7 @@ so to be cautious I do it explicitly.
 
 #+name: alt-to-advise-org-export-as
 #+BEGIN_SRC emacs-lisp 
+  ;; alternative means to do the above - work in progress 
   ;; activate advise for org-babel-exp-do-export
   
   ;; temporarily disable advise for org-export-as - eventually never
@@ -1188,7 +1189,7 @@ so to be cautious I do it explicitly.
    
   (defun org-ravel-before-proc-hook (backend)
     (and
-     (member backend ravel-backends)
+     (org-export-derived-backend-p backend ravel-backends)
      (progn (
              ad-enable-advice 'org-babel-exp-do-export 'around 
                               'org-ravel-exp-do-export)
@@ -1197,7 +1198,7 @@ so to be cautious I do it explicitly.
   (add-hook 'org-export-before-parsing-hook 
             (lambda (backend)
               (and
-               (member backend ravel-backends)
+               (org-export-derived-backends-p backend ravel-backends)
                (progn 
                  (ad-disable-advice 'org-babel-exp-do-export 'around 
                                     'org-ravel-exp-do-export)

@@ -7,7 +7,7 @@
 
 `ox-ravel.org` is an orgmode file. 
 
-(`ravel.org` is the version that supports the development setup before
+(`ravel.org` is the **old** version that supports the development setup before
 the February 2013 merge of the new exporter into the master. Refer to
 it if you still use that version of `orgmode`.)
 
@@ -223,7 +223,7 @@ options in the ultimate code chunks. So, `knitr` chunk options such
 as 'results="as.is"' would be given as `ravel` arguments. The way
 these are handled depends on the backend; for `knitr` they are placed
 as chunk options and for `brew` they are used to construct variants
-of the '<% &hellip; %>' code delimiters.
+of the '<% &#x2026; %>' code delimiters.
 
 ### existing backends
 
@@ -906,12 +906,13 @@ end.
                (progn
                  (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
                  (add-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
+                 (ad-enable-advice 'org-babel-exp-do-export 'around 'org-ravel-exp-do-export)
                  (ad-activate 'org-babel-exp-do-export)
                  ad-do-it
+                 (ad-disable-advice 'org-babel-exp-do-export 'around 'org-ravel-exp-do-export)
+                 (ad-activate 'org-babel-exp-do-export)
                  (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-SRC-hookfun)
-                 (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun)
-                 (ad-deactivate  'org-babel-exp-do-export)
-                 )
+                 (remove-hook 'org-export-before-parsing-hook 'org-ravel-strip-header-hookfun))
              ad-do-it))
         
         (ad-activate 'org-export-as)
@@ -924,21 +925,21 @@ end.
         
         (defun org-ravel-strip-SRC-hookfun ( backend )
           "Strip delimiters: ==SRC< and >SRC==. BACKEND is ignored."
-          (progn
+          (save-excursion
             (goto-char (point-min))
             (while (re-search-forward "==SRC<\\(.*?\\)>SRC==" nil t)
               (replace-match "src_R\\1" nil nil))))
 
 3.  org-ravel-strip-header-hookfun
 
-    This hack works around the need to protect #+ATTR&hellip; lines from Babel
+    This hack works around the need to protect #+ATTR&#x2026; lines from Babel
     until the export parser can see them. Also see advice for org-babel-exp-do-export
     
         
         
         (defun org-ravel-strip-header-hookfun ( backend )
           "Strip #+header: ==<STRIP>==. BACKEND is ignored."
-           (progn
+           (save-excursion
             (goto-char (point-min))
             (while (re-search-forward 
                     "^[         ]*#\\+headers?:[        ]*==<STRIP>==[ ]\\([^\n]*\\)$" 

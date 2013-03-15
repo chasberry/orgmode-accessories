@@ -335,6 +335,6 @@ will result in bold elements being filterd through that function.
 
 The advantage of using a derived backend to experiment with filters is
 that ~org-export-filters-alist~ is not filled with functions that will
-need to be removed once the experiments have eneded.
+need to be removed once the experiments have ended.
 
 

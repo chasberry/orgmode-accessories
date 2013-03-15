@@ -299,7 +299,7 @@ Here is the elisp header for ox-ravel.el
   (require 'ox-latex)
   (require 'ox-html)
   (require 'ox-beamer)
-  (require 'org-md)
+  (require 'ox-md)
 #+end_src
 
 #+END_SRC

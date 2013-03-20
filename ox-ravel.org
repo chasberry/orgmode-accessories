@@ -470,11 +470,11 @@ This backend produces an Sweave noweb style document.
 
 #+name: latex-noweb-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
-  (org-export-define-derived-backend latex-noweb latex
-    :translate-alist ((src-block . org-ravel-src-block)
+  (org-export-define-derived-backend 'latex-noweb 'latex
+    :translate-alist '((src-block . org-ravel-src-block)
                       (inline-src-block . org-ravel-inline-src-block))
     :menu-entry
-    (?l 1
+    '(?l 1
         ((?r "As Rnw File" org-ravel-latex-noweb-dispatch))))
 #+end_src
 
@@ -571,11 +571,11 @@ being exported.
 
 #+name: beamer-noweb-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
-  (org-export-define-derived-backend beamer-noweb beamer
-    :translate-alist ((src-block . org-ravel-src-block)
+  (org-export-define-derived-backend 'beamer-noweb 'beamer
+    :translate-alist '((src-block . org-ravel-src-block)
                       (inline-src-block . org-ravel-inline-src-block))
     :menu-entry
-    (?l 1
+    '(?l 1
         ((?s "As Rnw Beamer" org-ravel-beamer-noweb-dispatch))))
 #+end_src
 
@@ -710,11 +710,11 @@ subtree.
 
 #+name: latex-brew-translate-alist
 #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
-  (org-export-define-derived-backend latex-brew latex
-     :translate-alist ((src-block . org-ravel-src-block)
+  (org-export-define-derived-backend 'latex-brew 'latex
+     :translate-alist '((src-block . org-ravel-src-block)
                        (inline-src-block . org-ravel-inline-src-block))
      :menu-entry
-     (?l 2
+     '(?l 2
         ((?w "As Brew File" org-ravel-latex-brew-dispatch))))
   
 #+END_SRC
@@ -818,11 +818,11 @@ used here, too.
 
 #+name: html-knitr-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
-  (org-export-define-derived-backend html-knitr html
-    :translate-alist ((src-block . org-ravel-src-block)
+  (org-export-define-derived-backend 'html-knitr 'html
+    :translate-alist '((src-block . org-ravel-src-block)
                       (inline-src-block . org-ravel-inline-src-block))
      :menu-entry
-     (?h 3
+     '(?h 3
         ((?r "As Rhtml File" org-ravel-html-knitr-dispatch))))
 
 #+end_src
@@ -890,11 +890,11 @@ used here, too.
 
 #+name: md-knitr-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
-    (org-export-define-derived-backend md-knitr md
-      :translate-alist ((src-block . org-ravel-src-block)
+    (org-export-define-derived-backend 'md-knitr 'md
+      :translate-alist '((src-block . org-ravel-src-block)
                         (inline-src-block . org-ravel-inline-src-block))
       :menu-entry
-      (?m 4
+      '(?m 4
           ((?r "As Rmd (Markdown) File" org-ravel-md-knitr-dispatch))))
   
     
@@ -970,11 +970,11 @@ used here, too.
 
 #+name: md-knitr-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
-    (org-export-define-derived-backend md-brew md
-      :translate-alist ((src-block . org-ravel-src-block)
+    (org-export-define-derived-backend 'md-brew 'md
+      :translate-alist '((src-block . org-ravel-src-block)
                         (inline-src-block . org-ravel-inline-src-block))
       :menu-entry
-      (?m 4
+      '(?m 4
           ((?w "As brew (Markdown) File" org-ravel-md-brew-dispatch))))
   
 #+end_src

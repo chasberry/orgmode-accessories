@@ -2,6 +2,7 @@
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
+#+COMMENT: latest revision 2013-06-21 Fri
 #+DESCRIPTION: Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -257,7 +258,7 @@ Mostly DONE:
   - DONE for the non-R inline src block function, use ancestor
   - NB ( assoc 'src-block (reverse org-rnw-translate-alist)) will
     find the ancestor!!!! - might need to revise for multiply derived
-    backends like org-md.
+    backends like ox-md.
   - NB org-export-before-parsing-hook is handy - it can remove delimiters
     I insert to subvert babel's machinations.
   - need to add a native knitr backend
@@ -329,11 +330,11 @@ usual export mechanism in which the source code (aka src blocks) are
 evaluated by orgmode's Babel engine and (optionally) code and/or
 results are passed to the exporter.
 
-Before the document is parsed, Babel is run. However, R scr blocks are
+Before the document is parsed, Babel is run. However, R src blocks are
 not evaluated. Instead they are passed on to the exporter as is except
 that when the ~:noweb yes~ header argument is given, the expanded src
 block is created (by inserting the code from the blocks in the noweb
-references) and passed to the exporter. R scr blocks that have the
+references) and passed to the exporter. R src blocks that have the
 ~:exports none~ header argument are not exported. Src blocks in other
 languages are evaluated and exported as usual.
 

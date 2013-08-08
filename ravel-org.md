@@ -393,7 +393,7 @@ set. In short:
       (let
           ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
            (org-export-to-file 'latex-noweb 
-                               outfile subtreep visible-only 
+                               outfile async subtreep visible-only 
                                body-only ext-plist))))
 
 
@@ -481,7 +481,7 @@ See the comments for `latex-noweb`.
       (let
           ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
            (org-export-to-file 'beamer-noweb 
-                               outfile subtreep visible-only 
+                               outfile async subtreep visible-only 
                                body-only ext-plist))))
 
 
@@ -632,7 +632,7 @@ used here, too.
       (let
           ((outfile  (org-export-output-file-name ".brew" subtreep)))
            (org-export-to-file 'latex-brew 
-                               outfile subtreep visible-only 
+                               outfile async subtreep visible-only 
                                body-only ext-plist))))
 
 ## html-knitr backend
@@ -695,7 +695,7 @@ See the comments for `latex-noweb`.
       (let
           ((outfile  (org-export-output-file-name ".Rhtml" subtreep)))
            (org-export-to-file 'html-knitr 
-                               outfile subtreep visible-only 
+                               outfile async subtreep visible-only 
                                body-only ext-plist))))
 
 ## md-knitr backend
@@ -758,7 +758,7 @@ See the comments for `latex-noweb`.
       (let
           ((outfile  (org-export-output-file-name ".Rmd" subtreep)))
            (org-export-to-file 'md-knitr 
-                               outfile subtreep visible-only 
+                               outfile async subtreep visible-only 
                                body-only ext-plist))))
 
 
@@ -815,7 +815,7 @@ See the comments for `latex-brew`.
       (let
           ((outfile  (org-export-output-file-name ".brew" subtreep)))
            (org-export-to-file 'md-brew 
-                               outfile subtreep visible-only 
+                               outfile async subtreep visible-only 
                                body-only ext-plist))))
 
 

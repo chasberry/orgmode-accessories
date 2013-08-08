@@ -2,7 +2,7 @@
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
-#+COMMENT: latest revision 2013-06-21 Fri
+#+COMMENT: latest revision 2013-08-07
 #+DESCRIPTION: Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -533,7 +533,7 @@ This backend produces an Sweave noweb style document.
     (let
         ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
          (org-export-to-file 'latex-noweb 
-                             outfile subtreep visible-only 
+                             outfile async subtreep visible-only 
                              body-only ext-plist))))
 #+END_SRC
     
@@ -632,7 +632,7 @@ See the comments for ~latex-noweb~.
     (let
         ((outfile  (org-export-output-file-name ".Rnw" subtreep)))
          (org-export-to-file 'beamer-noweb 
-                             outfile subtreep visible-only 
+                             outfile async subtreep visible-only 
                              body-only ext-plist))))
 #+END_SRC
 
@@ -808,7 +808,7 @@ used here, too.
     (let
         ((outfile  (org-export-output-file-name ".brew" subtreep)))
          (org-export-to-file 'latex-brew 
-                             outfile subtreep visible-only 
+                             outfile async subtreep visible-only 
                              body-only ext-plist))))
 #+END_SRC
 
@@ -879,7 +879,7 @@ used here, too.
     (let
         ((outfile  (org-export-output-file-name ".Rhtml" subtreep)))
          (org-export-to-file 'html-knitr 
-                             outfile subtreep visible-only 
+                             outfile async subtreep visible-only 
                              body-only ext-plist))))
 #+END_SRC
 
@@ -953,7 +953,7 @@ used here, too.
     (let
         ((outfile  (org-export-output-file-name ".Rmd" subtreep)))
          (org-export-to-file 'md-knitr 
-                             outfile subtreep visible-only 
+                             outfile async subtreep visible-only 
                              body-only ext-plist))))
 #+END_SRC
     
@@ -1025,7 +1025,7 @@ works.
     (let
         ((outfile  (org-export-output-file-name ".brew" subtreep)))
          (org-export-to-file 'md-brew 
-                             outfile subtreep visible-only 
+                             outfile async subtreep visible-only 
                              body-only ext-plist))))
 #+END_SRC
     

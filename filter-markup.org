@@ -239,6 +239,9 @@ Here is a complete set of filter functions to provide markup tags.
     (format "<vrs>%s</vrs>" text))
 #+end_src
 
+#+RESULTS:
+: ox-mrkup-filter-verse-block
+
 
 ** A LaTeX Backend Example
 
@@ -258,9 +261,9 @@ could be editted to purpose.
 
 #+begin_src emacs-lisp
   (require 'ox-latex)
-  (org-export-define-derived-backend latex2 latex
+  (org-export-define-derived-backend 'latex2 'latex
     :filters-alist 
-    ((:filter-bold . ox-mrkup-filter-bold)
+    '((:filter-bold . ox-mrkup-filter-bold)
      (:filter-babel-call . ox-mrkup-filter-babel-call)
      (:filter-center-block . ox-mrkup-filter-center-block)
      (:filter-clock . ox-mrkup-filter-clock)

@@ -1432,3 +1432,11 @@ to add a noweb chunk. It will prompt for the name of the chunk.
   ;;; e-ravel.el ends here
 #+END_SRC
 :END:
+
+** COMMENT export to docx
+
+export to markdown - Rmd
+then knit the result
+then follow [[http://stackoverflow.com/questions/19889459/knitr-html-to-word-docx-using-pandoc][knitr to docx post]]
+
+

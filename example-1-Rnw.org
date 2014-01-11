@@ -1,7 +1,7 @@
 #+TITLE:     example-1-Rnw.org
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
-#+DATE:      2012-07-16 Mon
+#+DATE:      2014-01-11 Sat
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -20,7 +20,11 @@
 The next section is the "example-1.Rnw' file from the R distribution,
 but modified to *.org format.
 
-Running this command:
+The usual way to export a subtree is to move point into the subtree and issue
+
+   C-c C-e C-s l r
+
+However, running this command:
 #+BEGIN_SRC emacs-lisp
   (save-excursion
     (let ((org-export-latex-default-packages-alist nil))

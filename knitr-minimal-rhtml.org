@@ -1,14 +1,19 @@
 #+title: A minimal knitr example in HTML
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
-#+DATE:      2012-08-07 Tue
+#+DATE:      2014-01-11 Sat
 
 * What is Up
 
 The next section is the "knitr-minimal.Rhtml' file from the [[https://github.com/yihui/knitr/blob/master/inst/examples/knitr-minimal.Rhtml][knitr demos page]],
 but modified to *.org format.
 
-Running this src block should turn it back into the original (or something close to it).
+The usual way to export a subtree is to move point into the subtree and issue
+
+   C-c C-e C-s h r
+
+However, running this src block should turn it back into the original
+(or something close to it).
 #+BEGIN_SRC emacs-lisp
   (save-excursion
     (forward-line 4)
@@ -20,6 +25,7 @@ Running this src block should turn it back into the original (or something close
 : knitr-minimal.Rhtml
 
 should translate it back to Rhtml.
+
 
 * A minimal knitr example in HTML
 

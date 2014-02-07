@@ -1,0 +1,113 @@
+#+TITLE:     slidify-example.org
+#+AUTHOR:    Charles C. Berry
+#+EMAIL:     ccberry@ucsd.edu
+#+DATE:      2014-02-07 Fri
+#+DESCRIPTION: Notes and example of org --> ravel --> slidify
+#+PROPERTY: session "*R*"
+
+
+* Setup for test-deck
+
+1. Run the [[new-deck]] src block once to start.
+2. Go to the [[#tds-headline][test-deck slides]] subtree, edit, and export with the
+  =md-knitr= backend
+3. Go to the [[run-slidify]] src block and run the code there.
+4. Repeat 2 and 3 as needed.
+
+
+#+NAME: new-deck
+#+BEGIN_SRC R 
+library(slidify)
+author("test-deck",open_rmd=FALSE,use_git=FALSE)
+#+END_SRC
+
+
+* test-deck slides
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: test-deck/my.Rmd
+   :EXPORT_OPTIONS: toc:nil
+   :CUSTOM_ID: tds-headline
+   :END:
+
+#+BEGIN_MD
+---
+title       : Ravel for slidify
+subtitle    : a minimal slidy deck
+author      : Charles C. Berry
+job         : Professor
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+---
+#+END_MD
+
+** Setup notes
+- =#+BEGIN_MD ... #+END_MD= block contains yaml header
+- =EXPORT_FILE_NAME= needs to be in test-deck dir
+- =EXPORT_OPTIONS= needs =toc:nil= or html creation will barf
+- =#+MD: ---= terminates slides (not needed at the very end)
+- ~ox-ravel.el~ needs to be loaded
+- export using the ~md-knitr~ backend, e.g. =C-c C-e C-s m r=
+#+MD: ---
+** Square root of 2
+
+#+NAME: first block
+#+BEGIN_SRC R
+sqrt(2)
+#+END_SRC
+
+#+MD: ---
+** Square root of 3
+
+#+NAME: next block
+#+BEGIN_SRC R
+sqrt(3)
+#+END_SRC
+
+
+#+MD: ---
+** Mauna Whau Plot - code
+
+Borrowed this code from ~example(image)~:
+
+#+ATTR_RAVEL: eval=FALSE
+#+NAME: image-plot
+#+BEGIN_SRC R
+  # A prettier display of the volcano
+  x <- 10*(1:nrow(volcano))
+  y <- 10*(1:ncol(volcano))
+  image(x, y, volcano, col = terrain.colors(100), axes = FALSE)
+  contour(x, y, volcano, levels = seq(90, 200, by = 5),
+          add = TRUE, col = "peru")
+  axis(1, at = seq(100, 800, by = 100))
+  axis(2, at = seq(100, 600, by = 100))
+  box()
+  title(main = "Maunga Whau Volcano", font.main = 4)
+#+END_SRC
+
+#+MD: ---
+** Mauna Whau Plot - Displayed
+
+#+ATTR_RAVEL: echo=FALSE
+#+NAME: image-plot-run
+#+BEGIN_SRC R
+<<image-plot>>
+#+END_SRC
+
+
+
+#+MD: ---
+
+this last slide had no headline
+
+
+* Run it
+
+#+NAME: run-slidify
+#+BEGIN_SRC R 
+slidify("my.Rmd")
+#+END_SRC
+
+

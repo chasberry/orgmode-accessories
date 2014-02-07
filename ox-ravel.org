@@ -1495,3 +1495,10 @@ Easy-peasy.
 
 But turning md back to org might have a few hiccups
 
+* COMMENT tables to R
+
+[[http://article.gmane.org/gmane.emacs.orgmode/51153][org mode tables and tangling thread]]
+
+[[http://permalink.gmane.org/gmane.emacs.orgmode/81248][another such thread]]
+
+

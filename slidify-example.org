@@ -21,6 +21,8 @@ library(slidify)
 author("test-deck",open_rmd=FALSE,use_git=FALSE)
 #+END_SRC
 
+#+RESULTS: new-deck
+
 
 * test-deck slides
    :PROPERTIES:
@@ -109,5 +111,7 @@ this last slide had no headline
 #+BEGIN_SRC R 
 slidify("my.Rmd")
 #+END_SRC
+
+#+RESULTS: run-slidify
 
 

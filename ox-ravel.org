@@ -1355,7 +1355,7 @@ until the export parser can see them. Also see [[*advice%20for%20org-babel-exp-d
                               (if noweb-yes
                                   (org-babel-expand-noweb-references
                                    info
-                                   (org-babel-exp-get-export-buffer))
+                                   org-babel-exp-reference-buffer)
                                 (nth 1 info)))))))
         ;; not R so do default
         ad-do-it)))
@@ -1395,110 +1395,4 @@ to add a noweb chunk. It will prompt for the name of the chunk.
   ;;; ox-ravel.el ends here
 #+END_SRC
 :END:
-
-* COMMENT knitr to org
-
-
-The code chunks can be extracted by ~purl(...)~. In fact, one could
-copy them and replace them with comments.
-
-
-#+NAME: example
-#+BEGIN_SRC R :results output
-      library(knitr)
-      
-      
-    doctext <-
-        paste(
-            "a\n<<b,echo=FALSE,opt1=1,opt2=2,opt3=3,opt4=4>>=",
-            "ls()\n@\nmore text goes here",
-            "an inline expr \\Sexpr{1+2} was here",
-            "<<>>=\nunlabelled <- TRUE\n@",
-            sep="\n")
-  cat(doctext,"\n")
-  cat(
-      purl(text=doctext,
-           documentation=2L)
-      )
-#+END_SRC
-
-#+RESULTS: example
-#+begin_example
-a
-<<b,echo=FALSE,opt1=1,opt2=2,opt3=3,opt4=4>>=
-ls()
-@
-more text goes here
-an inline expr \Sexpr{1+2} was here
-<<>>=
-unlabelled <- TRUE
-@ 
-  |                                                                         |                                                                 |   0%  |                                                                         |.............                                                    |  20%  |                                                                         |..........................                                       |  40%  |                                                                         |.......................................                          |  60%  |                                                                         |....................................................             |  80%  |                                                                         |.................................................................| 100%
-#' a
-## ----b,echo=FALSE,opt1=1,opt2=2,opt3=3,opt4=4----------------------------
-ls()
-
-#' 
-#' more text goes here
-#' an inline expr \Sexpr{1+2} was here
-## ------------------------------------------------------------------------
-unlabelled <- TRUE
-
-#' 
-#+end_example
-
-#+NAME: two
-#+BEGIN_SRC R :results output
-  
-  library(knitr)
-        
-  doctext <-
-      paste(
-          "Start here as text",
-          "//begin.rcode",
-          "//rc <- 3",
-          "//end.rcode",
-          "inline +r abc*3 + was here",
-          sep="\n")
-  cat(doctext,"\n")
-  cat(
-      purl(text=doctext,
-           documentation=2L)
-      )
-#+END_SRC
-
-#+RESULTS: two
-#+begin_example
-Start here as text
-//begin.rcode
-//rc <- 3
-//end.rcode
-inline +r abc*3 + was here 
-  |                                                                         |                                                                 |   0%  |                                                                         |......................                                           |  33%  |                                                                         |...........................................                      |  67%  |                                                                         |.................................................................| 100%
-#' Start here as text
-## ------------------------------------------------------------------------
-rc <- 3
-
-#' 
-#' inline +r abc*3 + was here
-#+end_example
-
-Limited experimentation shows that at least four dashes will be at the
-end of the line with the label and options.
-
-Lines with no labels or options are all dashes.
-
-In line expressions do not get parsed, it appears. So there is still
-some work to do to translate them back to src_R{} blocks.
-
-Easy-peasy.
-
-But turning md back to org might have a few hiccups
-
-* COMMENT tables to R
-
-[[http://article.gmane.org/gmane.emacs.orgmode/51153][org mode tables and tangling thread]]
-
-[[http://permalink.gmane.org/gmane.emacs.orgmode/81248][another such thread]]
-
 

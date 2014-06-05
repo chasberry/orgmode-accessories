@@ -1315,7 +1315,7 @@ until the export parser can see them. Also see [[*advice%20for%20org-babel-exp-d
                     ;; it will be stripped just before parsing
                     ;; insert `:ravel' values, if any
                     (flet 
-                     ((org-babel-examplize-region
+                     ((org-babel-examplify-region
                        (x y z)
                        (insert (format "==SRC<%s>SRC==" 
                                        (prog1 (buffer-substring x y)

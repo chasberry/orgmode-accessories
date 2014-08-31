@@ -27,17 +27,22 @@ The usual way to export a subtree is to move point into the subtree and issue
 However, running this command:
 #+BEGIN_SRC emacs-lisp
   (save-excursion
-    (let ((org-export-latex-default-packages-alist nil))
-      (progn (forward-line 5)
-             (search-forward "Sweave Example 1")
-             (forward-line 1)
-      (org-export-to-file 'latex-noweb "example-1-fromOrg.Rnw" nil t ))))
+    (let ((org-export-latex-default-packages-alist nil)
+          (org-ravel-run t)
+          (org-ravel-style "rnw"))
+      (outline-next-visible-heading 1)
+      (forward-line 1)
+      (org-export-to-file 'ravel-latex 
+          "example-1-fromOrg.Rnw" nil t )))
 #+END_SRC
 
 #+RESULTS:
 : example-1-fromOrg.Rnw
 
-should translate it back to Sweave.
+should translate it back to Sweave. (Note that the interactive export
+dispatch takes care of setting `or-ravel-ravelp' and
+`org-ravel-style'. Here it is done explicitly to enable
+`org-export-to-file' to run.)
 
 * Sweave Example 1
   :PROPERTIES:

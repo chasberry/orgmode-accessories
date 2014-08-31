@@ -15,8 +15,6 @@ Add ons for orgmode
     and view it in emacs orgmode
   - or ~git clone~ the repository and view the file (using emacs
     orgmode for the best viewing)
-- ravel.org :: older version for pre-February 2013 merge of new
-               exporter to the orgmode master
 - example-1-Rnw.org :: includes an orgmode translation of example-1 from the
      Sweave user's manual. Exporting with ~e-latex-noweb~ produces a
      file very similar to the =*.Rnw= code.
@@ -29,11 +27,7 @@ Add ons for orgmode
 
 * Bugs?
 
-- The new exporter and Babel are moving targets.
-- There are my own misunderstandings and mistakes.  
-
-
-So bugs happen. Please let me know if you encounter a bug or if
+Bugs happen. Please let me know if you encounter a bug or if
 something seems to break that once worked as that might indicate a
 change in the exporter or Babel that I need to keep up with.
 
@@ -76,15 +70,16 @@ maybe impossible) to use when Babel is doing the final report
 generation. There are terrific possibilities presented by R packages
 like [[http://yihui.name/knitr/][=knitr=]] and [[https://github.com/daroczig/pander][=pander=]].
 
-** A new export engine
+** The Org export engine
 
-The new orgmode export engine (see [[http://orgmode.org/worg/dev/org-export-reference.html][Org Export Reference Documentation]])
- offers the possibility to have a workstyle in which an orgmode master
- document contains a /subtree/ with text and code blocks that when
- exported becomes an Sweave or brew style document that when run
- produces LaTeX, HTML, and/or some other markup language. By including
- caching options in those documents the development process becomes
- easy to organize, restarting work after a break is just a matter of
- rerunning the document to load the cached objects and libraries, then
- switching to the orgmode master to try out some new code, reorganize
- the presentation, and so on.
+The Org export engine (see the Org manual [[http://orgmode.org/org.html#Exporting][Exporting]] section or the [[http://orgmode.org/worg/dev/org-export-reference.html][Org
+Export Reference Documentation]]) offers the possibility to have a
+workstyle in which an orgmode master document contains a /subtree/
+with text and code blocks that when exported becomes an Sweave or brew
+style document that when run produces LaTeX, HTML, and/or some other
+markup language. By including caching options in those documents the
+development process becomes easy to organize, restarting work after a
+break is just a matter of rerunning the document to load the cached
+objects and libraries, then switching to the orgmode master to try out
+some new code, reorganize the presentation, and so on.
+

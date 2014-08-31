@@ -1,0 +1,352 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil creator:comment d:(not "LOGBOOK") date:t
+#+OPTIONS: e:t email:nil f:t inline:t num:t p:nil pri:nil prop:nil
+#+OPTIONS: stat:t tags:t tasks:t tex:t timestamp:t toc:t todo:t |:t
+#+TITLE: demos
+#+DATE: <2014-08-26 Tue>
+#+AUTHOR: Charles Berry
+#+EMAIL: ccberry@ucsd.edu
+#+DESCRIPTION: demonstrate/test ravel capabilities
+#+KEYWORDS:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 24.3.1 (Org mode 8.3beta)
+
+
+* simple R src block
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: simple-src-block.pdf
+  :END:
+
+Run this interactively, viz.
+
+: C-c C-e C-s C-b r L
+
+or from emacs-lisp using
+
+: (org-ravel-export-to-buffer 'ravel-latex "* ravel-latex Output *" nil t )
+
+#+NAME: simple-src-block
+#+BEGIN_SRC R
+a <- 1
+b <- 1 + a
+(a+b)^b
+#+END_SRC
+
+** expected result						   :noexport:
+
+The buffer * ravel-latex Output * should contain:
+
+#+BEGIN_LaTeX
+Run this interactively, viz.
+
+\begin{verbatim}
+C-c C-e C-s C-b r L
+\end{verbatim}
+
+<<simple-src-block>>=
+a <- 1
+b <- 1 + a
+(a+b)^b
+@ %def
+
+#+END_LaTeX
+
+* simple inline src block
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: simple-inline-src-block.pdf
+  :END:
+Run this interactively, viz.
+
+: C-c C-e C-s C-b r L
+
+Line ending with inline src block: src_R{sum(rnorm(10))}
+
+src_R{sum(rnorm(10))} Line starting with inline src block
+
+Line containing src_R{sum(rnorm(10))} inline src block
+
+** expected result						   :noexport:
+
+   The buffer * ravel-latex Output * should contain:
+
+#+BEGIN_LaTeX
+Run this interactively, viz.
+
+\begin{verbatim}
+C-c C-e C-s C-b r L
+\end{verbatim}
+
+Line ending with inline src block: \Sexpr{ sum(rnorm(10)) }
+
+\Sexpr{ sum(rnorm(10)) } Line starting with inline src block
+
+Line containing \Sexpr{ sum(rnorm(10)) } inline src block
+
+#+END_LaTeX
+* src block with graph for Sweave
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: graphic-src-block.pdf
+  :END:
+
+
+Run this interactively, viz.
+
+\begin{verbatim}
+C-c C-e C-s r l
+\end{verbatim}
+
+
+Do a qqplot and plot the identity line.
+
+#+BEGIN_SRC  R :ravel fig=TRUE
+qqnorm(rnorm(10))
+abline(a=0,b=1,lty=2)
+#+END_SRC
+
+** expected result						   :noexport:
+
+   The file =graphic-src-block.Rnw= should contain code that this
+   src block will turn into a pdf with a nice figure.
+
+#+BEGIN_SRC sh :results value
+R CMD Sweave --pdf graphic-src-block.Rnw
+#+END_SRC
+
+#+RESULTS:
+
+
+* expanded document
+
+
+ #+NAME: stuff
+#+HEADER: :exports code
+#+BEGIN_SRC org
+
+  @@latex:\section{@@ The Letter src_R{i} @@latex:}@@
+
+  The letter src_R{i} 
+  - can be upcased like this: src_R{toupper(i)}
+  - its character codes is src_R{charToRaw(i)} 
+  - src_R{toupper(i)}'s character code is src_R{charToRaw(toupper(i))}.
+
+
+#+END_SRC
+
+#+NAME: excode
+#+BEGIN_SRC emacs-lisp :var code=stuff :exports code :wrap latex
+  (org-ravel-export-string-as code 'ravel-latex 
+                              t nil nil "braces")
+#+END_SRC
+
+#+RESULTS: excode
+#+BEGIN_latex
+\section{ The Letter {{i}} }
+
+The letter {{i}} can be upcased like this: {{toupper(i)}}.
+The character codes are {{charToRaw(i)}} and {{charToRaw(toupper(i))}}.
+#+END_latex
+
+#+HEADER: :var ktmp=excode
+#+BEGIN_SRC R :results output :wrap latex
+  require(knitr)
+  for (i in letters[1:5]){
+      res <- knit_expand(text=ktmp)
+      cat(res)
+  }
+
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_latex
+\section{ The Letter a }
+
+The letter a 
+\begin{itemize}
+\item can be upcased like this: A
+\item its character codes is 61
+\item A's character code is 41.
+\end{itemize}
+\section{ The Letter b }
+
+The letter b 
+\begin{itemize}
+\item can be upcased like this: B
+\item its character codes is 62
+\item B's character code is 42.
+\end{itemize}
+\section{ The Letter c }
+
+The letter c 
+\begin{itemize}
+\item can be upcased like this: C
+\item its character codes is 63
+\item C's character code is 43.
+\end{itemize}
+\section{ The Letter d }
+
+The letter d 
+\begin{itemize}
+\item can be upcased like this: D
+\item its character codes is 64
+\item D's character code is 44.
+\end{itemize}
+\section{ The Letter e }
+
+The letter e 
+\begin{itemize}
+\item can be upcased like this: E
+\item its character codes is 65
+\item E's character code is 45.
+\end{itemize}
+#+END_latex
+
+
+* src block with latex caption for knitr
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: captioned-src-block.pdf
+  :END:
+
+
+Run this interactively, viz.
+
+\begin{verbatim}
+C-c C-e C-s r l
+\end{verbatim}
+
+and respond with a =y= when prompted:
+
+: Evaluate this latex code block (lcap) on your system? (y or n) 
+
+#+NAME: lcap
+#+BEGIN_SRC latex :exports none 
+  qqplot of variables from a Gaussian distributon with unit mean and
+  variance. Note that it should appear like this: $ y = x\beta +
+  \epsilon $, where $\beta$ is 1 and $\epsilon$ is pretty small.
+#+END_SRC
+
+The latex caption will be brought into the variable =lcap_ref= by this
+empty src block:
+
+#+BEGIN_SRC R :var lcap_ref=(org-babel-ref-resolve "lcap")
+#+END_SRC
+
+Or a line like this:
+: src_R[:var lcap_ref=(org-babel-ref-resolve "lcap")]{ } 
+will do the same thing
+
+Now do the qqplot taking =lcap_ref= as the caption, and plot the
+identity line.
+
+#+NAME: lcap-user
+#+BEGIN_SRC  R :ravel fig.cap=lcap_ref
+qqnorm(rnorm(10))
+abline(a=0,b=1,lty=2)
+#+END_SRC
+
+** expected result						   :noexport:
+
+   The file =captioned-src-block.Rnw= should contain code that this
+   src block will turn into a pdf with a nicely captioned figure.
+
+#+NAME: run-knitr-with-latex-caption
+#+BEGIN_SRC R :results value
+require(knitr)
+knit2pdf("captioned-src-block.Rnw")
+#+END_SRC
+
+#+RESULTS: run-knitr-with-latex-caption
+: captioned-src-block.pdf
+
+
+
+* TODO src block with a computed caption for knitr
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: captioned-src-block.pdf
+  :END:
+
+
+Run this interactively, viz.
+
+\begin{verbatim}
+C-c C-e C-s r l
+\end{verbatim}
+
+and respond with a =y= whenever prompted:
+
+: Evaluate this [...] on your system? (y or n) 
+
+The R src code for making the =qqplot= is run first. The least squares
+fit is extracted, too.
+
+#+NAME: get-qqplot2
+#+BEGIN_SRC R
+qplt <- qqnorm( rnorm(200), plot.it=FALSE )
+ab <- coef( lm( y~x, qplt ))
+#+END_SRC
+
+and the \LaTeX caption is written here with inline src blocks.
+
+#+NAME: lcap3
+#+BEGIN_SRC latex :exports code :width 55
+
+  qqplot of realizations from a Gaussian distribution
+  with unit mean and unit variance.
+  Note that it should appear like this: 
+  \(y = \alpha + x\beta + \epsilon\)
+  where \(\alpha=0\) and \(\beta =1\) and \(\epsilon\) is 
+  pretty small. 
+
+  In reality \(\hat\alpha =\) src_R{round(ab[1],3)} and
+  \(\hat\beta=\) src_R{round(ab[2],3)}.
+
+#+END_SRC
+
+
+The latex caption will be brought into the variable =lcap_ref= by the
+ next src block. In this case it really only serves to convert the
+ =src_R{}= inlines to =\Sexpr{}= inlines. Outside of captions, long
+ sections of text with extensive ~org-mode~ formatting that depend on
+ the data in complicated ways can be rendered.
+
+ The caption could have been placed in a ~example~ block with the same
+ effect, but if the \LaTeX is hairy, it is nice to be able to edit in
+ ~latex~ edit buffers.
+
+#+NAME: lcap_ref_fmt
+#+HEADER: :var code=lcap3 :exports code
+#+BEGIN_SRC emacs-lisp 
+  (org-ravel-export-string-as code 'ravel-latex t)
+#+END_SRC
+
+#+BEGIN_SRC R :var  lcapref=lcap_ref_fmt(lcap3)
+ lcap_ref <- knit_expand(text=lcapref,delim=c("\\Sexpr{","}"))
+#+END_SRC
+
+Now do the qqplot taking =lcap_ref= as the caption, and plot the
+fitted and the identity line.
+
+#+NAME: lcap-user2
+#+BEGIN_SRC  R :ravel fig.cap=lcap_ref
+plot(qplt)
+abline(a=0,b=1,lty=2)
+abline(coef=ab)
+legend("bottomright",lty=1:2,legend=c("fitted","expected"))
+#+END_SRC
+
+
+** expected result						   :noexport:
+
+   The file =captioned-src-block.Rnw= should contain code that this
+   src block will turn into a pdf with a nicely captioned figure.
+
+#+NAME: run-knitr-with-tricky-latex-caption
+#+BEGIN_SRC R :results value
+require(knitr)
+knit2pdf("captioned-src-block.Rnw")
+#+END_SRC
+
+#+RESULTS: run-knitr-with-tricky-latex-caption
+: captioned-src-block.pdf
+

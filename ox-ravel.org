@@ -948,28 +948,45 @@ the ravel family of backends. For `ravel' blocks/snippets, they merely
 return their content. For other blocks/snippets, they fall back to the
 transcoders for the parent backend.
 
-*** TODO defun-org-ravel-export-block now special-block
+*** TODO defun-org-ravel-export-block now special-block is REVERTED
 :TODO:
-export-blocks are deprecated --- use special blocks instead.
-`org-ravel-special-block' implements this.
+
+- ANN :: http://lists.gnu.org/archive/html/emacs-orgmode/2014-08/msg01007.html
+
+- reverted :: export-blocks are deprecated --- use special blocks
+              instead. `org-ravel-special-block' implements this.
 
 Note that I do not query org-export-raw-special-block-p, because this
 is implied for ravel - it might be necessary to leave the old export
 block transcoder in place for back compatibility
 
+
+Porbably this does not matter - why would an on-the-fly backend be used
+without having any ravele backends registered:  on the fly backends
+need to have RAVEL entry in `org-element-block-name-alist' iff there
+are not ravel backends registered - or the special block transcoder
+needs to handle them
+
+But now I have doctored org-ravel-special-block to allow for this
+possibility.
+
+I have just [2014-09-15 Mon] added a :blocks entry to
+org-ravel-create-backend, but it does not alter the alist...
+and maybe should not.
+
 :END:
 
 #+NAME: defun-org-ravel-special-block
 #+BEGIN_SRC emacs-lisp 
-   (defun org-ravel-special-block (special-block contents info)
-      "Transcode a SPECIAL-BLOCK element from Org to ravel.
-      CONTENTS is nil.  INFO is a plist holding contextual information."
-      (if (equal (org-element-property :type special-block) "RAVEL")
-          (org-remove-indentation (org-element-property :raw-value special-block))
-        (let ((parent-backend (org-export-backend-parent backend)))
-          (if parent-backend
-              (org-export-with-backend 
-               parent-backend special-block contents info)))))
+  (defun org-ravel-special-block (special-block contents info)
+     "Transcode a SPECIAL-BLOCK element from Org to ravel.
+     CONTENTS is nil.  INFO is a plist holding contextual information."
+     (if (equal (org-element-property :type special-block) "RAVEL")
+         contents
+       (let ((parent-backend (org-export-backend-parent backend)))
+         (if parent-backend
+             (org-export-with-backend 
+              parent-backend special-block contents info)))))
 
 #+END_SRC
 
@@ -1004,7 +1021,8 @@ block transcoder in place for back compatibility
 
 #+END_SRC
 ** export to file, to buffer, string as string
-*** defun-org-ravel-export-string-as
+
+
 *** defun-org-ravel-create-backend
 #+BEGIN_SRC emacs-lisp
   (defun  org-ravel-create-backend (parent &optional style)
@@ -1021,8 +1039,11 @@ block transcoder in place for back compatibility
                     (org-export-backend-options 
                      (or (org-export-get-backend parent)
                          (user-error 
-                          (format "Backend %S is not loaded" parent )
-                          ))))))
+                          (format "Backend %S is not loaded" parent )))))
+     :blocks    (let ((eblocks 
+                       (org-export-backend-blocks 
+                        (org-export-get-backend parent))))
+                  (add-to-list 'eblocks "RAVEL"))))
 
 #+END_SRC
 *** defun-org-ravel-export-string-as

@@ -927,7 +927,7 @@ See the `org-ravel-style-x' docstring for more details.
 #+NAME: org-ravel-style-x-md
 #+BEGIN_SRC emacs-lisp
   (org-ravel-style-x "md"   
-  "```{r  %s }\n%s ```" 
+  "```{r  %s }\n%s \n```" 
   "`r  %s `")
 
 
@@ -1345,21 +1345,27 @@ For a slicker approach see org-export-backends' docstring
 
 #+NAME: run-org-ravel-to-file
 #+BEGIN_SRC emacs-lisp 
+  (let ((backends (mapcar 'org-export-backend-name org-export--registered-backends)))
+  (unless (memq 'latex backends) 
+    (load "ox-latex"))
   (org-ravel-define-exporter
    'ravel-latex 
    'latex ?l "Ravel-LaTeX" "rnw" nil t (lambda () (LaTeX-mode)))
-  (require 'ox-beamer)
+  (unless (memq 'beamer backends) 
+    (load "ox-beamer"))
   (org-ravel-define-exporter
    'ravel-beamer 
    'beamer ?b "Ravel-beamer" "rnw" nil t (lambda () (LaTeX-mode)))
-  (require 'ox-md)
+  (unless (memq 'html backends) 
+    (load "ox-html"))
   (org-ravel-define-exporter
    'ravel-html 
    'html ?h "Ravel-html" "html" nil t )
-    (org-ravel-define-exporter
-     'ravel-markdown 
-     'md ?m "Ravel-markdown" "md" nil t )
-
+  (unless (memq 'md backends) 
+    (load "ox-md"))
+  (org-ravel-define-exporter
+   'ravel-markdown 
+   'md ?m "Ravel-markdown" "md" nil t ))
 #+END_SRC
 
 * provide ravel							   :noexport:

@@ -171,9 +171,10 @@ some new code, reorganize the presentation, and so on.
 
 #+name: loadup
 #+begin_src emacs-lisp :results output silent
-  (require 'ox-latex)
-  (require 'ox-html)
-  (require 'ox-md)
+  (load "ox-latex" t t )
+  (load "ox-html" t t )
+  (load "ox-md" t t )
+  (load "ox-beamer" t t )
 #+end_src
    
 ** extract ox-ravel.el and load it

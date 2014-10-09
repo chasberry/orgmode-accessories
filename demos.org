@@ -25,7 +25,16 @@ Run this interactively, viz.
 
 or from emacs-lisp using
 
-: (org-ravel-export-to-buffer 'ravel-latex "* ravel-latex Output *" nil t )
+
+#+NAME: simple-R-src-block
+#+BEGIN_SRC emacs-lisp :exports code :wrap latex
+  (set-buffer
+   (org-ravel-export-to-buffer 'ravel-latex 
+                               "* ravel-latex Output *" 
+                               nil t nil t))
+  (buffer-substring-no-properties (point-min) (point-max))
+#+END_SRC
+
 
 #+NAME: simple-src-block
 #+BEGIN_SRC R
@@ -38,11 +47,23 @@ b <- 1 + a
 
 The buffer * ravel-latex Output * should contain:
 
-#+BEGIN_LaTeX
+#+RESULTS: simple-R-src-block-expected
+#+BEGIN_latex
 Run this interactively, viz.
 
 \begin{verbatim}
 C-c C-e C-s C-b r L
+\end{verbatim}
+
+or from emacs-lisp using
+
+
+\begin{verbatim}
+(set-buffer
+ (org-ravel-export-to-buffer 'ravel-latex 
+			     "* ravel-latex Output *" 
+			     nil t nil t))
+(buffer-substring-no-properties (point-min) (point-max))
 \end{verbatim}
 
 <<simple-src-block>>=
@@ -50,8 +71,15 @@ a <- 1
 b <- 1 + a
 (a+b)^b
 @ %def
+#+END_latex
 
-#+END_LaTeX
+
+#+RESULTS: simple-R-src-block
+#+BEGIN_latex
+  \boldtt{Result of simple-R-src-block goes here.}
+#+END_latex
+
+
 
 * simple inline src block
   :PROPERTIES:
@@ -60,6 +88,18 @@ b <- 1 + a
 Run this interactively, viz.
 
 : C-c C-e C-s C-b r L
+
+or from emacs-lisp using
+
+#+NAME: simple-inline-src-block
+#+BEGIN_SRC emacs-lisp :exports code :wrap latex
+  (set-buffer
+   (org-ravel-export-to-buffer 'ravel-latex 
+                               "* ravel-latex Output *" 
+                               nil t nil t))
+  (buffer-substring-no-properties (point-min) (point-max))
+#+END_SRC
+
 
 Line ending with inline src block: src_R{sum(rnorm(10))}
 
@@ -71,20 +111,38 @@ Line containing src_R{sum(rnorm(10))} inline src block
 
    The buffer * ravel-latex Output * should contain:
 
-#+BEGIN_LaTeX
-Run this interactively, viz.
+#+RESULTS: simple-inline-src-block-expected
+#+BEGIN_latex
+  Run this interactively, viz.
 
-\begin{verbatim}
-C-c C-e C-s C-b r L
-\end{verbatim}
+  \begin{verbatim}
+  C-c C-e C-s C-b r L
+  \end{verbatim}
 
-Line ending with inline src block: \Sexpr{ sum(rnorm(10)) }
+  or from emacs-lisp using
+  \begin{verbatim}
+  (set-buffer
+   (org-ravel-export-to-buffer 'ravel-latex 
+                               "* ravel-latex Output *" 
+                               nil t nil t))
+  (buffer-substring-no-properties (point-min) (point-max))
+  \end{verbatim}
 
-\Sexpr{ sum(rnorm(10)) } Line starting with inline src block
 
-Line containing \Sexpr{ sum(rnorm(10)) } inline src block
+  Line ending with inline src block: \Sexpr{ sum(rnorm(10)) }
 
-#+END_LaTeX
+  \Sexpr{ sum(rnorm(10)) } Line starting with inline src block
+
+  Line containing \Sexpr{ sum(rnorm(10)) } inline src block
+#+END_latex
+
+and here is what it contains (if you ran the simple-inline-src-block):
+
+#+RESULTS: simple-inline-src-block
+#+BEGIN_latex
+  \boldtt{ Result goes here. }
+#+END_latex
+
 * src block with graph for Sweave
   :PROPERTIES:
   :EXPORT_FILE_NAME: graphic-src-block.pdf
@@ -117,12 +175,24 @@ R CMD Sweave --pdf graphic-src-block.Rnw
 #+RESULTS:
 
 
-* expanded document
+* Expanding a Document via knitr
+
+The org-mode template in the ~stuff~ src block is read by the ~excode~ src
+block and inline src blocks are converted to knitr delimiters and org
+is converted to latex. Then the latex is processed by ~knit_expand()~.
+
+To demonstrate, run the ~demo-expansion~ src block and browse the
+results block.
+
+#+NAME: demo-expansion
+#+BEGIN_SRC emacs-lisp
+(require 'ox-org)
+(org-sbe "knit-expand" (ktmp excode))
+#+END_SRC
 
 
- #+NAME: stuff
-#+HEADER: :exports code
-#+BEGIN_SRC org
+#+NAME: stuff
+#+BEGIN_ORG
 
   @@latex:\section{@@ The Letter src_R{i} @@latex:}@@
 
@@ -132,7 +202,7 @@ R CMD Sweave --pdf graphic-src-block.Rnw
   - src_R{toupper(i)}'s character code is src_R{charToRaw(toupper(i))}.
 
 
-#+END_SRC
+#+END_ORG
 
 #+NAME: excode
 #+BEGIN_SRC emacs-lisp :var code=stuff :exports code :wrap latex
@@ -140,14 +210,7 @@ R CMD Sweave --pdf graphic-src-block.Rnw
                               t nil nil "braces")
 #+END_SRC
 
-#+RESULTS: excode
-#+BEGIN_latex
-\section{ The Letter {{i}} }
-
-The letter {{i}} can be upcased like this: {{toupper(i)}}.
-The character codes are {{charToRaw(i)}} and {{charToRaw(toupper(i))}}.
-#+END_latex
-
+#+NAME: knit-expand
 #+HEADER: :var ktmp=excode
 #+BEGIN_SRC R :results output :wrap latex
   require(knitr)
@@ -157,50 +220,6 @@ The character codes are {{charToRaw(i)}} and {{charToRaw(toupper(i))}}.
   }
 
 #+END_SRC
-
-#+RESULTS:
-#+BEGIN_latex
-\section{ The Letter a }
-
-The letter a 
-\begin{itemize}
-\item can be upcased like this: A
-\item its character codes is 61
-\item A's character code is 41.
-\end{itemize}
-\section{ The Letter b }
-
-The letter b 
-\begin{itemize}
-\item can be upcased like this: B
-\item its character codes is 62
-\item B's character code is 42.
-\end{itemize}
-\section{ The Letter c }
-
-The letter c 
-\begin{itemize}
-\item can be upcased like this: C
-\item its character codes is 63
-\item C's character code is 43.
-\end{itemize}
-\section{ The Letter d }
-
-The letter d 
-\begin{itemize}
-\item can be upcased like this: D
-\item its character codes is 64
-\item D's character code is 44.
-\end{itemize}
-\section{ The Letter e }
-
-The letter e 
-\begin{itemize}
-\item can be upcased like this: E
-\item its character codes is 65
-\item E's character code is 45.
-\end{itemize}
-#+END_latex
 
 
 * src block with latex caption for knitr
@@ -219,14 +238,18 @@ and respond with a =y= when prompted:
 
 : Evaluate this latex code block (lcap) on your system? (y or n) 
 
+
+~:exports none~ assures that the contents of the ~lcap~ src block are not
+exported as is.
+
 #+NAME: lcap
-#+BEGIN_SRC latex :exports none 
+#+BEGIN_SRC latex :exports none
   qqplot of variables from a Gaussian distributon with unit mean and
   variance. Note that it should appear like this: $ y = x\beta +
   \epsilon $, where $\beta$ is 1 and $\epsilon$ is pretty small.
 #+END_SRC
 
-The latex caption will be brought into the variable =lcap_ref= by this
+The latex caption will be brought into the R variable =lcap_ref= by this
 empty src block:
 
 #+BEGIN_SRC R :var lcap_ref=(org-babel-ref-resolve "lcap")
@@ -261,9 +284,10 @@ knit2pdf("captioned-src-block.Rnw")
 
 
 
+
 * TODO src block with a computed caption for knitr
   :PROPERTIES:
-  :EXPORT_FILE_NAME: captioned-src-block.pdf
+  :EXPORT_FILE_NAME: computed-caption-src-block.pdf
   :END:
 
 
@@ -338,15 +362,13 @@ legend("bottomright",lty=1:2,legend=c("fitted","expected"))
 
 ** expected result						   :noexport:
 
-   The file =captioned-src-block.Rnw= should contain code that this
+   The file =computed-caption-src-block.Rnw= should contain code that this
    src block will turn into a pdf with a nicely captioned figure.
 
 #+NAME: run-knitr-with-tricky-latex-caption
 #+BEGIN_SRC R :results value
 require(knitr)
-knit2pdf("captioned-src-block.Rnw")
+knit2pdf("computed-caption-src-block.Rnw")
 #+END_SRC
 
-#+RESULTS: run-knitr-with-tricky-latex-caption
-: captioned-src-block.pdf
 

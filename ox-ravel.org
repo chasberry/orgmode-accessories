@@ -162,7 +162,7 @@ code, reorganize the presentation, and so on.
 (load-file "ox-ravel.el")
 #+END_SRC
  
-Now you can use ravel/
+Now you can use ravel.
   
 ** Install ox-ravel
 
@@ -919,9 +919,8 @@ See the `org-ravel-style-x' docstring for more details.
 #+NAME: org-ravel-style-x-html
 #+BEGIN_SRC emacs-lisp
   (org-ravel-style-x "html"   
-  "<!--begin.rcode  %s )\n%s\nend.code-->" 
-  "<!--rinline  %s  -->"
-  "%")
+  "<!--begin.rcode  %s \n%s\nend.rcode-->" 
+  "<!--rinline  %s  -->")
 #+END_SRC
 *** org-ravel-style-x-md
 #+NAME: org-ravel-style-x-md

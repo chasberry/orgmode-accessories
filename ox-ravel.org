@@ -461,9 +461,9 @@ different chunk and inline styles.
 #+BEGIN_SRC emacs-lisp
 
   (defcustom org-ravel-engines '("R")
-    "The engines to use in forming ravel chunks. Typically,
-  `org-ravel-run' will default to these.  Current knitr recognizes
-  these engines: 
+    "The engines to use in forming ravel chunks.  Typically,
+  `org-ravel-run' will default to these.  It can be buffer-local.
+  These engines are recognized by `knitr':
 
         `R' `python' `awk' `ruby' `haskell' `bash' `perl' `dot'
          `tikz' `sas' `coffeescript' and `polyglot'."
@@ -486,6 +486,7 @@ different chunk and inline styles.
 
 
 
+  (make-variable-buffer-local 'org-ravel-engines)
 #+END_SRC
 
 *** TODO setq-org-ravel-style-alist
@@ -539,7 +540,6 @@ use `defcustom' here
                                (string :tag "File extension"))))
 
 #+END_SRC
-
 
 ** TODO functions, macros,  and advice
 :TODO:
@@ -707,7 +707,12 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
              ((oec (org-element-context))
               (ravel-attr (org-element-property :attr_ravel oec))
               (type (org-element-type oec))
-              (headers params)
+              ;; Need (org-babel-params-from-properties "ravel") here as
+              ;; parsing was done on "R" or other language.
+              (headers  (apply #'org-babel-merge-params 
+                               (append
+                                (org-babel-params-from-properties "ravel")
+                                (list params))))
               (ravelarg (cdr (assoc :ravel headers)))
               (engine (cdr (assoc :engine headers)))
               (ravelstyle (cdr (assoc :ravel-style headers)))

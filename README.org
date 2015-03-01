@@ -5,22 +5,14 @@ Add ons for orgmode
 
 * The other files here:
 
-- ravel-org.md :: a ~markdown~ (and easily viewed) version of ~ox-ravel.org~
 - ox-ravel.org :: description and definition of backends to create
-               ~Sweave~, ~brew~, ~Rmd~, and ~html-knitr~ style files. This
-               file is *too big* to generate a blob, so either
-  - click on the ~raw~ button if you see an error message when trying
-    to view it and save the text
-  - download ~https://raw.github.com/chasberry/orgmode-accessories/master/ox-ravel.org~
-    and view it in emacs orgmode
-  - or ~git clone~ the repository and view the file (using emacs
-    orgmode for the best viewing)
+               ~Sweave~, ~brew~, ~Rmd~, and ~html~ style files.
 - example-1-Rnw.org :: includes an orgmode translation of example-1 from the
-     Sweave user's manual. Exporting with ~e-latex-noweb~ produces a
+     Sweave user's manual. Exporting with ~ravel-latex~ produces a
      file very similar to the =*.Rnw= code.
 - test-cases.org :: this sets up to allow parallel exports using
-                    ~e-latex~ and two derived backends ~e-latex-noweb~
-                    and ~e-latex-brew~ and inspect the =diffs= between
+                    ~latex~ and two derived backends ~ravel-latex~
+                    and ~ravel-brew~ and inspect the =diffs= between
                     them.
 - knitr-minimal-rhtml.org :: includes an orgmode translation of
      =knitr-minimal.Rhtml= from the [[http://yihui.name/knitr/demos][the knitr demos page]]

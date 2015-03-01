@@ -1337,39 +1337,42 @@ Probably need to pretty up the unit tests.
 #+END_SRC
 
 
-** run-org-ravel-to-file: Create Backends
-:TODOWHAT:
-Maybe make just latex, ascii, md and html as defaults. Make templates
-for other backends and maybe a way to easily add them.
+** Create Backends
 
-For a slicker approach see org-export-backends' docstring
+The `(eval-after-load FILE FORM)' forms seems to work. i.e. FORM is
+executed if the backend specified in FILE (e.g. 'ox-latex) is already loaded.
+If not, then when FILE is loaded, FORM is run.
 
-:END:
+The variable `org-export-backends' can be customized to (de-)list
+parent backends. The `ravel' backends that depend on those parents are
+(de-)activated when the parent is (de-)listed.
 
+A ravel backend whose parent is not in `org-export-backends' will need
+to `require' or `load' that parent.
 
-#+NAME: run-org-ravel-to-file
-#+BEGIN_SRC emacs-lisp 
-  (let ((backends (mapcar 'org-export-backend-name org-export--registered-backends)))
-  (unless (memq 'latex backends) 
-    (load "ox-latex"))
-  (org-ravel-define-exporter
-   'ravel-latex 
-   'latex ?l "Ravel-LaTeX" "rnw" nil t (lambda () (LaTeX-mode)))
-  (unless (memq 'beamer backends) 
-    (load "ox-beamer"))
-  (org-ravel-define-exporter
-   'ravel-beamer 
-   'beamer ?b "Ravel-beamer" "rnw" nil t (lambda () (LaTeX-mode)))
-  (unless (memq 'html backends) 
-    (load "ox-html"))
-  (org-ravel-define-exporter
-   'ravel-html 
-   'html ?h "Ravel-html" "html" nil t )
-  (unless (memq 'md backends) 
-    (load "ox-md"))
-  (org-ravel-define-exporter
-   'ravel-markdown 
-   'md ?m "Ravel-markdown" "md" nil t ))
+#+NAME: run-org-ravel-define-exporters
+#+BEGIN_SRC emacs-lisp :comments org
+
+  (eval-after-load 'ox-latex
+    '(org-ravel-define-exporter
+     'ravel-latex 
+     'latex ?l "Ravel-LaTeX" "rnw" nil t (lambda () (LaTeX-mode))))
+
+  (eval-after-load 'ox-beamer
+    '(org-ravel-define-exporter
+     'ravel-beamer 
+     'beamer ?b "Ravel-beamer" "rnw" nil t (lambda () (LaTeX-mode))))
+
+  (eval-after-load 'ox-html
+    '(org-ravel-define-exporter
+     'ravel-html 
+     'html ?h "Ravel-html" "html" nil t ))
+
+  (eval-after-load 'ox-md
+    '(org-ravel-define-exporter
+     'ravel-markdown 
+     'md ?m "Ravel-markdown" "md" nil t ))
+
 #+END_SRC
 
 * provide ravel							   :noexport:

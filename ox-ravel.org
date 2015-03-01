@@ -25,11 +25,9 @@
 
 ~ox-ravel.org~ is an orgmode file. 
 
-If you are browsing ~github~, you
-should probably look at the file ~ravel-org.md~ which is formatted for viewing
-(and omits lots of details that are usually not of interest). 
-
-If you have downloaded a copy of ~ox-ravel.org~, it is best to view it using [[orgmode][orgmode]]
+If you have downloaded a copy of ~ox-ravel.org~, it is best to view it
+using [[orgmode][orgmode]], which is a part of recent distributions of GNU
+Emacs. In other words, it should suffice to open the file using emacs.
   
 ** quickstart guide
 

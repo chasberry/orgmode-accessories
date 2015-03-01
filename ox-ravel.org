@@ -15,7 +15,8 @@
 #+LINK_HOME:
 #+XSLT:
 #+DRAWERS: DEVNOTES TODOWHAT
-#+PROPERTY: tangle ox-ravel.el
+#+PROPERTY: header-args :tangle ox-ravel.el :comments org
+
 
 * Background
   :PROPERTIES:
@@ -184,7 +185,8 @@ can be used. Check out
   :eval:     never
   :END:
 
-  :DEVNOTES:
+*************** 
+
 Things to think about:
 - load, require, autoload, provide
 - Commentary and Code as per checkDoc
@@ -249,42 +251,43 @@ Mostly DONE:
     needs whitespace between the [args] if any in the src_R call. So,
     I add that in the flet'ed version of org-babel-execute:R.
 
-:END:
+    
+*************** END
 
-  :DEVNOTES:
+** The elisp header for ox-ravel.el
 
-Here is the elisp header for ox-ravel.el
+ #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :comments no
+   ;;; ox-ravel.el --- Sweave/knit/brew document maker for orgmode
+   ;; Copyright (C) 2012,2014  Charles C. Berry
 
-#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
-  ;;; ox-ravel.el --- Sweave/knit/brew document maker for orgmode
-  ;; Copyright (C) 2012,2014  Charles C. Berry
+   ;; This program is free software: you can redistribute it and/or modify
+   ;; it under the terms of the GNU General Public License as published by
+   ;; the Free Software Foundation, either version 3 of the License, or
+   ;; (at your option) any later version.
 
-  ;; This program is free software: you can redistribute it and/or modify
-  ;; it under the terms of the GNU General Public License as published by
-  ;; the Free Software Foundation, either version 3 of the License, or
-  ;; (at your option) any later version.
+   ;; This program is distributed in the hope that it will be useful,
+   ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+   ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   ;; GNU General Public License for more details.
 
-  ;; This program is distributed in the hope that it will be useful,
-  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ;; GNU General Public License for more details.
+   ;; You should have received a copy of the GNU General Public License
+   ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  ;; You should have received a copy of the GNU General Public License
-  ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   ;;; Commentary:
+   ;;              See ox-ravel.org for details.
+   ;;
+   ;;; Code:
+   ;;
+ #+END_SRC
 
-  ;;; Commentary:
-  ;;              See ox-ravel.org for details.
-  ;;
-  ;;; Code:
-  ;;
-#+END_SRC
+ Prerequisites
 
-#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
-  (require 'ox)
-#+end_src
+ #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+   (require 'ox)
+ #+end_src
 
-#+END_SRC
-:END:
+ #+END_SRC
+ :END:
 
 
 ** using and extending ravel
@@ -367,11 +370,8 @@ other backends. In future development, it might help to prefix
 arguments with the name of their backend.
 
 *** TODO using Babel header arguments in exported code chunks
-:TODOWHAT:
-revise the sr blk?
-:END:
 
-Babel header as a string parseable by
+Babel headers as a string parseable by
 `org-babel-parse-header-arguments' are made available to the
 ~org-ravel-blockify~ function in the ~non-ravelargs~ argument. This
 would allow translation of some org-babel R header arguments
@@ -541,7 +541,8 @@ use `defcustom' here
 #+END_SRC
 
 ** TODO functions, macros,  and advice
-:TODO:
+**************** 
+   TODO
 Or maybe not...
 
 After http://thread.gmane.org/gmane.emacs.orgmode/87533/focus=87845
@@ -558,7 +559,9 @@ Need to do:
   - apply the chunk style functions as per --snippetize/blockify
   - let-bind org-babel-exp-code-template if (member lang engines)
   - let-bind org-babel-exp-inline-code-template if (member lang engines)
-:END:
+
+*************** END
+
 
 *** defadvice-org-babel-parse-inline-src-block-match
 
@@ -682,7 +685,8 @@ nil in which case, I do not reset it.
 
 #+END_SRC
 *** TODO defun-org-babel-execute:ravel
-:TODO:
+*************** 
+    TODO
 engine needs to go somewhere.
 
 - Maybe best to pass it on to the chunk styling functions. That way,
@@ -691,8 +695,8 @@ engine needs to go somewhere.
 
 - or cons it to ravel-attr, which brew can ignore
 
-:END:
 
+*************** END
 
 
 `org-babel-execute:ravel' calls formatting functions for the code. No
@@ -1174,7 +1178,7 @@ and maybe should not.
 #+END_SRC
 
 ** Backend Definitions
-
+   
 
 *** defun-org-ravel-extension
 #+NAME: defun-org-ravel-extension
@@ -1399,11 +1403,11 @@ to `require' or `load' that parent.
 #+END_SRC
 
 * provide ravel							   :noexport:
-:DEVNOTES:
+
 #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
   (provide 'ox-ravel)
 
   ;;; ox-ravel.el ends here
 #+END_SRC
-:END:
+
 

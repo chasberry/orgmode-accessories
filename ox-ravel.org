@@ -1081,7 +1081,7 @@ and maybe should not.
   replace it with `org-ravel-run' or `org-ravel-engines'.  STYLE
   will set `org-ravel-style' if non-nil, otherwise
   `org-ravel-style' or the default for BACKEND will be used.  This
-  can be run by Babel using a backend that is not ravel-compliant
+  can be run by Babel using a backend that is ravel-compliant
   to produce a string that is used in a Babel src block."
     (let* ((org-ravel-run
            (or engines org-ravel-run org-ravel-engines))

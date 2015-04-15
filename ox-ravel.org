@@ -806,28 +806,6 @@ functions to be so called.
 #+END_SRC
 
 
-** defmacro-org-ravel-deefun
-
-`intern' is needed here to be sure that `name' ends up on `obarray'
-
-#+NAME: defmacro-org-ravel-deefun
-#+BEGIN_SRC emacs-lisp
-  (defmacro org-ravel-deefun (name arglist body)
-    "Define a function.
-
-  Set up a simple `defun' with NAME as a string and some ARGLIST, and
-    format BODY as the docstring.  See `org-ravel-style-x'."
-    (let ((name (intern name)))
-      (list 'defalias
-            (list 'quote name)
-            (list 'function
-                  (cons 'lambda
-                        (list arglist body)))
-            (concat "Run this:\n\n"
-                    (pp-to-string body)))))
-
-#+END_SRC
-
 ** defmacro-org-ravel-style-x
 #+NAME: defmacro-org-ravel-style-x
 #+BEGIN_SRC emacs-lisp
@@ -850,20 +828,24 @@ functions to be so called.
        are RAVEL, R-HEADERS-ATTR, SRC-CODE as above.  Note that only SRC-CODE is
        used in this macro, but other arguments may be used in hand tooled inline
        style functions."
-      (let ((blk-args
-             '(label ravel attr-ravel r-headers-attr src-code))
-            (inline-args '(ravel r-headers-attr src-code))
-            (blk-body
-             `(let ((ravel  (org-ravel-attr-plus-header label ravel attr-ravel)))
-                ,(if xcode
-                     `(format ,xblock ravel
-                              (replace-regexp-in-string "^" ,xcode src-code))
-                   `(format ,xblock ravel src-code))))
+     (let ((blk-args
+            '(label ravel attr-ravel r-headers-attr src-code))
+           (inline-args '(ravel r-headers-attr src-code))
+           (blk-body
+            `(let ((ravel  (org-ravel-attr-plus-header label ravel attr-ravel)))
+               ,(if xcode
+                    `(format ,xblock ravel
+                             (replace-regexp-in-string "^" ,xcode src-code))
+                  `(format ,xblock ravel src-code))))
            (inline-body `(format ,xinline src-code))
            (bname (concat "org-ravel-block-" x))
            (iname (concat "org-ravel-inline-" x)))
-       (eval (list 'org-ravel-deefun bname blk-args blk-body))
-       (eval (list 'org-ravel-deefun iname inline-args inline-body))
+       (defalias (intern bname)
+         (list 'lambda blk-args blk-body)
+         (concat "Run this:\n\n" (pp-to-string blk-body)))
+       (defalias (intern iname)
+         (list 'lambda inline-args inline-body)
+         (concat "Run this:\n\n" (pp-to-string inline-body)))
        (format "Functions: %s and %s" bname iname)))
 
 #+END_SRC

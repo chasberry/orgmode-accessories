@@ -1039,8 +1039,7 @@ and maybe should not.
      :transcoders '((export-snippet . org-ravel-export-snippet)
                     (export-block . org-ravel-export-block)
                     (special-block . org-ravel-special-block))
-     :options `((:ravel-style "RAVEL_STYLE" nil
-                                   ,style t))
+     :options `((:ravel-style "RAVEL_STYLE" nil ,style t))
                :blocks    '("RAVEL")))
 
 #+END_SRC
@@ -1241,8 +1240,7 @@ Probably need to pretty up the unit tests.
                             (special-block . org-ravel-special-block))
          :options-alist '((:ravel-style "RAVEL_STYLE"
                                         nil ,style-default t))
-         :export-block    '("RAVEL") 
-     
+         :export-block    '("RAVEL")      
          :menu-entry
          '(?r "Ravel"
               ,(remq nil

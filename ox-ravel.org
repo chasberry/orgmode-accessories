@@ -1,3 +1,4 @@
+
 #+TITLE:     ox-ravel.org
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
@@ -1038,16 +1039,12 @@ and maybe should not.
      :transcoders '((export-snippet . org-ravel-export-snippet)
                     (export-block . org-ravel-export-block)
                     (special-block . org-ravel-special-block))
-     :options (cons `(:ravel-style "RAVEL_STYLE" nil
-                                   ,style t)
-                    (org-export-backend-options
-                     (or (org-export-get-backend parent)
-                         (user-error
-                          (format "Backend %S is not loaded" parent )))))
-     :blocks    (let ((eblocks
-                       (org-export-backend-blocks
-                        (org-export-get-backend parent))))
-                  (add-to-list 'eblocks "RAVEL"))))
+     :options `((:ravel-style "RAVEL_STYLE" nil
+                                   ,style t))
+               :blocks    (let ((eblocks
+                                 (org-export-backend-blocks
+                                  (org-export-get-backend parent))))
+                            (add-to-list 'eblocks "RAVEL"))))
 
 #+END_SRC
 *** defun-org-ravel-export-string-as
@@ -1241,32 +1238,27 @@ Probably need to pretty up the unit tests.
     `(org-export-define-derived-backend
          ,ravel-backend
          ,parent
-       :translate-alist '(
-                          (export-snippet . org-ravel-export-snippet)
-                          (export-block . org-ravel-export-block)
-                          (special-block . org-ravel-special-block))
-       :options-alist (cons
-                       '(:ravel-style "RAVEL_STYLE"
-                                      nil ,style-default t)
-                       (org-export-backend-options
-                        (or (org-export-get-backend ,parent)
-                            (user-error
-                             (format "Backend %S is not loaded" ,parent )))))
-       :export-block    (cons "RAVEL"
-                              (org-export-backend-blocks
-                               (org-export-get-backend ,parent)))
-
-       :menu-entry
-       '(?r "Ravel"
-            ,(remq nil
-                   `((,menu-key ,(concat menu-label " file")
-                                ,(org-ravel-export-to-file-or-buffer
-                                  ravel-backend style-default fileout))
-                     ,(if bufferout
-                          `(,(upcase menu-key) ,(concat menu-label " buffer")
-                            ,(org-ravel-export-to-file-or-buffer
-                              ravel-backend style-default nil bufferout
-                              post-proc))))))))
+         :translate-alist '(
+                            (export-snippet . org-ravel-export-snippet)
+                            (export-block . org-ravel-export-block)
+                            (special-block . org-ravel-special-block))
+         :options-alist '((:ravel-style "RAVEL_STYLE"
+                                        nil ,style-default t))
+         :export-block    (cons "RAVEL"
+                                (org-export-backend-blocks
+                                 (org-export-get-backend ,parent)))
+       
+         :menu-entry
+         '(?r "Ravel"
+              ,(remq nil
+                     `((,menu-key ,(concat menu-label " file")
+                                  ,(org-ravel-export-to-file-or-buffer
+                                    ravel-backend style-default fileout))
+                       ,(if bufferout
+                            `(,(upcase menu-key) ,(concat menu-label " buffer")
+                              ,(org-ravel-export-to-file-or-buffer
+                                ravel-backend style-default nil bufferout
+                                post-proc))))))))
 #+END_SRC
 
 

@@ -1041,10 +1041,7 @@ and maybe should not.
                     (special-block . org-ravel-special-block))
      :options `((:ravel-style "RAVEL_STYLE" nil
                                    ,style t))
-               :blocks    (let ((eblocks
-                                 (org-export-backend-blocks
-                                  (org-export-get-backend parent))))
-                            (add-to-list 'eblocks "RAVEL"))))
+               :blocks    '("RAVEL")))
 
 #+END_SRC
 *** defun-org-ravel-export-string-as
@@ -1244,10 +1241,8 @@ Probably need to pretty up the unit tests.
                             (special-block . org-ravel-special-block))
          :options-alist '((:ravel-style "RAVEL_STYLE"
                                         nil ,style-default t))
-         :export-block    (cons "RAVEL"
-                                (org-export-backend-blocks
-                                 (org-export-get-backend ,parent)))
-       
+         :export-block    '("RAVEL") 
+     
          :menu-entry
          '(?r "Ravel"
               ,(remq nil

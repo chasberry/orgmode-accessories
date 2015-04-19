@@ -1080,7 +1080,7 @@ and maybe should not.
 #+NAME: defun-org-ravel-export-to-file
 #+BEGIN_SRC emacs-lisp
   (defun org-ravel-export-to-file
-    (backend file &optional async subtreep visible-only
+    (backend &optional file async subtreep visible-only
              body-only ext-plist post-process engines style)
     "Export invoking ravel with BACKEND to FILE.
 
@@ -1093,7 +1093,12 @@ and maybe should not.
        `(org-ravel-export-to-file
          (org-ravel-create-backend 'ascii \"md\") ... )'
 
-    to create a ravel-compliant backend."
+    to create a ravel-compliant backend.
+
+  Note that `org-babel-confirm-evaluate' is set locally by `let*'
+  to `org-ravel-no-confirm-for-ravel', which holds a `lambda'
+  function.  To override this, create a variable with that name."
+
     (let* ((org-ravel-run
             (or engines org-ravel-run org-ravel-engines))
            (backend (if (symbolp backend)
@@ -1105,7 +1110,10 @@ and maybe should not.
                        (assoc :ravel-style
                               (org-export-backend-options
                                backend)))))
-           (org-confirm-babel-evaluate t))
+           (org-confirm-babel-evaluate t)
+           (file (or file
+                     (org-export-output-file-name
+                      (org-ravel-extension org-ravel-style) subtreep))))
       (when async (user-error "ASYNC not allow for ravel"))
       (org-ravel-reset-confirm
        org-ravel-no-confirm-for-ravel)
@@ -1118,7 +1126,7 @@ and maybe should not.
 #+NAME: defun-org-ravel-export-to-buffer
 #+BEGIN_SRC emacs-lisp
   (defun org-ravel-export-to-buffer
-      (backend buffer &optional async subtreep visible-only
+      (backend &optional buffer async subtreep visible-only
                body-only ext-plist post-process engines style)
     "Export invoking ravel using BACKEND to BUFFER.
 
@@ -1131,7 +1139,12 @@ and maybe should not.
      `(org-ravel-export-to-buffer
        (org-ravel-create-backend 'ascii \"md\") ... )'
 
-  to create a ravel-compliant backend."
+  to create a ravel-compliant backend.
+
+  Note that `org-babel-confirm-evaluate' is set locally by `let*'
+  to `org-ravel-no-confirm-for-ravel', which holds a `lambda'
+  function.  To override this, create a variable with that name."
+  
     (let* ((org-ravel-run
             (or engines org-ravel-run org-ravel-engines))
            (backend (if (symbolp backend)
@@ -1143,7 +1156,10 @@ and maybe should not.
                      (assoc :ravel-style
                             (org-export-backend-options
                              backend)))))
-           (org-confirm-babel-evaluate t))
+           (org-confirm-babel-evaluate t)
+           (buffer (or buffer
+                       (format "* %S Output *"
+                               (org-export-backend-name backend)))))
       (when async (user-error "ASYNC not allow for ravel"))
       (org-ravel-reset-confirm
        org-ravel-no-confirm-for-ravel)
@@ -1164,172 +1180,65 @@ and maybe should not.
 
 
 #+END_SRC
-*** TODO defmacro-org-ravel-to-file
-:TODOWHAT:
 
-Looks like unwind-protect is overkill - interrupts to (let ...) seem
-to revert the variables to their former values.
-
-There may be some other simplifications now that org-ravel-export* and
-org-ravel-create-backend funs exist.
-
-defun-org-ravel-export-to-file-or-buffer needs to specify the right
-form - probably a lambda form - when buf-fun is t
-
-Maybe this
-
-#+BEGIN_SRC emacs-lisp :tangle no
-out-file-or-buf (concat
-                   "* " (symbol-name
-                         (if (symbolp ravel-bkend) ravel-bkend
-                           (eval ravel-bkend)))" Output *")
-
-#+END_SRC
-
-would do...
-
-Probably need to pretty up the unit tests.
-
-:END:
-
+*** defmacro-ravel-define-exporter
 
 #+NAME: defmacro-ravel-define-exporter
 #+BEGIN_SRC emacs-lisp
-  (defmacro org-ravel-define-exporter
-    (ravel-backend parent menu-key menu-label style-default
-                   &optional fileout bufferout post-proc)
-    "Define ravel backends.
+    (defmacro org-ravel-define-exporter
+      (ravel-backend parent menu-key menu-label style-default
+                     &optional fileout bufferout post-proc)
+      "Define ravel backends.
 
-  The arguments are:
+    The arguments are:
 
-         RAVEL-BACKEND is a symbol naming the backend derived from
+           RAVEL-BACKEND is a symbol naming the backend derived from
 
-         PARENT - a registered backend,
+           PARENT is a registered backend,
 
-         MENU-KEY should be an integer code for a lower-case
-         character like `?a' to refer to file dispatch,
+           MENU-KEY should be an integer code for a lower-case
+           character like `?a' to refer to file dispatch,
 
-         MENU-LABEL tells how to label the backend in the
-         dispatch menu,
+           MENU-LABEL tells how to label the backend in the
+           dispatch menu,
 
-         STYLE-DEFAULT is the style to use if not specified as a
-          `:ravel-style' attribute,
+           STYLE-DEFAULT is the style to use if not specified as a
+            `:ravel-style' attribute,
 
-         FILEOUT can be a lambda form with args like
-         `org-export-to-file' or nil or t; (which use
-         `org-export-to-file' with generic args),
+           FILEOUT is usually nil which allows
+           `org-ravel-export-to-file' to assign the file name
 
-         BUFFEROUT can be a lambda form with args like
-         `org-export-to-buffer' or t (which uses
-         `org-export-to-buffer'with generic args) (`(upcase
-         MENU-KEY)' will be used for menu dispatch) or nil for no
-         buffer dispatcher, and
+           BUFFEROUT is usually `t' - if non-nil create menu
+           entry `(upcase MENU-KEY)' that will be used for menu
+           dispatch) or nil for no buffer dispatcher, and
 
-         POST-PROC for a post-export hook function
+           POST-PROC is a post-export hook function or nil."
 
-    Note that `org-babel-confirm-evaluate' is set locally (in the
-    process buffers only) to `org-ravel-no-confirm-for-ravel', which
-    hold a `lambda' function.  To override this, create a variable
-    with that name."
-    `(org-export-define-derived-backend
-         ,ravel-backend
-         ,parent
-         :translate-alist '(
-                            (export-snippet . org-ravel-export-snippet)
-                            (export-block . org-ravel-export-block)
-                            (special-block . org-ravel-special-block))
-         :options-alist '((:ravel-style "RAVEL_STYLE"
-                                        nil ,style-default t))
-         :export-block    '("RAVEL")      
-         :menu-entry
-         '(?r "Ravel"
-              ,(remq nil
-                     `((,menu-key ,(concat menu-label " file")
-                                  ,(org-ravel-export-to-file-or-buffer
-                                    ravel-backend style-default fileout))
-                       ,(if bufferout
-                            `(,(upcase menu-key) ,(concat menu-label " buffer")
-                              ,(org-ravel-export-to-file-or-buffer
-                                ravel-backend style-default nil bufferout
-                                post-proc))))))))
+      `(org-export-define-derived-backend
+           ,ravel-backend
+           ,parent
+           :translate-alist '(
+                              (export-snippet . org-ravel-export-snippet)
+                              (export-block . org-ravel-export-block)
+                              (special-block . org-ravel-special-block))
+           :options-alist '((:ravel-style "RAVEL_STYLE"
+                                          nil ,style-default t))
+           :export-block    '("RAVEL")      
+           :menu-entry
+           '(?r "Ravel"
+                ,(remq nil
+                       `((,menu-key ,(concat menu-label " file")
+                                    (lambda (a s v b)
+                                      (org-ravel-export-to-file
+                                     ,ravel-backend ,fileout a s v b nil 
+                                     nil nil ,style-default)))
+                         ,(if bufferout
+                              `(,(upcase menu-key) ,(concat menu-label " buffer")
+                                (lambda (a s v b)
+                                  (org-ravel-export-to-buffer
+                                   ,ravel-backend nil a s v b nil ,post-proc
+                                   nil ,style-default)))))))))
 #+END_SRC
-
-
-#+NAME: defun-org-ravel-export-to-file-or-buffer
-#+BEGIN_SRC emacs-lisp
-  (defun  org-ravel-export-to-file-or-buffer
-    (ravel-bkend style-def &optional file-fun buf-fun post-proc)
-  "Construct an action for RAVEL-BKEND.
-
-  Users should not invoke this function directly.
-
-  `Action' is in the sense of `org-export-define-backend' (see its
-  docstring).  `org-ravel-define-exporter' calls this function and
-  its docstring describes the other arguments STYLE-DEF (AULT),
-  FILE-FUN, BUF-FUN and POST-PROC.  RAVEL-BKEND must be a quoted
-  symbol when evaluated, which is automatic when used by
-  `org-ravel-define-exporter'."
-    (let (c-lambda  out-file-or-buf)
-      (if buf-fun
-          ;; configure buffer output
-          (setq
-           c-lambda (lambda
-                      (&optional async subtreep visible-only
-                                 body-only ext-plist post-process))
-           out-file-or-buf (concat
-                            "* " (symbol-name (eval ravel-bkend)) " Output *")
-           buf-fun  (if (eq buf-fun t)
-                        (lambda (back buf
-                                      &optional async subt vis bod ext-p post-pr)
-                          (org-export-to-buffer back buf async subt
-                                                vis bod ext-p post-pr))
-                      buf-fun))
-
-        ;; configure file output
-        (setq
-         c-lambda (lambda
-                    (&optional async subtreep visible-only
-                               body-only ext-plist))
-         out-file-or-buf '(org-export-output-file-name
-                           (org-ravel-extension
-                            org-ravel-style) subtreep)
-         file-fun (or
-                   (unless (eq t file-fun) file-fun)
-                   (setq file-fun
-                         (lambda (back buf
-                                       &optional async subt vis bod ext-p post-pr)
-                           (org-export-to-file back buf async subt
-                                               vis bod ext-p post-pr))))))
-      `(,@c-lambda
-        ,@`(
-            (interactive)
-            (let* ((org-ravel-run org-ravel-engines)
-                   (org-ravel-style
-                    (or
-                     (org-entry-get (point-min) "ravel-style" t)
-                     ,style-def))
-                   ;; honor local non-nil org-confirm-babel-evaluate
-                   (org-confirm-babel-evaluate-old
-                    org-confirm-babel-evaluate)
-                   (outfile ,out-file-or-buf))
-              ;;
-              (unwind-protect
-                  (progn
-                    (org-ravel-reset-confirm
-                     org-ravel-no-confirm-for-ravel)
-                    (when async (user-error "ASYNC is not valid for ravel"))
-                    ,(if buf-fun
-                         `(funcall ,buf-fun ,ravel-bkend outfile
-                                   nil subtreep visible-only body-only
-                                   ext-plist ,post-proc)
-                       `(funcall ,file-fun ,ravel-bkend outfile
-                                 nil subtreep visible-only body-only
-                                 ext-plist)))
-                (org-ravel-reset-confirm
-                 org-confirm-babel-evaluate-old )))))))
-
-#+END_SRC
-
 
 ** Create Backends
 

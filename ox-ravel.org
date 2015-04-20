@@ -1055,21 +1055,34 @@ and maybe should not.
   `org-ravel-run' locally.  Otherwise, an attempt will be made to
   replace it with `org-ravel-run' or `org-ravel-engines'.  STYLE
   will set `org-ravel-style' if non-nil, otherwise
-  `org-ravel-style' or the default for BACKEND will be used.  This
-  can be run by Babel using a backend that is ravel-compliant
-  to produce a string that is used in a Babel src block."
+  `org-ravel-style' or the default for BACKEND will be used.  
+
+  This function can be run by Babel to produce a string that is
+  used in a Babel src block.
+
+  It can run arbitrary backends if STYLE is supplied or if STRING
+  supplies valid values for src blocks and inline src blocks in it."
+
     (let* ((org-ravel-run
-           (or engines org-ravel-run org-ravel-engines))
-           (backend (if (symbolp backend)
-                                (org-export-get-backend backend)
-                              backend))
+            (or engines org-ravel-run org-ravel-engines))
+           (bk-orig
+            (if (symbolp backend)
+                (org-export-get-backend backend) backend))
+           (ravel-block
+            (member "RAVEL"
+                    (org-export-backend-blocks bk-orig)))
+           (backend (if ravel-block bk-orig
+                      (unless style
+                        (message "Non ravel BACKEND might need STYLE."))
+                      (org-ravel-create-backend
+                       (org-export-backend-name bk-orig) style)))
            (org-ravel-style
             (or style org-ravel-style
                 (nth 3
                      (assoc :ravel-style
                             (org-export-backend-options
                              backend)))))
-           (org-confirm-babel-evaluate t))
+           (org-confirm-babel-evaluate org-confirm-babel-evaluate))
       (org-ravel-reset-confirm
        org-ravel-no-confirm-for-ravel)
       (org-export-string-as string backend body-only ext-plist)))

@@ -172,7 +172,6 @@ abline(a=0,b=1,lty=2)
 R CMD Sweave --pdf graphic-src-block.Rnw
 #+END_SRC
 
-#+RESULTS:
 
 
 * Expanding a Document via knitr
@@ -313,7 +312,7 @@ ab <- coef( lm( y~x, qplt ))
 and the \LaTeX caption is written here with inline src blocks.
 
 #+NAME: lcap3
-#+BEGIN_SRC latex :exports code :width 55
+#+BEGIN_SRC latex :exports code
 
   qqplot of realizations from a Gaussian distribution
   with unit mean and unit variance.
@@ -327,8 +326,7 @@ and the \LaTeX caption is written here with inline src blocks.
 
 #+END_SRC
 
-
-The latex caption will be brought into the variable =lcap_ref= by the
+ The latex caption will be brought into the variable =lcap_ref= by the
  next src block. In this case it really only serves to convert the
  =src_R{}= inlines to =\Sexpr{}= inlines. Outside of captions, long
  sections of text with extensive ~org-mode~ formatting that depend on

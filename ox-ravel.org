@@ -459,31 +459,37 @@ different chunk and inline styles.
 #+NAME: defcustom-org-ravel-engines
 #+BEGIN_SRC emacs-lisp
 
-  (defcustom org-ravel-engines '("R")
+  (defcustom org-ravel-engines '(("R"))
     "Use these engines in forming ravel chunks.
 
   Typically, `org-ravel-run' will default to these.  It can be
   buffer-local.  These engines are recognized by `knitr':
 
         `R' `python' `awk' `ruby' `haskell' `bash' `perl' `dot'
-         `tikz' `sas' `coffeescript' and `polyglot'."
+         `tikz' `sas' `coffeescript' and `polyglot'.
+
+  Each alist CONS cell has the language (as a string) for the CAR and
+  any cdr is cons-ed to the ravel attributes.
+
+  Buffer local values are allowed."
+ 
    :group 'org-export-ravel
 
    :type '(set :greedy t
-               (const :tag "   R" "R" )
-               (const :tag "   Python" "python" )
-               (const :tag "   AWK" "awk" )
-               (const :tag "   Ruby" "ruby" )
-               (const :tag "   Haskell" "haskell" )
-               (const :tag "   bash" "bash" )
-               (const :tag "   perl" "perl" )
-               (const :tag "   dot" "dot" )
-               (const :tag "   TikZ" "tikz" )
-               (const :tag "   SAS" "sas" )
-               (const :tag "   CoffeeScript" "coffeescript" )
-               (const :tag "   Polyglot" "polyglot" )
+               (const :tag "   R" ("R") )
+               (const :tag "   Python" ("python" . "engine='python'"))
+               (const :tag "   AWK" ("awk" . "engine='awk'"))
+               (const :tag "   Ruby" ("ruby" . "engine='ruby'"))
+               (const :tag "   Haskell" ("haskell" . "engine='haskell'"))
+               (const :tag "   bash" ("bash" . "engine='bash'"))
+               (const :tag "   perl" ("perl" . "engine='perl'"))
+               (const :tag "   dot" ("dot" . "engine='dot'"))
+               (const :tag "   TikZ" ("tikz" . "engine='tikz'"))
+               (const :tag "   SAS" ("sas" . "engine='sas'"))
+               (const :tag "   CoffeeScript"
+                      ("coffeescript" . "engine='coffeescript'"))
+               (const :tag "   Polyglot" ("polyglot" . "engine='polyglot'"))
                (string  :tag "   Other")))
-
 
 
   (make-variable-buffer-local 'org-ravel-engines)
@@ -613,9 +619,10 @@ Need to do:
   engines."
     (when (and (boundp 'org-ravel-run)
                org-ravel-run
-               (member (nth 0 retval) org-ravel-run))
+               (assoc (nth 0 retval) org-ravel-run))
       (let ((nth-2-retval (nth 2 retval)))
-        (add-to-list 'nth-2-retval `(:engine . ,(nth 0 retval)))
+        (add-to-list 'nth-2-retval
+                     `(:engine . ,(assoc (nth 0 retval) org-ravel-engines)))
         (setf (nth 0 retval) "ravel")
         (unless (equal (cdr (assoc :exports nth-2-retval)) "none")
           (setf (cdr (assoc :exports nth-2-retval)) "results"))
@@ -722,7 +729,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
                                 (org-babel-params-from-properties "ravel")
                                 (list params))))
               (ravelarg (cdr (assoc :ravel headers)))
-              (engine (cdr (assoc :engine headers)))
+              (engine (cddr (assoc :engine headers)))
               (ravelstyle (cdr (assoc :ravel-style headers)))
               (label (org-element-property :name oec))
               (non-ravelargs (assq-delete-all :ravel headers))
@@ -730,9 +737,9 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
                (org-ravel-get-style ravelstyle))
               (full-body
                (org-babel-expand-body:ravel body params)))
-           (unless (string= "R" engine)
+           (when engine
              (setq ravel-attr
-                   (cons (format "engine=%S" engine)
+                   (cons engine
                          ravel-attr)))
            (if (equal type 'inline-src-block)
                (org-ravel-snippetize chunk-style ravelarg non-ravelargs full-body)

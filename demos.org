@@ -27,7 +27,7 @@ or from emacs-lisp using
 
 
 #+NAME: simple-R-src-block
-#+BEGIN_SRC emacs-lisp :exports code :wrap latex
+#+BEGIN_SRC emacs-lisp :exports code :wrap example
   (set-buffer
    (org-ravel-export-to-buffer 'ravel-latex 
                                "* ravel-latex Output *" 
@@ -47,8 +47,8 @@ b <- 1 + a
 
 The buffer * ravel-latex Output * should contain:
 
-#+RESULTS: simple-R-src-block-expected
-#+BEGIN_latex
+#+RESULTS: simple-R-src-block
+#+BEGIN_example
 Run this interactively, viz.
 
 \begin{verbatim}
@@ -66,18 +66,14 @@ or from emacs-lisp using
 (buffer-substring-no-properties (point-min) (point-max))
 \end{verbatim}
 
+
 <<simple-src-block>>=
 a <- 1
 b <- 1 + a
 (a+b)^b
 @ %def
-#+END_latex
+#+END_example
 
-
-#+RESULTS: simple-R-src-block
-#+BEGIN_latex
-  \boldtt{Result of simple-R-src-block goes here.}
-#+END_latex
 
 
 
@@ -92,7 +88,7 @@ Run this interactively, viz.
 or from emacs-lisp using
 
 #+NAME: simple-inline-src-block
-#+BEGIN_SRC emacs-lisp :exports code :wrap latex
+#+BEGIN_SRC emacs-lisp :exports code :wrap example
   (set-buffer
    (org-ravel-export-to-buffer 'ravel-latex 
                                "* ravel-latex Output *" 
@@ -111,37 +107,33 @@ Line containing src_R{sum(rnorm(10))} inline src block
 
    The buffer * ravel-latex Output * should contain:
 
-#+RESULTS: simple-inline-src-block-expected
-#+BEGIN_latex
-  Run this interactively, viz.
-
-  \begin{verbatim}
-  C-c C-e C-s C-b r L
-  \end{verbatim}
-
-  or from emacs-lisp using
-  \begin{verbatim}
-  (set-buffer
-   (org-ravel-export-to-buffer 'ravel-latex 
-                               "* ravel-latex Output *" 
-                               nil t nil t))
-  (buffer-substring-no-properties (point-min) (point-max))
-  \end{verbatim}
-
-
-  Line ending with inline src block: \Sexpr{ sum(rnorm(10)) }
-
-  \Sexpr{ sum(rnorm(10)) } Line starting with inline src block
-
-  Line containing \Sexpr{ sum(rnorm(10)) } inline src block
-#+END_latex
-
 and here is what it contains (if you ran the simple-inline-src-block):
 
 #+RESULTS: simple-inline-src-block
-#+BEGIN_latex
-  \boldtt{ Result goes here. }
-#+END_latex
+#+BEGIN_example
+Run this interactively, viz.
+
+\begin{verbatim}
+C-c C-e C-s C-b r L
+\end{verbatim}
+
+or from emacs-lisp using
+
+\begin{verbatim}
+(set-buffer
+ (org-ravel-export-to-buffer 'ravel-latex 
+			     "* ravel-latex Output *" 
+			     nil t nil t))
+(buffer-substring-no-properties (point-min) (point-max))
+\end{verbatim}
+
+
+Line ending with inline src block: \Sexpr{ sum(rnorm(10)) }
+
+\Sexpr{ sum(rnorm(10)) } Line starting with inline src block
+
+Line containing \Sexpr{ sum(rnorm(10)) } inline src block
+#+END_example
 
 * src block with graph for Sweave
   :PROPERTIES:

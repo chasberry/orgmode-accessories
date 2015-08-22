@@ -1047,7 +1047,7 @@ and maybe should not.
                     (export-block . org-ravel-export-block)
                     (special-block . org-ravel-special-block))
      :options `((:ravel-style "RAVEL_STYLE" nil ,style t))
-               :blocks    '("RAVEL")))
+     :blocks    '("RAVEL")))
 
 #+END_SRC
 *** defun-org-ravel-export-string-as

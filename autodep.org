@@ -1,0 +1,51 @@
+#+LATEX_CLASS: article
+#+DESCRIPTION: derived from 017-auto-dependson.Rnw 
+#+DATE: \today
+#+OPTIONS: toc:nil
+#+AUTHOR: Yihui Xie (translated to Org mode by Charles Berry)
+
+* Overview
+
+017-auto-dependson.Rnw from https://github.com/yihui/knitr-examples is
+translated to *.org
+
+The exported autodep.Rnw file will cache =x= and =y= when run under
+~knitr~. If the =a= block is revised, another export will create a
+fresh autodep.Rnw file. Then running ~knitr~ on the new file will
+recompute both values and refresh both cached values.
+
+Export the next subtree as `ravel-latex'.
+
+e.g. put point *here* then do =C-c C-n C-c C-e C-s r l=
+
+* Auto-Dependson
+
+#+NAME: setup
+#+header: :ravel cache=FALSE
+#+BEGIN_SRC R
+library(knitr)
+# global chunk options
+opts_chunk$set(cache=TRUE, autodep=TRUE)
+#+END_SRC
+
+
+We create a new global object \texttt{x} in the first chunk (a):
+
+#+NAME: a
+#+BEGIN_SRC R
+x = 5
+#+END_SRC
+
+
+Then we print it in the second chunk (b). Because we have set the global chunk option
+\texttt{autodep = TRUE} in the first chunk, \textbf{knitr} should be able to
+figure out that chunk b depends on chunk a.
+
+#+NAME: b
+#+BEGIN_SRC R
+(y = x + 2)
+#+END_SRC
+
+
+You can verify it by changing chunk a to see if b also changes.
+

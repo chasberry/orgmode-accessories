@@ -15,7 +15,14 @@ Add ons for orgmode
                     and ~ravel-brew~ and inspect the =diffs= between
                     them.
 - knitr-minimal-rhtml.org :: includes an orgmode translation of
-     =knitr-minimal.Rhtml= from the [[http://yihui.name/knitr/demos][the knitr demos page]]
+     =knitr-minimal.Rhtml= from the [[http://yihui.name/knitr/demos][the knitr demos page]].
+
+- autodep.org :: orgmode translation of 017-auto-dependson.Rnw from
+     [[https://github.com/yihui/knitr-examples][knitr examples page]] illustrates dependency aware caching of
+     computed objects.
+
+- slidify-example.org :: how to ise the ~slidify~ package to make
+     slides.
 
 * Bugs?
 

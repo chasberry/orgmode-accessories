@@ -735,6 +735,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
               (non-ravelargs (assq-delete-all :ravel headers))
               (chunk-style
                (org-ravel-get-style ravelstyle))
+	      (body (org-remove-indentation body))
               (full-body
                (org-babel-expand-body:ravel body params)))
            (when engine
@@ -1009,7 +1010,7 @@ and maybe should not.
     "Transcode a EXPORT-BLOCK element from Org to ravel.
   CONTENTS is nil.  INFO is a plist holding contextual information."
     (if (equal (org-element-property :type export-block) "RAVEL")
-        (org-remove-indentation (org-element-property :value export-block))
+	(org-element-property :value export-block)
       (let ((parent-backend (org-export-backend-parent backend)))
         (if parent-backend
             (org-export-with-backend
@@ -1025,8 +1026,8 @@ and maybe should not.
     "Transcode a EXPORT-SNIPPET element from Org to ravel.
   CONTENTS is nil.  INFO is a plist holding contextual information."
     (if (eq (org-export-snippet-backend export-snippet) 'ravel)
-        (org-remove-indentation (org-element-property :value export-snippet))
-       (let ((parent-backend (org-export-backend-parent backend)))
+	(org-element-property :value export-snippet)
+      (let ((parent-backend (org-export-backend-parent backend)))
          (if parent-backend
              (org-export-with-backend
               parent-backend export-snippet contents info)))))

@@ -3,7 +3,7 @@
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
-#+COMMENT: latest revision 2014-08-24
+#+COMMENT: latest revision 2015-09-24
 #+DESCRIPTION: Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -735,7 +735,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
               (non-ravelargs (assq-delete-all :ravel headers))
               (chunk-style
                (org-ravel-get-style ravelstyle))
-	      (body (org-remove-indentation body))
+	      (body (org-element-remove-indentation body))
               (full-body
                (org-babel-expand-body:ravel body params)))
            (when engine

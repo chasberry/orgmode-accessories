@@ -886,20 +886,26 @@ used here, too.
 
 
 ** md-knitr backend
-   This backend produces a Markdown style document as supported by [[http://yihui.name/knitr/][knitr.]] 
+   This backend produces a Markdown style document as supported by [[http://yihui.name/knitr/][knitr]] or by
+   [[http://rmarkdown.rstudio.com/][rmarkdown]]. The new markdown syntax from the latter adds also support for
+   bibliographies and citations (see
+   http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html) for
+   more details.
+
 *** template-alist
 
 
 #+name: md-knitr-translate-alist
 #+begin_src emacs-lisp :tangle ox-ravel.el
-    (org-export-define-derived-backend 'md-knitr 'md
-      :translate-alist '((src-block . org-ravel-src-block)
-                        (inline-src-block . org-ravel-inline-src-block))
-      :menu-entry
-      '(?m 4
-          ((?r "As Rmd (Markdown) File" org-ravel-md-knitr-dispatch))))
+  (org-export-define-derived-backend 'md-knitr 'md
+    :translate-alist '((src-block . org-ravel-src-block)
+                      (inline-src-block . org-ravel-inline-src-block))
+    :filters-alist '((:filter-latex-fragment . org-ravel-filter-latex-fragment))
+    :menu-entry
+    '(?m 4
+        ((?r "As Rmd (Markdown) File" org-ravel-md-knitr-dispatch))))
   
-    
+
 #+end_src
 
 
@@ -958,6 +964,21 @@ used here, too.
                              body-only ext-plist))))
 #+END_SRC
     
+*** filter function to translate latex into pandoc compatible citations
+
+The function below translates the citations in latex format (i.e. =\cite{id}=) into
+citations that can be processed by pandoc (i.e. =[@id]=). Note, this only works
+if =ox-bibtex= is *not* loaded and used, as =ox-bibtex= by default transforms
+all latex/bibtex citations into html links.
+
+#+name: md-knitr-filterfun
+#+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :results silent
+  (defun org-ravel-filter-latex-fragment (text back-end info)
+    (replace-regexp-in-string ",[\s-]*" "; @"
+                              (replace-regexp-in-string "\\\\cite{\\(.*\\)}" "[@\\1]" text))
+    )
+
+#+END_SRC
 
 
 ** md-brew backend

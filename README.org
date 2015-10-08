@@ -21,7 +21,7 @@ Add ons for orgmode
      [[https://github.com/yihui/knitr-examples][knitr examples page]] illustrates dependency aware caching of
      computed objects.
 
-- slidify-example.org :: how to ise the ~slidify~ package to make
+- slidify-example.org :: how to use the ~slidify~ package to make
      slides.
 
 * Bugs?

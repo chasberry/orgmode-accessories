@@ -22,7 +22,7 @@ but modified to *.org format.
 
 The usual way to export a subtree is to move point into the subtree and issue
 
-   C-c C-e C-s l r
+   C-c C-e C-s r l
 
 However, running this command:
 #+BEGIN_SRC emacs-lisp

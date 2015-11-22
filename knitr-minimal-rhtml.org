@@ -10,7 +10,7 @@ but modified to *.org format.
 
 The usual way to export a subtree is to move point into the subtree and issue
 
-   C-c C-e C-s h r
+   C-c C-e C-s r h
 
 However, running this src block should turn it back into the original
 (or something close to it).

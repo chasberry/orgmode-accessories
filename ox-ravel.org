@@ -1206,59 +1206,64 @@ and maybe should not.
 
 #+NAME: defmacro-ravel-define-exporter
 #+BEGIN_SRC emacs-lisp
-    (defmacro org-ravel-define-exporter
-      (ravel-backend parent menu-key menu-label style-default
-                     &optional fileout bufferout post-proc)
-      "Define ravel backends.
+  (defmacro org-ravel-define-exporter
+    (ravel-backend parent menu-key menu-label style-default
+                   &optional fileout bufferout post-proc filters)
+    "Define ravel backends.
 
-    The arguments are:
+  The arguments are:
 
-           RAVEL-BACKEND is a symbol naming the backend derived from
+	 RAVEL-BACKEND is a symbol naming the backend derived from
 
-           PARENT is a registered backend,
+	 PARENT is a registered backend,
 
-           MENU-KEY should be an integer code for a lower-case
-           character like `?a' to refer to file dispatch,
+	 MENU-KEY should be an integer code for a lower-case
+	 character like `?a' to refer to file dispatch,
 
-           MENU-LABEL tells how to label the backend in the
-           dispatch menu,
+	 MENU-LABEL tells how to label the backend in the
+	 dispatch menu,
 
-           STYLE-DEFAULT is the style to use if not specified as a
-            `:ravel-style' attribute,
+	 STYLE-DEFAULT is the style to use if not specified as a
+          `:ravel-style' attribute,
 
-           FILEOUT is usually nil which allows
-           `org-ravel-export-to-file' to assign the file name
+	 FILEOUT is usually nil which allows
+	 `org-ravel-export-to-file' to assign the file name
 
-           BUFFEROUT is usually `t' - if non-nil create menu
-           entry `(upcase MENU-KEY)' that will be used for menu
-           dispatch) or nil for no buffer dispatcher, and
+	 BUFFEROUT is usually `t' - if non-nil create menu
+	 entry `(upcase MENU-KEY)' that will be used for menu
+	 dispatch) or nil for no buffer dispatcher, and
 
-           POST-PROC is a post-export hook function or nil."
+	 POST-PROC is a post-export hook function or nil
 
-      `(org-export-define-derived-backend
-           ,ravel-backend
-           ,parent
-           :translate-alist '(
-                              (export-snippet . org-ravel-export-snippet)
-                              (export-block . org-ravel-export-block)
-                              (special-block . org-ravel-special-block))
-           :options-alist '((:ravel-style "RAVEL_STYLE"
-                                          nil ,style-default t))
-           :export-block    '("RAVEL")      
-           :menu-entry
-           '(?r "Ravel"
-                ,(remq nil
-                       `((,menu-key ,(concat menu-label " file")
-                                    (lambda (a s v b)
-                                      (org-ravel-export-to-file
-                                     ,ravel-backend ,fileout a s v b nil 
-                                     nil nil ,style-default)))
-                         ,(if bufferout
-                              `(,(upcase menu-key) ,(concat menu-label " buffer")
-                                (lambda (a s v b)
-                                  (org-ravel-export-to-buffer
-                                   ,ravel-backend nil a s v b nil ,post-proc
-                                   nil ,style-default)))))))))
+	 FILTERS is an alist of filters that will overwrite or
+	 complete filters defined in PARENT back-end.  See
+	 `org-export-filters-alist' for a list of allowed filters."
+
+    `(org-export-define-derived-backend
+	 ,ravel-backend
+	 ,parent
+	 :translate-alist '(
+                            (export-snippet . org-ravel-export-snippet)
+                            (export-block . org-ravel-export-block)
+                            (special-block . org-ravel-special-block))
+	 :options-alist '((:ravel-style "RAVEL_STYLE"
+					nil ,style-default t))
+	 :export-block    '("RAVEL")      
+	 :filters-alist ,filters
+	 :menu-entry
+	 '(?r "Ravel"
+              ,(remq nil
+                     `((,menu-key ,(concat menu-label " file")
+                                  (lambda (a s v b)
+                                    (org-ravel-export-to-file
+                                   ,ravel-backend ,fileout a s v b nil 
+                                   nil nil ,style-default)))
+                       ,(if bufferout
+                            `(,(upcase menu-key) ,(concat menu-label " buffer")
+                              (lambda (a s v b)
+				(org-ravel-export-to-buffer
+				 ,ravel-backend nil a s v b nil ,post-proc
+				 nil ,style-default)))))))))
 #+END_SRC
 
 ** Create Backends
@@ -1292,10 +1297,20 @@ to `require' or `load' that parent.
      'ravel-html
      'html ?h "Ravel-html" "html" nil t ))
 
+  (defun org-ravel-filter-cite-as-pandoc (text back-end info)
+    "Translate citations in latex format (i.e. \cite{id}) into
+  citations in pandoc format (i.e. [@id]). 
+
+  Note, loading `ox-bibtex' transforms all latex/bibtex citations
+  into html links, so do not load it if this format is desired."
+    (replace-regexp-in-string ",[\s-]*" "; @"
+                              (replace-regexp-in-string
+			       "\\\\cite{\\(.*\\)}" "[@\\1]" text)))
   (eval-after-load 'ox-md
     '(org-ravel-define-exporter
      'ravel-markdown
-     'md ?m "Ravel-markdown" "md" nil t ))
+     'md ?m "Ravel-markdown" "md" nil t nil 
+     '((:filter-latex-fragment . org-ravel-filter-cite-as-pandoc))))
 
 #+END_SRC
 

@@ -637,7 +637,7 @@ Need to do:
 *** defun-org-ravel-rewrap
 
 Wrap the results of `org-babel-execute:ravel' in a
-:#+BEGIN_RAVEL ... #+END_RAVEL block.
+:#+BEGIN_EXPORT RAVEL ... #+END_EXPORT block.
 
 #+NAME: defun-org-ravel-rewrap
 #+BEGIN_SRC emacs-lisp
@@ -645,10 +645,10 @@ Wrap the results of `org-babel-execute:ravel' in a
     ":wrap with `ravel' maybe.
   Argument RETVAL is the parsed src block."
     (if (assoc :wrap (nth 2 retval))
-        (setf (cdr (assoc :wrap (nth 2 retval))) "ravel")
+        (setf (cdr (assoc :wrap (nth 2 retval))) "EXPORT RAVEL")
       (setf (nth 2 retval)  (append (nth 2 retval)
-                                    '((:wrap . "ravel"))))))
-
+                                    '((:wrap . "EXPORT RAVEL"))))))
+				    
 #+END_SRC
 *** defun-org-ravel-set-raw-results
 
@@ -961,48 +961,7 @@ the ravel family of backends. For `ravel' blocks/snippets, they merely
 return their content. For other blocks/snippets, they fall back to the
 transcoders for the parent backend.
 
-*** TODO defun-org-ravel-export-block now special-block is REVERTED
-:TODO:
-
-- ANN :: http://lists.gnu.org/archive/html/emacs-orgmode/2014-08/msg01007.html
-
-- reverted :: export-blocks are deprecated --- use special blocks
-              instead. `org-ravel-special-block' implements this.
-
-Note that I do not query org-export-raw-special-block-p, because this
-is implied for ravel - it might be necessary to leave the old export
-block transcoder in place for back compatibility
-
-
-Porbably this does not matter - why would an on-the-fly backend be used
-without having any ravele backends registered:  on the fly backends
-need to have RAVEL entry in `org-element-block-name-alist' iff there
-are not ravel backends registered - or the special block transcoder
-needs to handle them
-
-But now I have doctored org-ravel-special-block to allow for this
-possibility.
-
-I have just [2014-09-15 Mon] added a :blocks entry to
-org-ravel-create-backend, but it does not alter the alist...
-and maybe should not.
-
-:END:
-
-#+NAME: defun-org-ravel-special-block
-#+BEGIN_SRC emacs-lisp
-  (defun org-ravel-special-block (special-block contents info)
-    "Transcode a SPECIAL-BLOCK element from Org to ravel.
-  CONTENTS is nil.  INFO is a plist holding contextual information."
-    (if (equal (org-element-property :type special-block) "RAVEL")
-        contents
-      (let ((parent-backend (org-export-backend-parent backend)))
-        (if parent-backend
-            (org-export-with-backend
-             parent-backend special-block contents info)))))
-
-#+END_SRC
-
+*** defun-org-ravel-export-block 
 
 #+NAME: defun-org-ravel-export-block
 #+BEGIN_SRC emacs-lisp
@@ -1045,8 +1004,7 @@ and maybe should not.
     (org-export-create-backend
      :parent parent
      :transcoders '((export-snippet . org-ravel-export-snippet)
-                    (export-block . org-ravel-export-block)
-                    (special-block . org-ravel-special-block))
+                    (export-block . org-ravel-export-block))
      :options `((:ravel-style "RAVEL_STYLE" nil ,style t))
      :blocks    '("RAVEL")))
 
@@ -1076,10 +1034,10 @@ and maybe should not.
            (bk-orig
             (if (symbolp backend)
                 (org-export-get-backend backend) backend))
-           (ravel-block
-            (member "RAVEL"
-                    (org-export-backend-blocks bk-orig)))
-           (backend (if ravel-block bk-orig
+           (ravel-style-option
+            (assq :ravel-style
+                    (org-export-backend-options bk-orig)))
+           (backend (if ravel-style-option bk-orig
                       (unless style
                         (message "Non ravel BACKEND might need STYLE."))
                       (org-ravel-create-backend
@@ -1244,11 +1202,9 @@ and maybe should not.
 	 ,parent
 	 :translate-alist '(
                             (export-snippet . org-ravel-export-snippet)
-                            (export-block . org-ravel-export-block)
-                            (special-block . org-ravel-special-block))
+                            (export-block . org-ravel-export-block))
 	 :options-alist '((:ravel-style "RAVEL_STYLE"
 					nil ,style-default t))
-	 :export-block    '("RAVEL")      
 	 :filters-alist ,filters
 	 :menu-entry
 	 '(?r "Ravel"

@@ -31,7 +31,7 @@ author("test-deck",open_rmd=FALSE,use_git=FALSE)
    :CUSTOM_ID: tds-headline
    :END:
 
-#+BEGIN_MD
+#+BEGIN_EXPORT
 ---
 title       : Ravel for slidify
 subtitle    : a minimal slidy deck
@@ -43,10 +43,10 @@ hitheme     : tomorrow      #
 widgets     : []            # {mathjax, quiz, bootstrap}
 mode        : selfcontained # {standalone, draft}
 ---
-#+END_MD
+#+END_EXPORT
 
 ** Setup notes
-- =#+BEGIN_MD ... #+END_MD= block contains yaml header
+- =#+BEGIN_EXPORT MD ... #+END_EXPORT= block contains yaml header
 - =EXPORT_FILE_NAME= needs to be in test-deck dir
 - =EXPORT_OPTIONS= needs =toc:nil= or html creation will barf
 - =#+MD: ---= terminates slides (not needed at the very end)

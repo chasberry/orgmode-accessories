@@ -29,20 +29,20 @@ should translate it back to Rhtml.
 
 * A minimal knitr example in HTML
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
 <!DOCTYPE html>
 <head>
   <title>A minimal knitr example in HTML</title>
 </head>
-#+END_HTML
+#+END_EXPORT
 
 #+BEGIN_SRC R
   opts_chunk$set(fig.width=5, fig.height=5, fig.path='ex-out-')
 #+END_SRC
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
 <body>
-#+END_HTML
+#+END_EXPORT
 
 This is a minimal example which shows *knitr*
   working with HTML
@@ -100,6 +100,6 @@ Errors, messages and warnings can be put into ~div~'s
   Well, everything seems to be working. Let's ask R what is the
   value of \pi? Of course it is src_R{pi}.
 
-#+BEGIN_HTML
+#+BEGIN_EXPORT HTML
 </body>
-#+END_HTML
+#+END_EXPORT

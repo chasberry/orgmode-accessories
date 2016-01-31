@@ -571,6 +571,9 @@ Need to do:
 
 
 *** defadvice-org-babel-parse-inline-src-block-match
+   :PROPERTIES:
+   :header-args:emacs-lisp: :tangle no
+   :END:
 
 #+NAME: defadvice-org-babel-parse-inline-src-block-match
 #+BEGIN_SRC emacs-lisp
@@ -586,6 +589,10 @@ Need to do:
 : org-babel-parse-inline-src-block-match
 
 *** defadvice-org-babel-parse-src-block-match
+   :PROPERTIES:
+   :header-args:emacs-lisp: :tangle no
+   :END:
+
 #+NAME: defadvice-org-babel-parse-src-block-match
 #+BEGIN_SRC emacs-lisp
   (defadvice org-babel-parse-src-block-match
@@ -597,6 +604,55 @@ Need to do:
 
 #+RESULTS: defadvice-org-babel-parse-src-block-match
 : org-babel-parse-src-block-match
+
+
+*** defmacro-org-ravel-wrap-parsers
+#+BEGIN_SRC emacs-lisp
+  ;; (require 'cl-lib) ;; and maybe (eval-when-compile (require 'cl))
+  (defmacro org-ravel-wrap-parsers (&rest body)
+    "Locally redefined parsers and execute BODY."
+    `(let* ((block-parser (symbol-function
+			  'org-babel-parse-src-block-match))
+	   (inline-parser (symbol-function
+			   'org-babel-parse-inline-src-block-match))
+	   (org-ravel-run
+              (or engines org-ravel-run org-ravel-engines))
+	   (bk-orig
+	    (if (symbolp backend)
+		(org-export-get-backend backend) backend))
+	   (ravel-style-option
+	    (assq :ravel-style
+		  (org-export-backend-options bk-orig)))
+	   (backend (if ravel-style-option bk-orig
+		      (unless style
+			(message "Non ravel BACKEND might need STYLE."))
+		      (org-ravel-create-backend
+		       (org-export-backend-name bk-orig) style)))
+	   (org-ravel-style
+	    (or style org-ravel-style
+		(nth 3
+		     (assoc :ravel-style
+			    (org-export-backend-options
+			     backend)))))
+	   (org-confirm-babel-evaluate org-confirm-babel-evaluate))
+       (letf
+	   (((symbol-function 'org-babel-parse-src-block-match)
+	     (lambda ()
+	       (let ((retval (funcall block-parser)))
+		 (if (org-ravel-engine-to-ravel retval)
+		     (org-ravel-rewrap retval))
+		 retval)))
+	    ((symbol-function 'org-babel-parse-inline-src-block-match)
+	     (lambda ()
+	       (let ((retval (funcall inline-parser)))
+		 (if
+		     (org-ravel-engine-to-ravel retval)
+		     (org-ravel-set-raw-results retval))
+		 retval))))
+	 ,@body)))
+
+#+END_SRC
+
 
 *** defalias-org-babel-expand-body
 
@@ -622,12 +678,12 @@ Need to do:
                (assoc (nth 0 retval) org-ravel-run))
       (let ((nth-2-retval (nth 2 retval)))
         (add-to-list 'nth-2-retval
-                     `(:engine . ,(assoc (nth 0 retval) org-ravel-engines)))
+                     `(:engine . ,(cdr (assoc (nth 0 retval) org-ravel-engines))))
         (setf (nth 0 retval) "ravel")
         (unless (equal (cdr (assoc :exports nth-2-retval)) "none")
           (setf (cdr (assoc :exports nth-2-retval)) "results"))
         (setf (nth 2 retval) nth-2-retval))))
-
+	
 
 #+END_SRC
 
@@ -729,7 +785,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
                                 (org-babel-params-from-properties "ravel")
                                 (list params))))
               (ravelarg (cdr (assoc :ravel headers)))
-              (engine (cddr (assoc :engine headers)))
+              (engine (cdr (assoc :engine headers)))
               (ravelstyle (cdr (assoc :ravel-style headers)))
               (label (org-element-property :name oec))
               (non-ravelargs (assq-delete-all :ravel headers))
@@ -1029,29 +1085,11 @@ transcoders for the parent backend.
   It can run arbitrary backends if STYLE is supplied or if STRING
   supplies valid values for src blocks and inline src blocks in it."
 
-    (let* ((org-ravel-run
-            (or engines org-ravel-run org-ravel-engines))
-           (bk-orig
-            (if (symbolp backend)
-                (org-export-get-backend backend) backend))
-           (ravel-style-option
-            (assq :ravel-style
-                    (org-export-backend-options bk-orig)))
-           (backend (if ravel-style-option bk-orig
-                      (unless style
-                        (message "Non ravel BACKEND might need STYLE."))
-                      (org-ravel-create-backend
-                       (org-export-backend-name bk-orig) style)))
-           (org-ravel-style
-            (or style org-ravel-style
-                (nth 3
-                     (assoc :ravel-style
-                            (org-export-backend-options
-                             backend)))))
-           (org-confirm-babel-evaluate org-confirm-babel-evaluate))
+    (macroexpand
+     (org-ravel-wrap-parsers
       (org-ravel-reset-confirm
        org-ravel-no-confirm-for-ravel)
-      (org-export-string-as string backend body-only ext-plist)))
+      (org-export-string-as string backend body-only ext-plist))))
 
 #+END_SRC
 *** defun-org-ravel-export-to-file
@@ -1070,7 +1108,7 @@ transcoders for the parent backend.
   ravel, it usually best to use, e.g.
 
        `(org-ravel-export-to-file
-         (org-ravel-create-backend 'ascii \"md\") ... )'
+	 (org-ravel-create-backend 'ascii \"md\") ... )'
 
     to create a ravel-compliant backend.
 
@@ -1078,28 +1116,19 @@ transcoders for the parent backend.
   to `org-ravel-no-confirm-for-ravel', which holds a `lambda'
   function.  To override this, create a variable with that name."
 
-    (let* ((org-ravel-run
-            (or engines org-ravel-run org-ravel-engines))
-           (backend (if (symbolp backend)
-                        (org-export-get-backend backend)
-                      backend))
-           (org-ravel-style
-              (or style org-ravel-style
-                  (nth 3
-                       (assoc :ravel-style
-                              (org-export-backend-options
-                               backend)))))
-           (org-confirm-babel-evaluate t)
-           (file (or file
-                     (org-export-output-file-name
-                      (org-ravel-extension org-ravel-style) subtreep))))
-      (when async (user-error "ASYNC not allow for ravel"))
-      (org-ravel-reset-confirm
-       org-ravel-no-confirm-for-ravel)
-      (org-export-to-file backend file async subtreep visible-only
-                          body-only ext-plist post-process)))
+    (macroexpand
+     (org-ravel-wrap-parsers
+      (let ((org-confirm-babel-evaluate t)
+	    (file (or file
+		      (org-export-output-file-name
+		       (org-ravel-extension org-ravel-style) subtreep))))
+	(when async (user-error "ASYNC not allow for ravel"))
+	(org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
+	(org-export-to-file backend file async subtreep visible-only
+			    body-only ext-plist post-process)))))
 
 #+END_SRC
+
 *** defun-org-ravel-export-to-buffer
 
 #+NAME: defun-org-ravel-export-to-buffer
@@ -1123,33 +1152,21 @@ transcoders for the parent backend.
   Note that `org-babel-confirm-evaluate' is set locally by `let*'
   to `org-ravel-no-confirm-for-ravel', which holds a `lambda'
   function.  To override this, create a variable with that name."
-  
-    (let* ((org-ravel-run
-            (or engines org-ravel-run org-ravel-engines))
-           (backend (if (symbolp backend)
-                        (org-export-get-backend backend)
-                      backend))
-           (org-ravel-style
-            (or style org-ravel-style
-                (nth 3
-                     (assoc :ravel-style
-                            (org-export-backend-options
-                             backend)))))
-           (org-confirm-babel-evaluate t)
-           (buffer (or buffer
-                       (format "* %S Output *"
-                               (org-export-backend-name backend)))))
-      (when async (user-error "ASYNC not allow for ravel"))
-      (org-ravel-reset-confirm
-       org-ravel-no-confirm-for-ravel)
-      (org-export-to-buffer backend buffer async subtreep visible-only
-                            body-only ext-plist post-process)))
+
+    (macroexpand
+     (org-ravel-wrap-parsers
+      (let ((org-confirm-babel-evaluate t)
+	    (buffer (or buffer
+			(format "* %S Output *"
+				(org-export-backend-name backend)))))
+	(when async (user-error "ASYNC not allow for ravel"))
+	(org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
+	(org-export-to-buffer backend buffer async subtreep visible-only
+			      body-only ext-plist post-process)))))
 
 #+END_SRC
 
 ** Backend Definitions
-   
-
 *** defun-org-ravel-extension
 #+NAME: defun-org-ravel-extension
 #+BEGIN_SRC emacs-lisp

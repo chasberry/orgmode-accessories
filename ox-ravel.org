@@ -664,13 +664,29 @@ Need to do:
 #+END_SRC
 
 
-*** defalias-org-babel-expand-body
+*** defun-org-babel-expand-body:ravel
 
-#+NAME: defalias-org-babel-expand-body:ravel
+
 #+BEGIN_SRC emacs-lisp
-  (defalias 'org-babel-expand-body:ravel 'org-babel-expand-body:R
-    "Do what R does here.")
+  (defun org-babel-expand-body:ravel (body params &optional var-lines)
+    "Use native `org-babel-expand-body' for src-block engine if
+    there is one to format BODY as per PARAMS."
+    (let*
+	((engine-cdr (cdr (assq :engine params)))
+	 (engine (and engine-cdr
+		       (replace-regexp-in-string
+			"engine='\\([^']+\\)'" "\\1" engine-cdr)))
+	 (expand-cmd
+	  (intern (concat "org-babel-expand-body:" engine))))
+      (cond
+       ((and engine (fboundp expand-cmd))
+	(funcall expand-cmd body params))
+       (engine (org-babel-expand-body:generic body params))
+       (t (org-babel-expand-body:R body params)))))
 #+END_SRC
+
+#
+
 *** defun-org-ravel-engine-to-ravel
 
 #+NAME: defun-org-ravel-engine-to-ravel

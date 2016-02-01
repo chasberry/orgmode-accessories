@@ -606,15 +606,25 @@ Need to do:
 : org-babel-parse-src-block-match
 
 
-*** defmacro-org-ravel-wrap-parsers
+*** defmacro-org-ravel-export-wrapper
 #+BEGIN_SRC emacs-lisp
   ;; (require 'cl-lib) ;; and maybe (eval-when-compile (require 'cl))
-  (defmacro org-ravel-wrap-parsers (&rest body)
-    "Locally redefined parsers and execute BODY."
+  (defmacro org-ravel-export-wrapper (&rest body)
+    "Set up the preliminaries for the BODY of an export function.
+
+  `org-ravel-export-to-file' and similar actions need to redefine
+   `org-babel-parse-src-block-match' and
+   `org-babel-parse-inline-src-block-match' and restore those
+   functions to their original values on exit, set values for
+   `org-ravel-run' and for `org-ravel-style', force the `backend'
+   to be ravel compliant, and (by default) turn off confirmation
+   for the evaluation of ravel blocks.
+
+  `(macroexpand (org-ravel-export-wrapper BODY))' when used inside a `defun' will take care of these issues."
     `(let* ((block-parser (symbol-function
 			  'org-babel-parse-src-block-match))
 	   (inline-parser (symbol-function
-			   'org-babel-parse-inline-src-block-match))
+			   ' org-babel-parse-inline-src-block-match))
 	   (org-ravel-run
               (or engines org-ravel-run org-ravel-engines))
 	   (bk-orig
@@ -706,6 +716,38 @@ Wrap the results of `org-babel-execute:ravel' in a
                                     '((:wrap . "EXPORT RAVEL"))))))
 				    
 #+END_SRC
+#+BEGIN_SRC emacs-lisp
+  (defun org-ravel-rewrap (retval)
+    ":wrap with `ravel' maybe.
+  Argument RETVAL is the parsed src block.
+
+  `:file', `:file-ext', and `:results' get suffixed with `-arg'
+  to neuter their effects. Block/snippet style functions can find
+  them in `R-HEADERS-ATTR'. "
+    (if (assoc :wrap (nth 2 retval))
+	(setf (cdr (assoc :wrap (nth 2 retval))) "EXPORT RAVEL")
+      (setf (nth 2 retval)  (append (nth 2 retval)
+                                    '((:wrap . "EXPORT RAVEL")))))
+    ;; :results value gets saved in non-ravelargs in case it is ever
+    ;; needed
+    (if (assq :file (nth 2 retval))
+	(setf (car (assoc :file (nth 2 retval))) :file-arg))
+    (if (assq :file-ext (nth 2 retval))
+	(setf (car (assq :file-ext (nth 2 retval))) :file-ext-arg))
+    (if (assq :results (nth 2 retval))
+	(let
+            ((results-arg (cdr (assq :results (nth 2 retval)))))
+          (setf (cdr (assq :results (nth 2 retval)))
+		"replace")
+	  (setf (nth 2 retval)  (append (nth 2 retval)
+					`((:results-arg . ,results-arg)))))))
+
+
+#+END_SRC
+
+
+
+
 *** defun-org-ravel-set-raw-results
 
 The inline results are in ~@@ravel: ... @@~ snippets. Do not allow
@@ -774,7 +816,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
      (save-excursion
        (if (string= "none" (cdr (assoc :exports params)))
            ""
-         (let*
+	 (let*
              ((oec (org-element-context))
               (ravel-attr (org-element-property :attr_ravel oec))
               (type (org-element-type oec))
@@ -782,8 +824,8 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
               ;; parsing was done on "R" or other language.
               (headers  (apply #'org-babel-merge-params
                                (append
-                                (org-babel-params-from-properties "ravel")
-                                (list params))))
+				(org-babel-params-from-properties "ravel")
+				(list params))))
               (ravelarg (cdr (assoc :ravel headers)))
               (engine (cdr (assoc :engine headers)))
               (ravelstyle (cdr (assoc :ravel-style headers)))
@@ -794,14 +836,14 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 	      (body (org-element-remove-indentation body))
               (full-body
                (org-babel-expand-body:ravel body params)))
-           (when engine
-             (setq ravel-attr
-                   (cons engine
-                         ravel-attr)))
+	   (when engine
+	     (setq ravel-attr
+		   (cons engine
+			 ravel-attr)))
            (if (equal type 'inline-src-block)
                (org-ravel-snippetize chunk-style ravelarg non-ravelargs full-body)
              (org-ravel-blockify chunk-style label ravelarg ravel-attr
-                                 non-ravelargs full-body))))))
+				 non-ravelargs full-body))))))
 #+END_SRC
 *** defun-org-ravel-snippetize/blockify
 
@@ -1086,7 +1128,7 @@ transcoders for the parent backend.
   supplies valid values for src blocks and inline src blocks in it."
 
     (macroexpand
-     (org-ravel-wrap-parsers
+     (org-ravel-export-wrapper
       (org-ravel-reset-confirm
        org-ravel-no-confirm-for-ravel)
       (org-export-string-as string backend body-only ext-plist))))
@@ -1117,7 +1159,7 @@ transcoders for the parent backend.
   function.  To override this, create a variable with that name."
 
     (macroexpand
-     (org-ravel-wrap-parsers
+     (org-ravel-export-wrapper
       (let ((org-confirm-babel-evaluate t)
 	    (file (or file
 		      (org-export-output-file-name
@@ -1154,7 +1196,7 @@ transcoders for the parent backend.
   function.  To override this, create a variable with that name."
 
     (macroexpand
-     (org-ravel-wrap-parsers
+     (org-ravel-export-wrapper
       (let ((org-confirm-babel-evaluate t)
 	    (buffer (or buffer
 			(format "* %S Output *"

@@ -709,16 +709,6 @@ Wrap the results of `org-babel-execute:ravel' in a
 #+BEGIN_SRC emacs-lisp
   (defun org-ravel-rewrap (retval)
     ":wrap with `ravel' maybe.
-  Argument RETVAL is the parsed src block."
-    (if (assoc :wrap (nth 2 retval))
-        (setf (cdr (assoc :wrap (nth 2 retval))) "EXPORT RAVEL")
-      (setf (nth 2 retval)  (append (nth 2 retval)
-                                    '((:wrap . "EXPORT RAVEL"))))))
-				    
-#+END_SRC
-#+BEGIN_SRC emacs-lisp
-  (defun org-ravel-rewrap (retval)
-    ":wrap with `ravel' maybe.
   Argument RETVAL is the parsed src block.
 
   `:file', `:file-ext', and `:results' get suffixed with `-arg'

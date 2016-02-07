@@ -284,6 +284,7 @@ Mostly DONE:
  Prerequisites
 
  #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
+   (require 'cl-lib)
    (require 'ox)
  #+end_src
 
@@ -495,14 +496,14 @@ different chunk and inline styles.
   (make-variable-buffer-local 'org-ravel-engines)
 #+END_SRC
 
-*** TODO setq-org-ravel-style-alist
+*** TODO defvar-org-ravel-style-alist
 :TODOWHAT:
 use `defcustom' here
 :END:
 
 #+NAME: setq-org-ravel-style-alist
-#+BEGIN_SRC emacs-lisp
-  (setq org-ravel-style-alist
+#+BEGIN_SRC emacs-lisp :tangle no
+  (defvar org-ravel-style-alist
        '((rnw . (org-ravel-block-rnw org-ravel-inline-rnw ".Rnw"))
         (brew . (org-ravel-block-brew org-ravel-inline-brew ".Rbrew"))
         (tex  . (org-ravel-block-tex org-ravel-inline-tex ".Rtex"))
@@ -514,7 +515,7 @@ use `defcustom' here
 
 
 #+NAME: defcustom-org-ravel-style-alist
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp 
     (defgroup org-export-ravel nil
       "Options for exporting Org mode files via Ravel."
       :tag "Org Export Ravel"
@@ -839,7 +840,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
               (non-ravelargs (assq-delete-all :ravel headers))
               (chunk-style
                (org-ravel-get-style ravelstyle))
-	      (body (org-element-remove-indentation body))
+	      (body (org-remove-indentation body))
               (full-body
                (org-babel-expand-body:ravel body params)))
 	   (when engine
@@ -1074,12 +1075,11 @@ transcoders for the parent backend.
   CONTENTS is nil.  INFO is a plist holding contextual information."
     (if (equal (org-element-property :type export-block) "RAVEL")
 	(org-element-property :value export-block)
-      (let ((parent-backend (org-export-backend-parent backend)))
-        (if parent-backend
+      (let ((parent-backend (org-export-backend-parent
+			     (org-element-property :back-end export-block)))) 
+	(if parent-backend
             (org-export-with-backend
              parent-backend export-block contents info)))))
-
-
 
 #+END_SRC
 *** defun-org-ravel-export-snippet
@@ -1090,10 +1090,11 @@ transcoders for the parent backend.
   CONTENTS is nil.  INFO is a plist holding contextual information."
     (if (eq (org-export-snippet-backend export-snippet) 'ravel)
 	(org-element-property :value export-snippet)
-      (let ((parent-backend (org-export-backend-parent backend)))
-         (if parent-backend
-             (org-export-with-backend
-              parent-backend export-snippet contents info)))))
+      (let ((parent-backend (org-export-backend-parent
+			     (org-element-property :back-end export-snippet)))) 
+	(if parent-backend
+	    (org-export-with-backend
+	     parent-backend export-snippet contents info)))))
 
 #+END_SRC
 ** export to file, to buffer, string as string

@@ -548,6 +548,14 @@ use `defcustom' here
 
 #+END_SRC
 
+*** defvar-org-ravel-backend-parent 
+
+#+BEGIN_SRC emacs-lisp
+
+  (defvar org-ravel-backend-parent nil
+    "If ravel is running, this variable will contain the name of the parent.")
+
+#+END_SRC
 ** TODO functions, macros,  and advice
 **************** 
    TODO
@@ -608,6 +616,10 @@ Need to do:
 
 
 *** defmacro-org-ravel-export-wrapper
+
+See [[*defun-org-ravel-export-string-as][defun-org-ravel-export-string-as]] as an example of how this
+macro is used.
+
 #+BEGIN_SRC emacs-lisp
   ;; (require 'cl-lib) ;; and maybe (eval-when-compile (require 'cl))
   (defmacro org-ravel-export-wrapper (&rest body)
@@ -618,10 +630,12 @@ Need to do:
    `org-babel-parse-inline-src-block-match' and restore those
    functions to their original values on exit, set values for
    `org-ravel-run' and for `org-ravel-style', force the `backend'
-   to be ravel compliant, and (by default) turn off confirmation
-   for the evaluation of ravel blocks.
+   to be ravel compliant and let-bind its parent as
+   `org-ravel-backend-parent', and (by default) turn off
+   confirmation for the evaluation of ravel blocks.
 
-  `(macroexpand (org-ravel-export-wrapper BODY))' when used inside a `defun' will take care of these issues."
+  `(macroexpand (org-ravel-export-wrapper BODY))' when used inside
+  a `defun' will take care of these issues."
     `(let* ((block-parser (symbol-function
 			  'org-babel-parse-src-block-match))
 	   (inline-parser (symbol-function
@@ -639,6 +653,7 @@ Need to do:
 			(message "Non ravel BACKEND might need STYLE."))
 		      (org-ravel-create-backend
 		       (org-export-backend-name bk-orig) style)))
+	   (org-ravel-backend-parent (org-export-backend-parent backend))
 	   (org-ravel-style
 	    (or style org-ravel-style
 		(nth 3
@@ -1068,6 +1083,7 @@ transcoders for the parent backend.
 
 *** defun-org-ravel-export-block 
 
+
 #+NAME: defun-org-ravel-export-block
 #+BEGIN_SRC emacs-lisp
   (defun org-ravel-export-block (export-block contents info)
@@ -1075,14 +1091,12 @@ transcoders for the parent backend.
   CONTENTS is nil.  INFO is a plist holding contextual information."
     (if (equal (org-element-property :type export-block) "RAVEL")
 	(org-element-property :value export-block)
-      (let ((parent-backend (org-export-backend-parent
-			     (org-element-property :back-end export-block)))) 
-	(if parent-backend
-            (org-export-with-backend
-             parent-backend export-block contents info)))))
+      (org-export-with-backend
+             org-ravel-backend-parent export-block contents info)))
 
 #+END_SRC
 *** defun-org-ravel-export-snippet
+
 #+NAME: defun-org-ravel-export-snippet
 #+BEGIN_SRC emacs-lisp
   (defun org-ravel-export-snippet (export-snippet contents info)
@@ -1090,11 +1104,7 @@ transcoders for the parent backend.
   CONTENTS is nil.  INFO is a plist holding contextual information."
     (if (eq (org-export-snippet-backend export-snippet) 'ravel)
 	(org-element-property :value export-snippet)
-      (let ((parent-backend (org-export-backend-parent
-			     (org-element-property :back-end export-snippet)))) 
-	(if parent-backend
-	    (org-export-with-backend
-	     parent-backend export-snippet contents info)))))
+      (org-export-with-backend org-ravel-backend-parent export-snippet contents info)))
 
 #+END_SRC
 ** export to file, to buffer, string as string

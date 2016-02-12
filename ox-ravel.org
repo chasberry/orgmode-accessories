@@ -23,6 +23,16 @@
   :PROPERTIES:
   :eval:     never
   :END:
+
+*Note this version requires at least this commit of Org mode* utilizing
+the new version of `org-babel-get-src-block-info':
+
+#+BEGIN_QUOTE
+ commit 9738da473277712804e0d004899388ad71c6b791
+  Author: Nicolas Goaziou <mail@nicolasgoaziou.fr>
+  Date:   Wed Feb 10 00:22:09 2016 +0100
+#+END_QUOTE
+
 ** browsing this file
 
 ~ox-ravel.org~ is an orgmode file.

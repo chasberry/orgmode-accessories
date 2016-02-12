@@ -1,8 +1,5 @@
 
 * TODO headline 1
-:TODOWHAT:
-The commands below do not work with the ravel-lang branch - need to revise them
-:END:
 
 Run this src block to see how some ravel styles differ from latex in
 the way they treat src blocks. You need to type 'y' repeatedly in
@@ -12,14 +9,12 @@ response to the query about evaluating the src blocks:
   (let
       ((org-export-show-temporary-export-buffer nil))
     (org-export-to-buffer 'latex "latex buffer")
-    (let ((org-ravel-run t)
-          (org-ravel-style "rnw"))
-      (org-export-to-buffer 'ravel-latex "noweb buffer"))
-    (let ((org-ravel-run t)
-          (org-ravel-style "brew"))
-      (org-export-to-buffer 'ravel-latex "brew buffer")))
+    (org-ravel-export-to-buffer 'ravel-latex "noweb buffer")
+    (org-ravel-export-to-buffer 'ravel-latex "brew buffer" nil nil
+				nil nil nil nil nil "brew"))
   (ediff-buffers3 "latex buffer" "noweb buffer" "brew buffer")
 #+END_SRC
+
 
 then you need to type 'n' several times to step through the diffs and finally 'qy'
 to quit.

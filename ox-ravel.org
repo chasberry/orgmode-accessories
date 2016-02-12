@@ -411,7 +411,7 @@ ingredients needed:
 The examples below should serve to show what is needed to create
 different chunk and inline styles.
 
-* TODO Babel
+* Babel
 
 ** variables
 *** defconst-org-babel-header-args:ravel
@@ -556,64 +556,7 @@ use `defcustom' here
     "If ravel is running, this variable will contain the name of the parent.")
 
 #+END_SRC
-** TODO functions, macros,  and advice
-**************** 
-   TODO
-Or maybe not...
-
-After http://thread.gmane.org/gmane.emacs.orgmode/87533/focus=87845
-patches are accepted, convert the code below to use :exports code, so
-`org-babel-exp-do-export' will use `org-babel-exp-code' instead of
-running `org-babel-exp-results'. Simplifies a lot.
-- no need to change :lang ravel
-- no need to set :results raw
-- cleaning old results is automagic
-Need to do:
-- advice org-babel-exp-code to
-  - call org-babel-expand-src-block to do :var assignment
-  - noweb expansion just works
-  - apply the chunk style functions as per --snippetize/blockify
-  - let-bind org-babel-exp-code-template if (member lang engines)
-  - let-bind org-babel-exp-inline-code-template if (member lang engines)
-
-*************** END
-
-
-*** defadvice-org-babel-parse-inline-src-block-match
-   :PROPERTIES:
-   :header-args:emacs-lisp: :tangle no
-   :END:
-
-#+NAME: defadvice-org-babel-parse-inline-src-block-match
-#+BEGIN_SRC emacs-lisp
-  (defadvice org-babel-parse-inline-src-block-match
-    (after org-ravel-change-inline-lang activate)
-    "Turn lang to ravel and add `:engine' header  maybe."
-    (if
-        (org-ravel-engine-to-ravel ad-return-value)
-        (org-ravel-set-raw-results ad-return-value)))
-#+END_SRC
-
-#+RESULTS: defadvice-org-babel-parse-inline-src-block-match
-: org-babel-parse-inline-src-block-match
-
-*** defadvice-org-babel-parse-src-block-match
-   :PROPERTIES:
-   :header-args:emacs-lisp: :tangle no
-   :END:
-
-#+NAME: defadvice-org-babel-parse-src-block-match
-#+BEGIN_SRC emacs-lisp
-  (defadvice org-babel-parse-src-block-match
-    (after org-ravel-change-sb-lang activate)
-    "Turn lang to ravel, add `:engine' header, and :wrap ravel maybe."
-    (if (org-ravel-engine-to-ravel ad-return-value)
-        (org-ravel-rewrap ad-return-value)))
-#+END_SRC
-
-#+RESULTS: defadvice-org-babel-parse-src-block-match
-: org-babel-parse-src-block-match
-
+** functions, macros,  and advice
 
 *** defmacro-org-ravel-export-wrapper
 
@@ -621,14 +564,12 @@ See [[*defun-org-ravel-export-string-as][defun-org-ravel-export-string-as]] as a
 macro is used.
 
 #+BEGIN_SRC emacs-lisp
-  ;; (require 'cl-lib) ;; and maybe (eval-when-compile (require 'cl))
   (defmacro org-ravel-export-wrapper (&rest body)
     "Set up the preliminaries for the BODY of an export function.
 
   `org-ravel-export-to-file' and similar actions need to redefine
-   `org-babel-parse-src-block-match' and
-   `org-babel-parse-inline-src-block-match' and restore those
-   functions to their original values on exit, set values for
+   `org-babel-get-src-block-info' and restore the
+   function to its original value on exit, set values for
    `org-ravel-run' and for `org-ravel-style', force the `backend'
    to be ravel compliant and let-bind its parent as
    `org-ravel-backend-parent', and (by default) turn off
@@ -636,47 +577,54 @@ macro is used.
 
   `(macroexpand (org-ravel-export-wrapper BODY))' when used inside
   a `defun' will take care of these issues."
-    `(let* ((block-parser (symbol-function
-			  'org-babel-parse-src-block-match))
-	   (inline-parser (symbol-function
-			   ' org-babel-parse-inline-src-block-match))
-	   (org-ravel-run
-              (or engines org-ravel-run org-ravel-engines))
-	   (bk-orig
-	    (if (symbolp backend)
-		(org-export-get-backend backend) backend))
-	   (ravel-style-option
-	    (assq :ravel-style
-		  (org-export-backend-options bk-orig)))
-	   (backend (if ravel-style-option bk-orig
-		      (unless style
-			(message "Non ravel BACKEND might need STYLE."))
-		      (org-ravel-create-backend
-		       (org-export-backend-name bk-orig) style)))
-	   (org-ravel-backend-parent (org-export-backend-parent backend))
-	   (org-ravel-style
-	    (or style org-ravel-style
-		(nth 3
-		     (assoc :ravel-style
-			    (org-export-backend-options
-			     backend)))))
-	   (org-confirm-babel-evaluate org-confirm-babel-evaluate))
+    `(let* ((get-info (symbol-function
+		       'org-babel-get-src-block-info))
+	    ;; set ravel variables
+	    (org-ravel-run
+	     (or  engines org-ravel-run org-ravel-engines))
+	    (bk-orig
+	     (if (symbolp backend)
+		 (org-export-get-backend backend) backend))
+	    (ravel-style-option
+	     (assq :ravel-style
+		   (org-export-backend-options bk-orig)))
+	    (backend (if ravel-style-option bk-orig
+		       (unless style
+			 (message "Non ravel BACKEND might need STYLE."))
+		       (org-ravel-create-backend
+			(org-export-backend-name bk-orig) style)))
+	    (org-ravel-backend-parent (org-export-backend-parent backend))
+	    (org-ravel-style
+	     (or style org-ravel-style
+		 (nth 3
+		      (assoc :ravel-style
+			     (org-export-backend-options
+			      backend)))))
+	    (org-confirm-babel-evaluate org-confirm-babel-evaluate))
+       ;; org-babel-get-src-block-info will modify info for ravel blocks
        (letf
-	   (((symbol-function 'org-babel-parse-src-block-match)
-	     (lambda ()
-	       (let ((retval (funcall block-parser)))
-		 (if (org-ravel-engine-to-ravel retval)
-		     (org-ravel-rewrap retval))
-		 retval)))
-	    ((symbol-function 'org-babel-parse-inline-src-block-match)
-	     (lambda ()
-	       (let ((retval (funcall inline-parser)))
-		 (if
-		     (org-ravel-engine-to-ravel retval)
-		     (org-ravel-set-raw-results retval))
-		 retval))))
+	   (((symbol-function 'org-babel-get-src-block-info)
+	     (lambda (&optional light datum)
+	       (let* ((dat (or datum (org-element-context)))
+		      (lang (org-element-property :language dat))
+		      (ravel-it (assoc lang org-ravel-run))
+		      (engine-cdr (and ravel-it (cdr ravel-it))))
+		 (if ravel-it
+		     (setf (nth 1 dat)
+			   (plist-put (nth 1 dat) :language "ravel")))
+		 (let* ((dat2 
+			 (funcall get-info light dat))
+			(nth-2-dat2 (nth 2 dat2)))
+		   (if (or (not ravel-it)
+			   (equal (cdr (assoc :exports (nth 2 dat2))) "none"))
+		       dat2 ;; non-ravel or nothing to do
+		     (setf (cdr (assoc :exports nth-2-dat2)) "results")
+		     (add-to-list 'nth-2-dat2 `((:engine . ,engine-cdr))) 
+		     (if (eq 'inline-src-block (org-element-type dat))
+			 (org-ravel-set-raw-results dat2)
+		       (org-ravel-rewrap dat2))
+		     dat2))))))
 	 ,@body)))
-
 #+END_SRC
 
 
@@ -702,35 +650,6 @@ macro is used.
 #+END_SRC
 
 #
-
-*** defun-org-ravel-engine-to-ravel
-
-#+NAME: defun-org-ravel-engine-to-ravel
-#+BEGIN_SRC emacs-lisp
-  (defun org-ravel-engine-to-ravel (retval)
-    "Maybe change lang to `ravel' in RETVAL.
-
-  If so save lang as `:engine' header,and force `:exports results'.
-
-  See docstrings for `org-ravel-run' and `org-ravel-engines' to see
-  how to make ravel recognize which lang-s should be handled as
-  engines."
-    (when (and (boundp 'org-ravel-run)
-               org-ravel-run
-               (assoc (nth 0 retval) org-ravel-run))
-      (let ((nth-2-retval (nth 2 retval)))
-        (add-to-list 'nth-2-retval
-                     `(:engine . ,(cdr (assoc (nth 0 retval) org-ravel-engines))))
-        (setf (nth 0 retval) "ravel")
-        (unless (equal (cdr (assoc :exports nth-2-retval)) "none")
-          (setf (cdr (assoc :exports nth-2-retval)) "results"))
-        (setf (nth 2 retval) nth-2-retval))))
-	
-
-#+END_SRC
-
-
-
 
 *** defun-org-ravel-rewrap
 
@@ -768,8 +687,6 @@ Wrap the results of `org-babel-execute:ravel' in a
 #+END_SRC
 
 
-
-
 *** defun-org-ravel-set-raw-results
 
 The inline results are in ~@@ravel: ... @@~ snippets. Do not allow
@@ -781,7 +698,7 @@ further formatting.
     "Set (:results raw replace).
   Argument RETVAL is the parsed src block."
     (if (assoc :results (nth 2 retval))
-        (setf (cdr (assoc :results (nth 2 retval))) "raw replace")
+	(setf (cdr (assoc :results (nth 2 retval))) "raw replace")
       (setf (nth 2 retval)
             (append (nth 2 retval)
                     '((:results . "raw replace"))))))
@@ -812,20 +729,7 @@ nil in which case, I do not reset it.
             value)))
 
 #+END_SRC
-*** TODO defun-org-babel-execute:ravel
-*************** 
-    TODO
-engine needs to go somewhere.
-
-- Maybe best to pass it on to the chunk styling functions. That way,
-  brew chunks can ignore the engine spec in sorting out how to handle
-  the ravel spec.
-
-- or cons it to ravel-attr, which brew can ignore
-
-
-*************** END
-
+*** defun-org-babel-execute:ravel
 
 `org-babel-execute:ravel' calls formatting functions for the code. No
 actual code is run. Also need to add some kind of alias for edit modes

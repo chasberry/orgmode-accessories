@@ -586,7 +586,12 @@ macro is used.
    confirmation for the evaluation of ravel blocks.
 
   `(macroexpand (org-ravel-export-wrapper BODY))' when used inside
-  a `defun' will take care of these issues."
+  a `defun' will take care of these issues.
+
+  Use of this macro outside of ravel export functions is
+  discouraged as it can corrupt the cache used by the
+  `org-element-*' functions.  In case of these issues,
+  `org-element-cache-reset' will straighten things out."
     `(let* ((get-info (symbol-function
 		       'org-babel-get-src-block-info))
 	    ;; set ravel variables

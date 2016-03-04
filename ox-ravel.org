@@ -803,7 +803,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 
   (defun  org-ravel-blockify
     (chunk-style label ravelarg ravel-attr non-ravelargs body)
-     "Format an inline src block.
+     "Format a src block.
 
   Use CHUNK-STYLE, LABEL, RAVELARG, RAVEL-ATTR and
   NON-RAVELARGS (typically ignored) to format BODY and wrap it
@@ -1241,8 +1241,8 @@ to `require' or `load' that parent.
   (eval-after-load 'ox-beamer
     '(org-ravel-define-exporter
      'ravel-beamer
-     'beamer ?b "Ravel-beamer" "rnw" nil t (lambda () (LaTeX-mode))))
-
+     'beamer ?b "Ravel-beamer" "rnw" nil t (lambda () (LaTeX-mode)))
+)
   (eval-after-load 'ox-html
     '(org-ravel-define-exporter
      'ravel-html

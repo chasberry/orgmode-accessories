@@ -156,7 +156,6 @@ matter of rerunning the document to load the cached objects and
 libraries, then switching to the orgmode master to try out some new
 code, reorganize the presentation, and so on.
 
-
 * lisp setup
   :PROPERTIES:
   :eval:     never
@@ -585,15 +584,19 @@ macro is used.
    `org-ravel-backend-parent', and (by default) turn off
    confirmation for the evaluation of ravel blocks.
 
-  `(macroexpand (org-ravel-export-wrapper BODY))' when used inside
-  a `defun' will take care of these issues.
+  `(org-ravel-export-wrapper BODY)' when used inside a `defun' will
+  take care of these issues.
 
   Use of this macro outside of ravel export functions is
   discouraged as it can corrupt the cache used by the
   `org-element-*' functions.  In case of these issues,
   `org-element-cache-reset' will straighten things out."
-    `(let* ((get-info (symbol-function
-		       'org-babel-get-src-block-info))
+    (declare (indent 1) (debug (form body)))
+    `(let* ((org-ravel-get-s-b-info
+	     ;; avoid recursive redefinition
+	     (or (org-bound-and-true-p org-ravel-get-s-b-info)
+		 (symbol-function
+		  'org-babel-get-src-block-info)))
 	    ;; set ravel variables
 	    (org-ravel-run
 	     (or  engines org-ravel-run org-ravel-engines))
@@ -628,7 +631,7 @@ macro is used.
 		     (setf (nth 1 dat)
 			   (plist-put (nth 1 dat) :language "ravel")))
 		 (let* ((dat2 
-			 (funcall get-info light dat))
+		 (funcall org-ravel-get-s-b-info light dat))
 			(nth-2-dat2 (nth 2 dat2)))
 		   (if (or (not ravel-it)
 			   (equal (cdr (assoc :exports (nth 2 dat2))) "none"))
@@ -641,7 +644,6 @@ macro is used.
 		     dat2))))))
 	 ,@body)))
 #+END_SRC
-
 
 *** defun-org-babel-expand-body:ravel
 
@@ -701,8 +703,7 @@ Wrap the results of `org-babel-execute:ravel' in a
 
 #+END_SRC
 
-
-*** defun-org-ravel-set-raw-results
+*** defun-org-ravel-set-raw-results 
 
 The inline results are in ~@@ravel: ... @@~ snippets. Do not allow
 further formatting.
@@ -1063,12 +1064,11 @@ transcoders for the parent backend.
   It can run arbitrary backends if STYLE is supplied or if STRING
   supplies valid values for src blocks and inline src blocks in it."
 
-    (macroexpand
-     (org-ravel-export-wrapper
-      (org-ravel-reset-confirm
-       org-ravel-no-confirm-for-ravel)
-      (org-export-string-as string backend body-only ext-plist))))
 
+    (org-ravel-export-wrapper
+     (org-ravel-reset-confirm
+      org-ravel-no-confirm-for-ravel)
+     (org-export-string-as string backend body-only ext-plist)))
 #+END_SRC
 *** defun-org-ravel-export-to-file
 
@@ -1094,16 +1094,15 @@ transcoders for the parent backend.
   to `org-ravel-no-confirm-for-ravel', which holds a `lambda'
   function.  To override this, create a variable with that name."
 
-    (macroexpand
-     (org-ravel-export-wrapper
-      (let ((org-confirm-babel-evaluate t)
-	    (file (or file
-		      (org-export-output-file-name
-		       (org-ravel-extension org-ravel-style) subtreep))))
-	(when async (user-error "ASYNC not allow for ravel"))
-	(org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
-	(org-export-to-file backend file async subtreep visible-only
-			    body-only ext-plist post-process)))))
+    (org-ravel-export-wrapper
+     (let ((org-confirm-babel-evaluate t)
+	   (file (or file
+		     (org-export-output-file-name
+		      (org-ravel-extension org-ravel-style) subtreep))))
+       (when async (user-error "ASYNC not allow for ravel"))
+       (org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
+       (org-export-to-file backend file async subtreep visible-only
+			   body-only ext-plist post-process))))
 
 #+END_SRC
 
@@ -1131,16 +1130,15 @@ transcoders for the parent backend.
   to `org-ravel-no-confirm-for-ravel', which holds a `lambda'
   function.  To override this, create a variable with that name."
 
-    (macroexpand
-     (org-ravel-export-wrapper
-      (let ((org-confirm-babel-evaluate t)
-	    (buffer (or buffer
-			(format "* %S Output *"
-				(org-export-backend-name backend)))))
-	(when async (user-error "ASYNC not allow for ravel"))
-	(org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
-	(org-export-to-buffer backend buffer async subtreep visible-only
-			      body-only ext-plist post-process)))))
+    (org-ravel-export-wrapper
+     (let ((org-confirm-babel-evaluate t)
+	   (buffer (or buffer
+		       (format "* %S Output *"
+			       (org-export-backend-name backend)))))
+       (when async (user-error "ASYNC not allow for ravel"))
+       (org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
+       (org-export-to-buffer backend buffer async subtreep visible-only
+			     body-only ext-plist post-process))))
 
 #+END_SRC
 

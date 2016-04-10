@@ -536,6 +536,7 @@ use `defcustom' here
       (tex  . (org-ravel-block-tex org-ravel-inline-tex ".Rtex"))
       (html . (org-ravel-block-html org-ravel-inline-html ".Rhtml"))
       (md   . (org-ravel-block-md org-ravel-inline-md ".Rmd"))
+      (braces   . (org-ravel-block-braces org-ravel-inline-braces ".Rtmpl"))
       (rst  . (org-ravel-block-rst org-ravel-inline-rst ".Rrst")))
     "The Chunk Style Alist to use in formatting Ravel output.
 

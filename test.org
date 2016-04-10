@@ -1,0 +1,234 @@
+#+TITLE: test
+#+DATE: <2016-04-10 Sun>
+#+AUTHOR: Charles Berry
+#+EMAIL: ccberry@ucsd.edu
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 24.5.1 (Org mode 8.3.4)
+#+DESCRIPTION: unit tests for ox-ravel
+
+
+* ert unit tests
+
+** define setup and tests 
+  :PROPERTIES:
+  :header-args:emacs-lisp: :tangle yes
+  :END:
+
+First, modify ~testing-path~ in [[*setup org-test* functions][setup org-test* functions]] as needed to point
+to the =testing= directory in the Org-mode distribution.
+
+Load the ert-deftest's by
+
+: M-x org-babel-tangle RET
+
+and
+
+: M-x load-file RET test.el
+
+or execute this subtree via
+
+: C-c C-v C-s
+
+and type 'y' to each query.
+
+*** setup org-test* functions
+
+ #+BEGIN_SRC emacs-lisp :var testing-path="~/elisp/org-mode/testing/" 
+   (require 'org)
+   (add-to-list 'load-path testing-path)
+   (require 'org-test)
+   (require 'ox-ravel)
+ #+END_SRC
+
+ #+RESULTS:
+ : ox-ravel
+
+*** standard inline styles
+
+ #+BEGIN_SRC emacs-lisp
+   (ert-deftest
+       ox-ravel/inline-styles ()
+       "Check that styles give proper inline results."
+     (let* ((code "1+2")
+            (inline-code (format "src_R{%s}" code))
+            (rnw-res (format "\\Sexpr{ %s }\n" code))
+            (tex-res (format "\\rinline{ %s }\n" code))
+            (html-res (format "<!--rinline  %s  -->\n" code))
+            (md-res (format "`r  %s `\n" code)))
+       (should
+	(string= rnw-res
+                 (org-ravel-export-string-as inline-code 'ravel-latex t nil nil nil)))
+       (should
+	(string= tex-res
+                 (org-ravel-export-string-as inline-code
+                                             'ravel-latex t nil nil  "tex")))
+       (should
+	(string= html-res
+                 (org-ravel-export-string-as inline-code
+                                             'ravel-latex t nil nil  "html")))
+       (should
+	(string= md-res
+                 (org-ravel-export-string-as inline-code
+                                             'ravel-latex t nil nil  "md")))))
+    
+ #+END_SRC
+
+ #+RESULTS:
+ : ox-ravel/inline-styles
+
+*** standard src block styles
+
+ #+BEGIN_SRC emacs-lisp
+     (ert-deftest
+         ox-ravel/src-block-styles ()
+         "Check that styles give proper src-block results."
+         (let* ((code "1+2")
+		(src-blk-code (format "#+begin_src R\n%s\n#+end_src\n" code))
+		(rnw-res (format "<<>>=\n%s\n@ %%def\n" code))
+		(tex-res (format  "%% begin.rcode(  )\n%%%s\n%% end.code\n" code))
+		(html-res (format "<!--begin.rcode   \n%s\nend.rcode-->\n" code))
+		(md-res (format  "```{r   }\n%s \n```\n" code)))
+           (should
+            (string= rnw-res
+                     (org-ravel-export-string-as src-blk-code 'ravel-latex t
+                                                 nil nil nil )))
+           (should
+            (string= tex-res
+                     (org-ravel-export-string-as src-blk-code
+                                                 'ravel-latex t nil nil  "tex")))
+         (should
+          (string= html-res
+                   (org-ravel-export-string-as src-blk-code
+                                               'ravel-latex t nil nil  "html")))
+         (should
+          (string= md-res
+                   (org-ravel-export-string-as src-blk-code
+                                               'ravel-latex t nil nil  "md")))))
+  
+ #+END_SRC
+
+ #+RESULTS:
+ : ox-ravel/src-block-styles
+
+*** brew styles
+
+ #+BEGIN_SRC emacs-lisp
+     (ert-deftest
+         ox-ravel/src-brew-styles ()
+       "Check that brew styles give expected results.
+   These tests _are_ sensitive to whitespace."
+       (let* ((code "1+2")
+		(src-blk-code
+                 (format "#+begin_src R :ravel <%% %%>\n%s\n#+end_src\n" code))
+		(pre-blk-code
+                 (format "#+begin_src R :ravel <%% code  {%%> \n%s\n#+end_src\n" code))
+		(post-blk-code
+                 (format "#+begin_src R :ravel <%% code  }%%> \n%s\n#+end_src\n" code))
+		(inline-code (format "src_R[<%% code %%>]{%s}" code))
+		(plain-res (format "<%% %s %%>\n" code))
+		(pre-blk-res
+                 (format "<%% %s {%%>\n" code))
+		(post-blk-res
+                 (format "<%% %s }%%>\n" code))
+		(inline-res
+                 (format "<%%= %s  -%%>\n" code)))
+         (should
+          (string= inline-res
+                   (org-ravel-export-string-as inline-code 'ravel-latex t
+                                               nil nil "brew" )))
+         (should
+          (string= plain-res
+                   (org-ravel-export-string-as src-blk-code 'ravel-latex t
+                                                 nil nil "brew" )))
+      
+         (should
+          (string= pre-blk-res
+                   (org-ravel-export-string-as pre-blk-code 'ravel-latex t
+                                               nil nil "brew" )))
+         (should
+          (string= post-blk-res
+                   (org-ravel-export-string-as post-blk-code 'ravel-latex t
+                                               nil nil "brew" )))))
+ #+END_SRC
+
+ #+RESULTS:
+ : ox-ravel/src-brew-styles
+
+*** non-ravel backend can be used when style is given
+
+ #+BEGIN_SRC emacs-lisp
+     (ert-deftest
+         ox-ravel/non-ravel-backend-with-style ()
+         "Non-ravel backend will work with a style supplied."
+       (let* ((code "1+2")
+              (inline-code (format "src_R{%s}" code))
+              (src-blk-code (format "#+begin_src R\n%s\n#+end_src\n" code)))
+         (should
+          (string= 
+           (org-ravel-export-string-as inline-code 'ravel-latex t nil nil nil)
+           (org-ravel-export-string-as inline-code 'latex t nil nil "rnw")))
+         (should
+          (string= 
+           (org-ravel-export-string-as src-blk-code 'ravel-latex t nil nil nil)
+           (org-ravel-export-string-as src-blk-code 'latex t nil nil "rnw")))))
+  
+ #+END_SRC
+
+ #+RESULTS:
+ : ox-ravel/non-ravel-backend-with-style
+
+*** export block/snippet uses parent
+
+ #+BEGIN_SRC emacs-lisp
+   (ert-deftest
+       ox-ravel/export-block-snippet-use-parent ()
+     "Use parent backend for export blocks and snippets."
+     (let* ((code "\\XYZ\nxyz")
+	    (snippet (format "@@latex:%s@@" code))
+	    (block (format "#+begin_export latex\n%s\n#+end_export"
+			   code)))
+       (should
+	(string=
+	 (org-ravel-export-string-as snippet 'ravel-latex t nil nil nil)
+	 (org-ravel-export-string-as snippet 'latex t)))
+       (should
+	(string=
+	 (org-ravel-export-string-as block 'ravel-latex t nil nil nil)
+	 (org-ravel-export-string-as block 'latex t)))))
+ #+END_SRC
+
+** run tests
+
+Run the tests like this:
+
+: M-x ert RET "ox-ravel/.*" RET
+
+or by executing this block
+
+#+BEGIN_SRC emacs-lisp
+  (ert "ox-ravel/.*" "ravel-ert-buffer")
+  (with-temp-buffer
+    (insert-buffer-substring "ravel-ert-buffer")
+    (kill-buffer "ert-buffer")
+    (buffer-substring-no-properties (point-min) (point-max)))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Selector: "ox-ravel/.*"
+Passed:  5
+Failed:  0
+Skipped: 0
+Total:   5/5
+
+Started at:   2016-04-09 13:42:55-0700
+Finished.
+Finished at:  2016-04-09 13:42:56-0700
+
+.....
+
+#+end_example
+
+See =/path/to/org-mode/testing/README= for more details on testing.

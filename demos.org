@@ -14,7 +14,7 @@
 #+CREATOR: Emacs 24.3.1 (Org mode 8.3beta)
 
 
-* simple R src block
+* Simple R src block
   :PROPERTIES:
   :EXPORT_FILE_NAME: simple-src-block.pdf
   :END:
@@ -76,8 +76,7 @@ b <- 1 + a
 
 
 
-
-* simple inline src block
+* Simple inline src block
   :PROPERTIES:
   :EXPORT_FILE_NAME: simple-inline-src-block.pdf
   :END:
@@ -135,7 +134,7 @@ Line ending with inline src block: \Sexpr{ sum(rnorm(10)) }
 Line containing \Sexpr{ sum(rnorm(10)) } inline src block
 #+END_example
 
-* src block with graph for Sweave
+* Src block with graph for Sweave
   :PROPERTIES:
   :EXPORT_FILE_NAME: graphic-src-block.pdf
   :END:
@@ -160,10 +159,9 @@ abline(a=0,b=1,lty=2)
    The file =graphic-src-block.Rnw= should contain code that this
    src block will turn into a pdf with a nice figure.
 
-#+BEGIN_SRC sh :results value
+#+BEGIN_SRC sh :results value :eval never-export
 R CMD Sweave --pdf graphic-src-block.Rnw
 #+END_SRC
-
 
 
 * Expanding a Document via knitr
@@ -175,15 +173,19 @@ is converted to latex. Then the latex is processed by ~knit_expand()~.
 To demonstrate, run the ~demo-expansion~ src block and browse the
 results block.
 
+
+
+
 #+NAME: demo-expansion
-#+BEGIN_SRC emacs-lisp
-(require 'ox-org)
-(org-sbe "knit-expand" (ktmp excode))
+#+BEGIN_SRC emacs-lisp :eval never-export
+  (require 'ob-org)
+  (let ((org-confirm-babel-evaluate nil))
+    (org-sbe "knit-expand" (ktmp excode)))
 #+END_SRC
 
 
 #+NAME: stuff
-#+BEGIN_ORG
+#+BEGIN_SRC org :exports code
 
   @@latex:\section{@@ The Letter src_R{i} @@latex:}@@
 
@@ -192,8 +194,7 @@ results block.
   - its character codes is src_R{charToRaw(i)} 
   - src_R{toupper(i)}'s character code is src_R{charToRaw(toupper(i))}.
 
-
-#+END_ORG
+#+END_SRC
 
 #+NAME: excode
 #+BEGIN_SRC emacs-lisp :var code=stuff :exports code :wrap latex
@@ -212,8 +213,7 @@ results block.
 
 #+END_SRC
 
-
-* src block with latex caption for knitr
+* Src block with latex caption for knitr
   :PROPERTIES:
   :EXPORT_FILE_NAME: captioned-src-block.pdf
   :END:
@@ -231,7 +231,7 @@ and respond with a =y= when prompted:
 
 
 ~:exports none~ assures that the contents of the ~lcap~ src block are not
-exported as is.
+exported as is. Note that =ob-latex= must be loaded.
 
 #+NAME: lcap
 #+BEGIN_SRC latex :exports none
@@ -243,12 +243,8 @@ exported as is.
 The latex caption will be brought into the R variable =lcap_ref= by this
 empty src block:
 
-#+BEGIN_SRC R :var lcap_ref=(org-babel-ref-resolve "lcap")
+#+BEGIN_SRC R :var lcap_ref=lcap
 #+END_SRC
-
-Or a line like this:
-: src_R[:var lcap_ref=(org-babel-ref-resolve "lcap")]{ } 
-will do the same thing
 
 Now do the qqplot taking =lcap_ref= as the caption, and plot the
 identity line.
@@ -274,9 +270,7 @@ knit2pdf("captioned-src-block.Rnw")
 : captioned-src-block.pdf
 
 
-
-
-* TODO src block with a computed caption for knitr
+* Src block with a computed caption for knitr
   :PROPERTIES:
   :EXPORT_FILE_NAME: computed-caption-src-block.pdf
   :END:
@@ -292,6 +286,8 @@ and respond with a =y= whenever prompted:
 
 : Evaluate this [...] on your system? (y or n) 
 
+Note that =ob-latex= must be loaded.
+
 The R src code for making the =qqplot= is run first. The least squares
 fit is extracted, too.
 
@@ -303,8 +299,14 @@ ab <- coef( lm( y~x, qplt ))
 
 and the \LaTeX caption is written here with inline src blocks.
 
+
+#+NAME: post-lcap
+#+BEGIN_SRC emacs-lisp
+  (org-ravel-export-string-as *this* 'ravel-latex t)
+#+END_SRC
+
 #+NAME: lcap3
-#+BEGIN_SRC latex :exports code
+#+BEGIN_SRC latex :exports code :post post-lcap
 
   qqplot of realizations from a Gaussian distribution
   with unit mean and unit variance.
@@ -318,25 +320,24 @@ and the \LaTeX caption is written here with inline src blocks.
 
 #+END_SRC
 
+
  The latex caption will be brought into the variable =lcap_ref= by the
  next src block. In this case it really only serves to convert the
  =src_R{}= inlines to =\Sexpr{}= inlines. Outside of captions, long
  sections of text with extensive ~org-mode~ formatting that depend on
  the data in complicated ways can be rendered.
 
- The caption could have been placed in a ~example~ block with the same
- effect, but if the \LaTeX is hairy, it is nice to be able to edit in
- ~latex~ edit buffers.
+ The caption could have been placed in a ~example~ block. However, the
+ inline src blocks would not get handled as easily, and if
+ the \LaTeX is hairy, it is nice to be able to edit in ~latex~ edit
+ buffers.
 
-#+NAME: lcap_ref_fmt
-#+HEADER: :var code=lcap3 :exports code
-#+BEGIN_SRC emacs-lisp 
-  (org-ravel-export-string-as code 'ravel-latex t)
+#+NAME: knitr-expansion
+#+BEGIN_SRC R :var lcapref=lcap3
+  lcap_ref <- knit_expand(text=lcapref,delim=c("\\Sexpr{","}"))
 #+END_SRC
 
-#+BEGIN_SRC R :var  lcapref=lcap_ref_fmt(lcap3)
- lcap_ref <- knit_expand(text=lcapref,delim=c("\\Sexpr{","}"))
-#+END_SRC
+#+RESULTS:
 
 Now do the qqplot taking =lcap_ref= as the caption, and plot the
 fitted and the identity line.
@@ -360,5 +361,6 @@ legend("bottomright",lty=1:2,legend=c("fitted","expected"))
 require(knitr)
 knit2pdf("computed-caption-src-block.Rnw")
 #+END_SRC
+
 
 

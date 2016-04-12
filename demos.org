@@ -47,7 +47,7 @@ b <- 1 + a
 
 The buffer * ravel-latex Output * should contain:
 
-#+RESULTS: simple-R-src-block
+
 #+BEGIN_example
 Run this interactively, viz.
 
@@ -106,9 +106,7 @@ Line containing src_R{sum(rnorm(10))} inline src block
 
    The buffer * ravel-latex Output * should contain:
 
-and here is what it contains (if you ran the simple-inline-src-block):
 
-#+RESULTS: simple-inline-src-block
 #+BEGIN_example
 Run this interactively, viz.
 

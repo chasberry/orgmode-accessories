@@ -1096,14 +1096,13 @@ transcoders for the parent backend.
   function.  To override this, create a variable with that name."
 
     (org-ravel-export-wrapper
-     (let ((org-confirm-babel-evaluate org-confirm-babel-evaluate)
-	   (file (or file
-		     (org-export-output-file-name
-		      (org-ravel-extension org-ravel-style) subtreep))))
-       (when async (user-error "ASYNC not allow for ravel"))
-       (org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
-       (org-export-to-file backend file async subtreep visible-only
-			   body-only ext-plist post-process))))
+	(let ((file (or file
+			(org-export-output-file-name
+			 (org-ravel-extension org-ravel-style) subtreep))))
+	  (when async (user-error "ASYNC not allow for ravel"))
+	  (org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
+	  (org-export-to-file backend file async subtreep visible-only
+			      body-only ext-plist post-process))))
 
 #+END_SRC
 
@@ -1132,14 +1131,13 @@ transcoders for the parent backend.
   function.  To override this, create a variable with that name."
 
     (org-ravel-export-wrapper
-     (let ((org-confirm-babel-evaluate org-confirm-babel-evaluate)
-	   (buffer (or buffer
-		       (format "* %S Output *"
-			       (org-export-backend-name backend)))))
-       (when async (user-error "ASYNC not allow for ravel"))
-       (org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
-       (org-export-to-buffer backend buffer async subtreep visible-only
-			     body-only ext-plist post-process))))
+	(let ((buffer (or buffer
+			  (format "* %S Output *"
+				  (org-export-backend-name backend)))))
+	  (when async (user-error "ASYNC not allow for ravel"))
+	  (org-ravel-reset-confirm org-ravel-no-confirm-for-ravel)
+	  (org-export-to-buffer backend buffer async subtreep visible-only
+				body-only ext-plist post-process))))
 
 #+END_SRC
 

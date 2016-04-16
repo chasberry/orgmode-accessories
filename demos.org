@@ -373,29 +373,24 @@ knit2pdf("computed-caption-src-block.Rnw")
 
 * run all
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :results file :file demo-knitr-expand.tex
   (require 'ox-ravel)
   (save-excursion
     (org-id-goto "80D43BC0-3AB7-4483-ABEF-30C8E251B874")
     (org-ravel-export-to-file 'ravel-latex
 			      "./demo-simple-src-block.Rnw"
 			      nil t nil t)
-
+  
     (org-id-goto "83121E77-5B68-4B81-A444-3B6A756EDD1C")
     (org-ravel-export-to-file 'ravel-latex
 			      "./demo-simple-inline-src-block.Rnw"
 			      nil t nil t)
-
+  
     (org-id-goto "36234656-157D-4F1D-B441-E727DFCC0251")
     (org-ravel-export-to-file 'ravel-latex
 			      "./demo-graphic-src-block.Rnw"
 			      nil t nil t)
-    (org-id-goto "EFF2E38D-38B5-4ED0-8048-028DADE7DDC4")
-    (require 'ob-org)
     (let ((org-confirm-babel-evaluate nil))
-      (org-ravel-export-to-file 'ravel-latex
-				"./demo-knitr-expand.Rnw"
-				nil t nil t)
       (org-id-goto "C341969B-90F3-4C27-AA7F-5352A9669506")
       (org-ravel-export-to-file 'ravel-latex
 				"./demo-captioned-src-block.Rnw"
@@ -404,8 +399,11 @@ knit2pdf("computed-caption-src-block.Rnw")
       (org-ravel-export-to-file 'ravel-latex
 				"./demo-computed-caption-src-block.Rnw"
 				nil t nil t)))
+  (require 'ob-org)
+  (let ((org-confirm-babel-evaluate nil))
+    (org-sbe "knit-expand" (ktmp excode)))
 #+END_SRC
 
 #+RESULTS:
-: ./demo-computed-caption-src-block.Rnw
+[[file:demo-knitr-expand.tex]]
 

@@ -17,6 +17,7 @@
 * Simple R src block
   :PROPERTIES:
   :EXPORT_FILE_NAME: simple-src-block.pdf
+  :ID:       80D43BC0-3AB7-4483-ABEF-30C8E251B874
   :END:
 
 Run this interactively, viz.
@@ -79,6 +80,7 @@ b <- 1 + a
 * Simple inline src block
   :PROPERTIES:
   :EXPORT_FILE_NAME: simple-inline-src-block.pdf
+  :ID:       83121E77-5B68-4B81-A444-3B6A756EDD1C
   :END:
 Run this interactively, viz.
 
@@ -135,6 +137,7 @@ Line containing \Sexpr{ sum(rnorm(10)) } inline src block
 * Src block with graph for Sweave
   :PROPERTIES:
   :EXPORT_FILE_NAME: graphic-src-block.pdf
+  :ID:       36234656-157D-4F1D-B441-E727DFCC0251
   :END:
 
 
@@ -163,6 +166,9 @@ R CMD Sweave --pdf graphic-src-block.Rnw
 
 
 * Expanding a Document via knitr
+  :PROPERTIES:
+  :ID:       EFF2E38D-38B5-4ED0-8048-028DADE7DDC4
+  :END:
 
 The org-mode template in the ~stuff~ src block is read by the ~excode~ src
 block and inline src blocks are converted to knitr delimiters and org
@@ -214,6 +220,7 @@ results block.
 * Src block with latex caption for knitr
   :PROPERTIES:
   :EXPORT_FILE_NAME: captioned-src-block.pdf
+  :ID:       C341969B-90F3-4C27-AA7F-5352A9669506
   :END:
 
 
@@ -271,6 +278,7 @@ knit2pdf("captioned-src-block.Rnw")
 * Src block with a computed caption for knitr
   :PROPERTIES:
   :EXPORT_FILE_NAME: computed-caption-src-block.pdf
+  :ID:       E73A2295-CCB9-43BE-9DA2-87A645366871
   :END:
 
 
@@ -361,4 +369,43 @@ knit2pdf("computed-caption-src-block.Rnw")
 #+END_SRC
 
 
+
+
+* run all
+
+#+BEGIN_SRC emacs-lisp
+  (require 'ox-ravel)
+  (save-excursion
+    (org-id-goto "80D43BC0-3AB7-4483-ABEF-30C8E251B874")
+    (org-ravel-export-to-file 'ravel-latex
+			      "./demo-simple-src-block.Rnw"
+			      nil t nil t)
+
+    (org-id-goto "83121E77-5B68-4B81-A444-3B6A756EDD1C")
+    (org-ravel-export-to-file 'ravel-latex
+			      "./demo-simple-inline-src-block.Rnw"
+			      nil t nil t)
+
+    (org-id-goto "36234656-157D-4F1D-B441-E727DFCC0251")
+    (org-ravel-export-to-file 'ravel-latex
+			      "./demo-graphic-src-block.Rnw"
+			      nil t nil t)
+    (org-id-goto "EFF2E38D-38B5-4ED0-8048-028DADE7DDC4")
+    (require 'ob-org)
+    (let ((org-confirm-babel-evaluate nil))
+      (org-ravel-export-to-file 'ravel-latex
+				"./demo-knitr-expand.Rnw"
+				nil t nil t)
+      (org-id-goto "C341969B-90F3-4C27-AA7F-5352A9669506")
+      (org-ravel-export-to-file 'ravel-latex
+				"./demo-captioned-src-block.Rnw"
+				nil t nil t)
+      (org-id-goto "E73A2295-CCB9-43BE-9DA2-87A645366871")
+      (org-ravel-export-to-file 'ravel-latex
+				"./demo-computed-caption-src-block.Rnw"
+				nil t nil t)))
+#+END_SRC
+
+#+RESULTS:
+: ./demo-computed-caption-src-block.Rnw
 

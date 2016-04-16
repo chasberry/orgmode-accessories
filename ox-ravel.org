@@ -514,12 +514,12 @@ use `defcustom' here
 #+BEGIN_SRC emacs-lisp :tangle no
   (defvar org-ravel-style-alist
        '((rnw . (org-ravel-block-rnw org-ravel-inline-rnw ".Rnw"))
-        (brew . (org-ravel-block-brew org-ravel-inline-brew ".Rbrew"))
-        (tex  . (org-ravel-block-tex org-ravel-inline-tex ".Rtex"))
-        (html . (org-ravel-block-html org-ravel-inline-html ".Rhtml"))
-        (md   . (org-ravel-block-md org-ravel-inline-md ".Rmd"))
-        (braces   . (org-ravel-block-braces org-ravel-inline-braces ".Rtmpl"))
-        (rst  . (org-ravel-block-rst org-ravel-inline-rst ".Rrst"))))
+	(brew . (org-ravel-block-brew org-ravel-inline-brew ".Rbrew"))
+	(tex  . (org-ravel-block-tex org-ravel-inline-tex ".Rtex"))
+	(html . (org-ravel-block-html org-ravel-inline-html ".Rhtml"))
+	(md   . (org-ravel-block-md org-ravel-inline-md ".Rmd"))
+	(braces   . (org-ravel-block-braces org-ravel-inline-braces ".Rtmpl"))
+	(rst  . (org-ravel-block-rst org-ravel-inline-rst ".Rrst"))))
 #+END_SRC
 
 
@@ -1096,7 +1096,7 @@ transcoders for the parent backend.
   function.  To override this, create a variable with that name."
 
     (org-ravel-export-wrapper
-     (let ((org-confirm-babel-evaluate t)
+     (let ((org-confirm-babel-evaluate org-confirm-babel-evaluate)
 	   (file (or file
 		     (org-export-output-file-name
 		      (org-ravel-extension org-ravel-style) subtreep))))
@@ -1132,7 +1132,7 @@ transcoders for the parent backend.
   function.  To override this, create a variable with that name."
 
     (org-ravel-export-wrapper
-     (let ((org-confirm-babel-evaluate t)
+     (let ((org-confirm-babel-evaluate org-confirm-babel-evaluate)
 	   (buffer (or buffer
 		       (format "* %S Output *"
 			       (org-export-backend-name backend)))))

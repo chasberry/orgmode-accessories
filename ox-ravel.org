@@ -499,7 +499,7 @@ different chunk and inline styles.
                (const :tag "   CoffeeScript"
                       ("coffeescript" . "engine='coffeescript'"))
                (const :tag "   Polyglot" ("polyglot" . "engine='polyglot'"))
-               (string  :tag "   Other")))
+               (cons  :tag "   Other"  string  string)))
 
 
   (make-variable-buffer-local 'org-ravel-engines)
@@ -631,14 +631,14 @@ macro is used.
 		 (if ravel-it
 		     (setf (nth 1 dat)
 			   (plist-put (nth 1 dat) :language "ravel")))
-		 (let* ((dat2 
-		 (funcall org-ravel-get-s-b-info light dat))
+		 (let* ((dat2 (funcall org-ravel-get-s-b-info light dat))
 			(nth-2-dat2 (nth 2 dat2)))
 		   (if (or (not ravel-it)
-			   (equal (cdr (assoc :exports (nth 2 dat2))) "none"))
+			   (equal (cdr (assoc :exports nth-2-dat2)) "none"))
 		       dat2 ;; non-ravel or nothing to do
 		     (setf (cdr (assoc :exports nth-2-dat2)) "results")
-		     (add-to-list 'nth-2-dat2 `((:engine . ,engine-cdr))) 
+		     (add-to-list 'nth-2-dat2 `(:engine . ,engine-cdr))
+		     (setf (nth 2 dat2) nth-2-dat2)
 		     (if (eq 'inline-src-block (org-element-type dat))
 			 (org-ravel-set-raw-results dat2)
 		       (org-ravel-rewrap dat2))
@@ -1011,7 +1011,8 @@ transcoders for the parent backend.
     "Transcode a EXPORT-BLOCK element from Org to ravel.
   CONTENTS is nil.  INFO is a plist holding contextual information."
     (if (equal (org-element-property :type export-block) "RAVEL")
-	(org-element-property :value export-block)
+	(org-unescape-code-in-string
+	 (org-element-property :value export-block))
       (org-export-with-backend
              org-ravel-backend-parent export-block contents info)))
 

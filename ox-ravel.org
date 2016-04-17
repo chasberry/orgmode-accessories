@@ -475,18 +475,20 @@ different chunk and inline styles.
   Typically, `org-ravel-run' will default to these.  It can be
   buffer-local.  These engines are recognized by `knitr':
 
-        `R' `python' `awk' `ruby' `haskell' `bash' `perl' `dot'
-         `tikz' `sas' `coffeescript' and `polyglot'.
+	`R' `python' `awk' `ruby' `haskell' `bash' `perl' `dot'
+	 `tikz' `sas' `coffeescript', `c', `Rcpp', and `polyglot'.
 
   Each alist CONS cell has the language (as a string) for the CAR and
   any cdr is cons-ed to the ravel attributes.
 
   Buffer local values are allowed."
- 
+
    :group 'org-export-ravel
 
    :type '(set :greedy t
                (const :tag "   R" ("R") )
+               (const :tag "   C" ("c" . "engine='c'"))
+	       (const :tag "   Rcpp" ("c++" . "engine='Rcpp'"))
                (const :tag "   Python" ("python" . "engine='python'"))
                (const :tag "   AWK" ("awk" . "engine='awk'"))
                (const :tag "   Ruby" ("ruby" . "engine='ruby'"))
@@ -509,19 +511,6 @@ different chunk and inline styles.
 :TODOWHAT:
 use `defcustom' here
 :END:
-
-#+NAME: setq-org-ravel-style-alist
-#+BEGIN_SRC emacs-lisp :tangle no
-  (defvar org-ravel-style-alist
-       '((rnw . (org-ravel-block-rnw org-ravel-inline-rnw ".Rnw"))
-	(brew . (org-ravel-block-brew org-ravel-inline-brew ".Rbrew"))
-	(tex  . (org-ravel-block-tex org-ravel-inline-tex ".Rtex"))
-	(html . (org-ravel-block-html org-ravel-inline-html ".Rhtml"))
-	(md   . (org-ravel-block-md org-ravel-inline-md ".Rmd"))
-	(braces   . (org-ravel-block-braces org-ravel-inline-braces ".Rtmpl"))
-	(rst  . (org-ravel-block-rst org-ravel-inline-rst ".Rrst"))))
-#+END_SRC
-
 
 #+NAME: defcustom-org-ravel-style-alist
 #+BEGIN_SRC emacs-lisp 

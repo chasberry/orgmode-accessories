@@ -20,15 +20,19 @@ the new version of `org-babel-get-src-block-info':
 
 - ox-ravel.org :: description and definition of backends to create
                ~Sweave~, ~brew~, ~Rmd~, and ~html~ style files.
+- demos.org :: demonstrations of various ravel features and use cases.
+- test.org :: ERT unit tests of ravel features.
 - example-1-Rnw.org :: includes an orgmode translation of example-1 from the
      Sweave user's manual. Exporting with ~ravel-latex~ produces a
      file very similar to the =*.Rnw= code.
+
+- knitr-minimal-rhtml.org :: includes an orgmode translation of
+     =knitr-minimal.Rhtml= from the [[http://yihui.name/knitr/demos][the knitr demos page]].
+
 - test-cases.org :: this sets up to allow parallel exports using
                     ~latex~ and two derived backends ~ravel-latex~
                     and ~ravel-brew~ and inspect the =diffs= between
                     them.
-- knitr-minimal-rhtml.org :: includes an orgmode translation of
-     =knitr-minimal.Rhtml= from the [[http://yihui.name/knitr/demos][the knitr demos page]].
 
 - autodep.org :: orgmode translation of 017-auto-dependson.Rnw from
      [[https://github.com/yihui/knitr-examples][knitr examples page]] illustrates dependency aware caching of

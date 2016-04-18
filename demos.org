@@ -3,7 +3,7 @@
 #+OPTIONS: e:t email:nil f:t inline:t num:t p:nil pri:nil prop:nil
 #+OPTIONS: stat:t tags:t tasks:t tex:t timestamp:t toc:t todo:t |:t
 #+TITLE: demos
-#+DATE: <2014-08-26 Tue>
+#+DATE: <2014-08-26 Tue>, [2016-04-17 Sun]
 #+AUTHOR: Charles Berry
 #+EMAIL: ccberry@ucsd.edu
 #+DESCRIPTION: demonstrate/test ravel capabilities
@@ -13,11 +13,15 @@
 #+EXCLUDE_TAGS: noexport
 #+CREATOR: Emacs 24.3.1 (Org mode 8.3beta)
 
+To run all of the demonstrations, go to [[Run and Save All Demos]] and
+execute the src block there. Every other section has an example of
+ravel capabilities with instructions on how to run it and the expected
+result.
 
 * Simple R src block
   :PROPERTIES:
   :EXPORT_FILE_NAME: simple-src-block.pdf
-  :ID:       80D43BC0-3AB7-4483-ABEF-30C8E251B874
+  :CUSTOM_ID:       80D43BC0-3AB7-4483-ABEF-30C8E251B874
   :END:
 
 Run this interactively, viz.
@@ -25,7 +29,6 @@ Run this interactively, viz.
 : C-c C-e C-s C-b r L
 
 or from emacs-lisp using
-
 
 #+NAME: simple-R-src-block
 #+BEGIN_SRC emacs-lisp :exports code :wrap example
@@ -35,7 +38,6 @@ or from emacs-lisp using
                                nil t nil t))
   (buffer-substring-no-properties (point-min) (point-max))
 #+END_SRC
-
 
 #+NAME: simple-src-block
 #+BEGIN_SRC R
@@ -76,11 +78,10 @@ b <- 1 + a
 #+END_example
 
 
-
 * Simple inline src block
   :PROPERTIES:
   :EXPORT_FILE_NAME: simple-inline-src-block.pdf
-  :ID:       83121E77-5B68-4B81-A444-3B6A756EDD1C
+  :CUSTOM_ID:       83121E77-5B68-4B81-A444-3B6A756EDD1C
   :END:
 Run this interactively, viz.
 
@@ -137,7 +138,7 @@ Line containing \Sexpr{ sum(rnorm(10)) } inline src block
 * Src block with graph for Sweave
   :PROPERTIES:
   :EXPORT_FILE_NAME: graphic-src-block.pdf
-  :ID:       36234656-157D-4F1D-B441-E727DFCC0251
+  :CUSTOM_ID:       36234656-157D-4F1D-B441-E727DFCC0251
   :END:
 
 
@@ -164,10 +165,9 @@ abline(a=0,b=1,lty=2)
 R CMD Sweave --pdf graphic-src-block.Rnw
 #+END_SRC
 
-
-* Expanding a Document via knitr
+* Expanding a Document via ~knitr::knit_expand()~
   :PROPERTIES:
-  :ID:       EFF2E38D-38B5-4ED0-8048-028DADE7DDC4
+  :CUSTOM_ID:       EFF2E38D-38B5-4ED0-8048-028DADE7DDC4
   :END:
 
 The org-mode template in the ~stuff~ src block is read by the ~excode~ src
@@ -220,7 +220,7 @@ results block.
 * Src block with latex caption for knitr
   :PROPERTIES:
   :EXPORT_FILE_NAME: captioned-src-block.pdf
-  :ID:       C341969B-90F3-4C27-AA7F-5352A9669506
+  :CUSTOM_ID:       C341969B-90F3-4C27-AA7F-5352A9669506
   :END:
 
 
@@ -274,11 +274,10 @@ knit2pdf("captioned-src-block.Rnw")
 #+RESULTS: run-knitr-with-latex-caption
 : captioned-src-block.pdf
 
-
 * Src block with a computed caption for knitr
   :PROPERTIES:
   :EXPORT_FILE_NAME: computed-caption-src-block.pdf
-  :ID:       E73A2295-CCB9-43BE-9DA2-87A645366871
+  :CUSTOM_ID:       E73A2295-CCB9-43BE-9DA2-87A645366871
   :END:
 
 
@@ -370,40 +369,384 @@ knit2pdf("computed-caption-src-block.Rnw")
 
 
 
+* Example 090 engine-c
 
-* run all
+** Background
 
-#+BEGIN_SRC emacs-lisp :results file :file demo-knitr-expand.tex
-  (require 'ox-ravel)
+The [[https://github.com/yihui/knitr-examples/blob/master/090-engine-c.Rmd][Original Version]] is translated to org mode and slightly modified
+in [[Org Version of Example 090]]. The following src block will create a
+buffer nearly identical to the original/
+
+
+#+BEGIN_SRC emacs-lisp :exports results :results silent 
+  (require 'ox-md)
   (save-excursion
-    (org-id-goto "80D43BC0-3AB7-4483-ABEF-30C8E251B874")
+    (org-next-visible-heading 1)
+    (org-ravel-export-to-buffer 'ravel-markdown "Example 090 Rmd"
+				nil t nil nil nil nil
+				'(("R")("c" . "engine='c'"))))
+#+END_SRC
+
+
+Alternatively, with =ox-md= loaded and ~org-ravel-engines~ including an element:
+
+: ("c" . "engine='c'")
+if the point is placed under the [[Org Version of Example 090]] headline then
+
+: C-c C-e C-s r M
+
+will produce an Rmd buffer.
+
+** Org Version of Example 090
+  :PROPERTIES:
+  :CUSTOM_ID:       24159BC3-1F20-4A49-9268-CE416C2E7B7C
+  :END:
+
+
+: # Compile C Code
+
+#+BEGIN_SRC R
+  ## is gcc or clang there ?
+    Sys.which(c("gcc","clang"))
+#+END_SRC
+
+#+RESULTS:
+| /usr/bin/gcc   |
+| /usr/bin/clang |
+|                |
+
+
+#+NAME: test-c
+#+BEGIN_SRC c :ravel results="hide"
+void square(double *x) {
+  *x = *x * *x;
+}
+#+END_SRC
+
+Test the ~square()~ function:
+
+#+BEGIN_SRC R
+.C('square', 9)
+.C('square', 123)
+#+END_SRC
+
+** Expected Result 						   :noexport:
+
+#+BEGIN_EXAMPLE
+  # Compile C Code
+
+  ```{r   }
+  ## is gcc or clang there ?
+    Sys.which(c("gcc","clang")) 
+  ```
+
+  ```{r  test-c, results="hide", engine='c' }
+  void square(double *x) {
+    ,*x = *x * *x;
+  } 
+  ```
+
+  Test the `square()` function:
+
+  ```{r   }
+  .C('square', 9)
+  .C('square', 123) 
+  ```
+#+END_EXAMPLE
+
+* Example 029 engine-Rcpp
+
+** Background
+
+The [[https://github.com/yihui/knitr-examples/blob/master/029-engine-Rcpp.Rmd][Original Version]] is translated to org mode and slightly modified
+in [[Org Version of Example 029]]. The following src block will create a
+buffer nearly identical to the original/
+
+
+#+BEGIN_SRC emacs-lisp :exports results :results silent 
+  (require 'ox-md)
+  (save-excursion
+    (org-next-visible-heading 1)
+    (org-ravel-export-to-buffer 'ravel-markdown "Example 029 Rmd"
+				nil t nil nil nil nil
+				'(("R")("c++" . "engine='Rcpp'"))))
+#+END_SRC
+
+Alternatively, with =ox-md= loaded and ~org-ravel-engines~ including an element:
+
+: ("c++" . "engine='Rcpp'")
+
+if the point is placed under the [[Org Version of Example 029]] headline then
+
+: C-c C-e C-s r M
+
+will produce an Rmd buffer.
+
+** Org Version of Example 029
+   :PROPERTIES:
+   :CUSTOM_ID:       7C6F9A2F-01CF-477F-A26B-0B8FFFBF18C1
+   :END:
+
+: # Call Rcpp from knitr
+
+#+NAME: setup
+#+BEGIN_SRC R setup, include=FALSE}
+library(knitr)
+opts_chunk$set(cache = TRUE) # because the compilation takes time, let's cache it
+#+END_SRC
+
+When the chunk option ~engine='Rcpp'~ is specified (or you write the
+chunk header as =```{Rcpp}=), the code chunk will be compiled through
+*Rcpp* via ~sourceCpp()~:
+
+Test for ~fibonacci~:
+
+#+NAME: fibCpp
+#+BEGIN_SRC c++
+#include <Rcpp.h>
+
+// [[Rcpp::export]]
+int fibonacci(const int x) {
+    if (x == 0 || x == 1) return(x);
+    return (fibonacci(x - 1)) + fibonacci(x - 2);
+}
+#+END_SRC
+
+Because ~fibonacci~ was defined with the ~Rcpp::export~ attribute it can now be called as a normal R function:
+
+#+NAME: fibTest
+#+BEGIN_SRC R :ravel dependson='fibCpp'
+fibonacci(10L)
+fibonacci(20L)
+#+END_SRC
+
+You can define multiple functions (or helper functions that are not exported) within Rcpp code chunks:
+
+#+NAME: multipleCpp
+#+BEGIN_SRC c++
+  #include <Rcpp.h>
+  using namespace Rcpp;
+
+  // [[Rcpp::export]]
+  NumericVector convolveCpp(NumericVector a, NumericVector b) {
+
+      int na = a.size(), nb = b.size();
+      int nab = na + nb - 1;
+      NumericVector xab(nab);
+
+      for (int i = 0; i < na; i++)
+          for (int j = 0; j < nb; j++)
+              xab[i + j] += a[i] * b[j];
+
+      return xab;
+  }
+
+  // [[Rcpp::export]]
+  List lapplyCpp(List input, Function f) {
+
+      List output(input.size());
+
+      std::transform(input.begin(), input.end(), output.begin(), f);
+      output.names() = input.names();
+
+      return output;
+  }
+#+END_SRC
+
+If you want to link to code defined in another package (e.g **RcppArmadillo**) then you need to provide an ~Rcpp::depends~ attribute. For example:
+
+#+NAME: lmCpp
+#+BEGIN_SRC c++
+// [[Rcpp::depends(RcppArmadillo)]]
+
+#include <RcppArmadillo.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+List fastLm(NumericVector yr, NumericMatrix Xr) {
+
+    int n = Xr.nrow(), k = Xr.ncol();
+
+    arma::mat X(Xr.begin(), n, k, false); // reuses memory and avoids extra copy
+    arma::colvec y(yr.begin(), yr.size(), false);
+
+    arma::colvec coef = arma::solve(X, y);      // fit model y ~ X
+    arma::colvec resid = y - X*coef;            // residuals
+
+    double sig2 = arma::as_scalar( arma::trans(resid)*resid/(n-k) );
+                                                // std.error of estimate
+    arma::colvec stderrest = arma::sqrt(
+                    sig2 * arma::diagvec( arma::inv(arma::trans(X)*X)) );
+
+    return List::create(Named("coefficients") = coef,
+                        Named("stderr")       = stderrest
+    );
+}
+#+END_SRC
+
+A test:
+
+#+NAME: lmTest
+#+BEGIN_SRC R :ravel dependson='lmCpp'
+fastLm(rnorm(10), matrix(1:20, ncol = 2))
+#+END_SRC
+
+Finally, you can pass additional arguments to ~sourceCpp()~ via the chunk option ~engine.opts~. For example, we can specify ~engine.opts=list(showOutput=TRUE, rebuild=FALSE)~ to show the output of ~R CMD SHLIB~.
+** Expected Result						   :noexport:
+
+#+BEGIN_EXAMPLE
+  # Call Rcpp from knitr
+
+  ```{r  setup }
+  library(knitr)
+  opts_chunk$set(cache = TRUE) # because the compilation takes time, let's cache it 
+  ```
+
+  When the chunk option `engine='Rcpp'` is specified (or you write the
+  chunk header as `` ```{Rcpp} ``), the code chunk will be compiled through
+  ,**Rcpp** via `sourceCpp()`:
+
+  Test for `fibonacci`:
+
+  ```{r  fibCpp, engine='Rcpp' }
+  #include <Rcpp.h>
+
+  // [[Rcpp::export]]
+  int fibonacci(const int x) {
+      if (x == 0 || x == 1) return(x);
+      return (fibonacci(x - 1)) + fibonacci(x - 2);
+  } 
+  ```
+
+  Because `fibonacci` was defined with the `Rcpp::export` attribute it can now be called as a normal R function:
+
+  ```{r  fibTest, dependson='fibCpp' }
+  fibonacci(10L)
+  fibonacci(20L) 
+  ```
+
+  You can define multiple functions (or helper functions that are not exported) within Rcpp code chunks:
+
+  ```{r  multipleCpp, engine='Rcpp' }
+  #include <Rcpp.h>
+  using namespace Rcpp;
+
+  // [[Rcpp::export]]
+  NumericVector convolveCpp(NumericVector a, NumericVector b) {
+
+      int na = a.size(), nb = b.size();
+      int nab = na + nb - 1;
+      NumericVector xab(nab);
+
+      for (int i = 0; i < na; i++)
+          for (int j = 0; j < nb; j++)
+              xab[i + j] += a[i] * b[j];
+
+      return xab;
+  }
+
+  // [[Rcpp::export]]
+  List lapplyCpp(List input, Function f) {
+
+      List output(input.size());
+
+      std::transform(input.begin(), input.end(), output.begin(), f);
+      output.names() = input.names();
+
+      return output;
+  } 
+  ```
+
+  If you want to link to code defined in another package (e.g ****RcppArmadillo****) then you need to provide an `Rcpp::depends` attribute. For example:
+
+  ```{r  lmCpp, engine='Rcpp' }
+  // [[Rcpp::depends(RcppArmadillo)]]
+
+  #include <RcppArmadillo.h>
+
+  using namespace Rcpp;
+
+  // [[Rcpp::export]]
+  List fastLm(NumericVector yr, NumericMatrix Xr) {
+
+      int n = Xr.nrow(), k = Xr.ncol();
+
+      arma::mat X(Xr.begin(), n, k, false); // reuses memory and avoids extra copy
+      arma::colvec y(yr.begin(), yr.size(), false);
+
+      arma::colvec coef = arma::solve(X, y);      // fit model y ~ X
+      arma::colvec resid = y - X*coef;            // residuals
+
+      double sig2 = arma::as_scalar( arma::trans(resid)*resid/(n-k) );
+                                                  // std.error of estimate
+      arma::colvec stderrest = arma::sqrt(
+                      sig2 * arma::diagvec( arma::inv(arma::trans(X)*X)) );
+
+      return List::create(Named("coefficients") = coef,
+                          Named("stderr")       = stderrest
+      );
+  } 
+  ```
+
+  A test:
+
+  ```{r  lmTest, dependson='lmCpp' }
+  fastLm(rnorm(10), matrix(1:20, ncol = 2)) 
+  ```
+
+  Finally, you can pass additional arguments to `sourceCpp()` via the chunk option `engine.opts`. For example, we can specify `engine.opts=list(showOutput=TRUE, rebuild=FALSE)` to show the output of `R CMD SHLIB`.
+#+END_EXAMPLE
+
+
+* Run and Save All Demos
+
+The following src block saves the results of the above sections to the
+directory =ravel-demo-results=.
+
+#+BEGIN_SRC emacs-lisp :results file :file ravel-demo-results/knitr-expand.tex
+  (require 'ox-ravel)
+  (make-directory "ravel-demo-results" t)
+  (save-excursion
+    (org-babel-ref-goto-headline-id 
+     "80D43BC0-3AB7-4483-ABEF-30C8E251B874")
     (org-ravel-export-to-file 'ravel-latex
-			      "./demo-simple-src-block.Rnw"
+			      "./ravel-demo-results/simple-src-block.Rnw"
 			      nil t nil t)
-  
-    (org-id-goto "83121E77-5B68-4B81-A444-3B6A756EDD1C")
+
+    (org-babel-ref-goto-headline-id "83121E77-5B68-4B81-A444-3B6A756EDD1C")
     (org-ravel-export-to-file 'ravel-latex
-			      "./demo-simple-inline-src-block.Rnw"
+			      "./ravel-demo-results/simple-inline-src-block.Rnw"
 			      nil t nil t)
-  
-    (org-id-goto "36234656-157D-4F1D-B441-E727DFCC0251")
+
+    (org-babel-ref-goto-headline-id "36234656-157D-4F1D-B441-E727DFCC0251")
     (org-ravel-export-to-file 'ravel-latex
-			      "./demo-graphic-src-block.Rnw"
+			      "./ravel-demo-results/graphic-src-block.Rnw"
 			      nil t nil t)
     (let ((org-confirm-babel-evaluate nil))
-      (org-id-goto "C341969B-90F3-4C27-AA7F-5352A9669506")
+      (org-babel-ref-goto-headline-id "C341969B-90F3-4C27-AA7F-5352A9669506")
       (org-ravel-export-to-file 'ravel-latex
-				"./demo-captioned-src-block.Rnw"
+				"./ravel-demo-results/captioned-src-block.Rnw"
 				nil t nil t)
-      (org-id-goto "E73A2295-CCB9-43BE-9DA2-87A645366871")
+      (org-babel-ref-goto-headline-id "E73A2295-CCB9-43BE-9DA2-87A645366871")
       (org-ravel-export-to-file 'ravel-latex
-				"./demo-computed-caption-src-block.Rnw"
-				nil t nil t)))
+				"./ravel-demo-results/computed-caption-src-block.Rnw"
+				nil t nil t))
+    (org-babel-ref-goto-headline-id "24159BC3-1F20-4A49-9268-CE416C2E7B7C")
+    (org-ravel-export-to-file 'ravel-markdown
+			      "./ravel-demo-results/Example-090.Rmd"
+			      nil t nil nil nil nil
+			      '(("R")("c" . "engine='c'")))
+    (org-babel-ref-goto-headline-id "7C6F9A2F-01CF-477F-A26B-0B8FFFBF18C1")
+    (org-ravel-export-to-file 'ravel-markdown
+				"./ravel-demo-results/Example-029.Rmd"
+				nil t nil nil nil nil
+				'(("R")("c++" . "engine='Rcpp'"))))
   (require 'ob-org)
   (let ((org-confirm-babel-evaluate nil))
     (org-sbe "knit-expand" (ktmp excode)))
 #+END_SRC
 
 #+RESULTS:
-[[file:demo-knitr-expand.tex]]
+[[file:ravel-demo-results/knitr-expand.tex]]
 

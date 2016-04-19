@@ -7,21 +7,15 @@
 #+DESCRIPTION: Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
-#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:
-#+LINK_HOME:
-#+XSLT:
 #+DRAWERS: DEVNOTES TODOWHAT
 #+PROPERTY: header-args :tangle ox-ravel.el :comments org
 
 
 * Background
   :PROPERTIES:
-  :eval:     never
+  :header-args: :eval never
   :END:
 
 *Note this version requires at least this commit of Org mode* utilizing
@@ -158,8 +152,8 @@ code, reorganize the presentation, and so on.
 
 * lisp setup
   :PROPERTIES:
-  :eval:     never
   :CUSTOM_ID: lispset
+  :header-args: :eval never
   :END:
 
 ** extract ox-ravel.el and load it
@@ -192,83 +186,14 @@ can be used. Check out
  from =github.com/yihui/knitr-examples/=
 * ravel
   :PROPERTIES:
-  :eval:     never
+  :header-args: :eval never
   :END:
-
-*************** 
-
-Things to think about:
-- load, require, autoload, provide
-- Commentary and Code as per checkDoc
-- dexy does integration of documents, see [[http://www.dexy.it/faq/#how-is-dexy-different-to-sweave][Dexy FAQ]], maybe later ...
-
-- melpa might be a good way to distribute: [[http://melpa.milkbox.net/][MELPA homepage]]
-
-- DO flet: use org-flet instead - [2012-08-17 Fri] HUH? org-flet is
-  gone!!! Back to plain old flet. Push this to github along with other
-  new stuff.
-
-- DONE: I have set up to combine :ravel and #+ATTR_RAVEL: then
-
-- Save the header info as #+ATTR_R-HEADERS: then parse the header info in
-  the src block function and
-  possibly refer to its values in setting up the chunk.
-
-- exporting brew style to *.org might be an awesome capability. Here is how to do it:
-  1. write the usual code including `:ravel <%[=] ... [{}][-]%>' arguments
-     - install a hook for org-export-before-parsing-hook that will
-     - (copy and) save the temp buffer
-     - run R and call brew( <the saved copy> )
-     - ad-deactivate as needed
-     - (stop "all done") or
-     - copy the saved buffer back to working buffer and continue. Under
-       this option, one can later use the saved buffer to export to
-       other formats
-     - then just export with any backend that supports brew
-  2. put brew delimiters in an *.org file
-     - run brew on that file and write another file
-     - export that file as usual, possibly letting babel work as usual
-
-
-Mostly DONE:
-- so here is what I am figuring out:
-  - DONE need to advise org-babel-exp-do-export
-    - to strip results of R blocks
-    - to pre-format R src-blocks and inline src blocks
-    - to pre-format and possibly run non-R source blocks according to
-      the original parent (e.g. latex)
-  - DONE advise org-export-as to
-    - add hook for pre-parsed buffer
-    - ad-activate org-babel-exp-do-export
-    - ad-do-it
-    - remove hook for pre-parsed buffer
-    - ad-deactivate
-    so that other back-ends are not tripped up
-  - DONE define a universal src-block function
-  - DONE define a universal inline-src-block function
-  - define a back-end specific src-block format [DONE for latex-brew
-    and latex-noweb]
-  - define a back-end specific inline-src-block format [LIKEWISE]
-  - DONE for the non-R src block function, use the ancestral version
-  - DONE for the non-R inline src block function, use ancestor
-  - NB ( assoc 'src-block (reverse org-rnw-translate-alist)) will
-    find the ancestor!!!! - might need to revise for multiply derived
-    backends like ox-md.
-  - NB org-export-before-parsing-hook is handy - it can remove delimiters
-    I insert to subvert babel's machinations.
-  - need to add a native knitr backend
-  - DONE src_R{} idiom is tricky. org-babel-inline-src-block-regexp
-    needs whitespace between the [args] if any in the src_R call. So,
-    I add that in the flet'ed version of org-babel-execute:R.
-
-    
-*************** END
 
 ** The elisp header for ox-ravel.el
 
  #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :comments no
    ;;; ox-ravel.el --- Sweave/knit/brew document maker for orgmode
-   ;; Copyright (C) 2012,2014  Charles C. Berry
+   ;; Copyright (C) 2012,2014,2016  Charles C. Berry
 
    ;; This program is free software: you can redistribute it and/or modify
    ;; it under the terms of the GNU General Public License as published by
@@ -284,8 +209,19 @@ Mostly DONE:
    ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
    ;;; Commentary:
-   ;;              See ox-ravel.org for details.
    ;;
+   ;;              Several exporters are provided for translating from
+   ;;              Org to formats for reproducible research using
+   ;;              document generating engines such as Sweave, brew,
+   ;;              knitr, rmarkdown, et cetera. Typically, R src blocks
+   ;;              are converted to `code chunks' in the desired format
+   ;;              and the rest of the Org document is translated to
+   ;;              latex, html, markdown, or some other document format.
+   ;;
+   ;;              See ox-ravel.org in the orgmode-accessories archive on
+   ;;              github for details.  Also see demos.org and other
+   ;;              *.org files for examples of usage.
+
    ;;; Code:
    ;;
  #+END_SRC
@@ -295,11 +231,7 @@ Mostly DONE:
  #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
    (require 'cl-lib)
    (require 'ox)
- #+end_src
-
  #+END_SRC
- :END:
-
 
 ** using and extending ravel
 
@@ -380,7 +312,7 @@ Some care is needed. Arguments for some backends may conflict with
 other backends. In future development, it might help to prefix
 arguments with the name of their backend.
 
-*** TODO using Babel header arguments in exported code chunks
+*** using Babel header arguments in exported code chunks
 
 Babel headers as a string parseable by
 `org-babel-parse-header-arguments' are made available to the
@@ -424,7 +356,7 @@ different chunk and inline styles.
 
 ** variables
 *** defconst-org-babel-header-args:ravel
-#+NAME: defconst-org-babel-header-args:ravel
+#+NAME: defconst-org-babel-header-args-ravel
 #+BEGIN_SRC emacs-lisp
   (defconst org-babel-header-args:ravel
     '(
@@ -741,7 +673,7 @@ nil in which case, I do not reset it.
 actual code is run. Also need to add some kind of alias for edit modes
 if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 
-#+NAME: defun-org-babel-execute:ravel
+#+NAME: defun-org-babel-execute-ravel
 #+BEGIN_SRC emacs-lisp
   (defun org-babel-execute:ravel (body params)
     "Format BODY as ravel according to PARAMS."
@@ -843,7 +775,6 @@ functions to be so called.
                              (cons ravelarg ravel-attr))) ", "))
 
 #+END_SRC
-
 
 ** defmacro-org-ravel-style-x
 #+NAME: defmacro-org-ravel-style-x
@@ -983,6 +914,18 @@ See the `org-ravel-style-x' docstring for more details.
   "{{%s}}")
 
 #+END_SRC
+*** org-ravel-style-x-rst
+
+#+NAME: org-ravel-style-x-rst
+#+BEGIN_SRC emacs-lisp
+  (org-ravel-style-x "rst"
+		     "..{r %s}\n%s\n.. .."
+		     ":r:`%s`"
+		     "%")
+#+END_SRC
+
+*** TODO org-ravel-style-x-asciidoc
+*** TODO org-ravel-style-x-textile
 * Exporter
 ** Transcoders
 

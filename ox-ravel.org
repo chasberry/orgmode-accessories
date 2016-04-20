@@ -229,8 +229,11 @@ can be used. Check out
  Prerequisites
 
  #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
-   (require 'cl-lib)
+   ;;; Requisites and Declarations
+   (eval-when-compile (require 'cl))
    (require 'ox)
+
+   (declare-function org-babel-expand-body:R "ob-R.el" )
  #+END_SRC
 
 ** using and extending ravel

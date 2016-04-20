@@ -199,7 +199,13 @@ and type 'y' to each query.
 	 (org-ravel-export-string-as block 'latex t)))))
  #+END_SRC
 
+ #+RESULTS:
+ : ox-ravel/export-block-snippet-use-parent
+
+
 ** run tests
+
+After running the [[define setup and tests][setup]]:
 
 Run the tests like this:
 
@@ -211,7 +217,7 @@ or by executing this block
   (ert "ox-ravel/.*" "ravel-ert-buffer")
   (with-temp-buffer
     (insert-buffer-substring "ravel-ert-buffer")
-    (kill-buffer "ert-buffer")
+    (kill-buffer "ravel-ert-buffer")
     (buffer-substring-no-properties (point-min) (point-max)))
 #+END_SRC
 

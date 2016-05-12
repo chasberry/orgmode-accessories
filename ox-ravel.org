@@ -356,7 +356,6 @@ The examples below should serve to show what is needed to create
 different chunk and inline styles.
 
 * Babel
-
 ** variables
 *** defconst-org-babel-header-args:ravel
 #+NAME: defconst-org-babel-header-args-ravel
@@ -422,8 +421,10 @@ different chunk and inline styles.
 
    :type '(set :greedy t
                (const :tag "   R" ("R") )
-               (const :tag "   C" ("c" . "engine='c'"))
-	       (const :tag "   Rcpp" ("c++" . "engine='Rcpp'"))
+               (const :tag "   c" ("c" . "engine='c'"))
+	       (const :tag "   rcpp" ("c++" . "engine='Rcpp'"))
+               (const :tag "   C" ("C" . "engine='c'"))
+	       (const :tag "   Rcpp" ("C++" . "engine='Rcpp'"))
                (const :tag "   Python" ("python" . "engine='python'"))
                (const :tag "   AWK" ("awk" . "engine='awk'"))
                (const :tag "   Ruby" ("ruby" . "engine='ruby'"))

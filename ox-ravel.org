@@ -399,7 +399,6 @@ different chunk and inline styles.
 
 *** defcustom-org-ravel-engines
 
-
 #+NAME: defcustom-org-ravel-engines
 #+BEGIN_SRC emacs-lisp
 
@@ -443,10 +442,8 @@ different chunk and inline styles.
   (make-variable-buffer-local 'org-ravel-engines)
 #+END_SRC
 
-*** TODO defvar-org-ravel-style-alist
-:TODOWHAT:
-use `defcustom' here
-:END:
+*** defvar-org-ravel-style-alist
+
 
 #+NAME: defcustom-org-ravel-style-alist
 #+BEGIN_SRC emacs-lisp 
@@ -492,85 +489,6 @@ use `defcustom' here
 
 #+END_SRC
 ** functions, macros,  and advice
-
-*** defmacro-org-ravel-export-wrapper
-
-See [[*defun-org-ravel-export-string-as][defun-org-ravel-export-string-as]] as an example of how this
-macro is used.
-
-#+BEGIN_SRC emacs-lisp
-  (defmacro org-ravel-export-wrapper (&rest body)
-    "Set up the preliminaries for the BODY of an export function.
-
-  `org-ravel-export-to-file' and similar actions need to redefine
-   `org-babel-get-src-block-info' and restore the
-   function to its original value on exit, set values for
-   `org-ravel-run' and for `org-ravel-style', force the `backend'
-   to be ravel compliant and let-bind its parent as
-   `org-ravel-backend-parent', and (by default) turn off
-   confirmation for the evaluation of ravel blocks.
-
-  `(org-ravel-export-wrapper BODY)' when used inside a `defun' will
-  take care of these issues.
-
-  Use of this macro outside of ravel export functions is
-  discouraged as it can corrupt the cache used by the
-  `org-element-*' functions.  In case of these issues,
-  `org-element-cache-reset' will straighten things out."
-    (declare (indent 1) (debug (form body)))
-    `(let* ((org-ravel-get-s-b-info
-	     ;; avoid recursive redefinition
-	     (or (org-bound-and-true-p org-ravel-get-s-b-info)
-		 (symbol-function
-		  'org-babel-get-src-block-info)))
-	    ;; set ravel variables
-	    (org-ravel-run
-	     (or  engines org-ravel-run org-ravel-engines))
-	    (bk-orig
-	     (if (symbolp backend)
-		 (org-export-get-backend backend) backend))
-	    (ravel-style-option
-	     (assq :ravel-style
-		   (org-export-backend-options bk-orig)))
-	    (backend (if ravel-style-option bk-orig
-		       (unless style
-			 (message "Non ravel BACKEND might need STYLE."))
-		       (org-ravel-create-backend
-			(org-export-backend-name bk-orig) style)))
-	    (org-ravel-backend-parent (org-export-backend-parent backend))
-	    (org-ravel-style
-	     (or style org-ravel-style
-		 (nth 3
-		      (assoc :ravel-style
-			     (org-export-backend-options
-			      backend)))))
-	    (org-confirm-babel-evaluate org-confirm-babel-evaluate))
-       ;; org-babel-get-src-block-info will modify info for ravel blocks
-       (letf
-	   (((symbol-function 'org-babel-get-src-block-info)
-	     (lambda (&optional light datum)
-	       (let* ((dat (or datum (org-element-context)))
-		      (lang (org-element-property :language dat))
-		      (ravel-it (assoc lang org-ravel-run))
-		      (engine-cdr (and ravel-it (cdr ravel-it))))
-		 (if ravel-it
-		     (setf (nth 1 dat)
-			   (plist-put (nth 1 dat) :language "ravel")))
-		 (let* ((dat2 (funcall org-ravel-get-s-b-info light dat))
-			(nth-2-dat2 (nth 2 dat2)))
-		   (if (or (not ravel-it)
-			   (equal (cdr (assoc :exports nth-2-dat2)) "none"))
-		       dat2 ;; non-ravel or nothing to do
-		     (setf (cdr (assoc :exports nth-2-dat2)) "results")
-		     (add-to-list 'nth-2-dat2 `(:engine . ,engine-cdr))
-		     (setf (nth 2 dat2) nth-2-dat2)
-		     (if (eq 'inline-src-block (org-element-type dat))
-			 (org-ravel-set-raw-results dat2)
-		       (org-ravel-rewrap dat2))
-		     dat2))))))
-	 ,@body)))
-#+END_SRC
-
 *** defun-org-babel-expand-body:ravel
 
 
@@ -652,7 +570,6 @@ Confirmation of ravel `execution' is a nuisance --- and no code is
 actually run --- so disable confirmations for `ravel' src blocks.
 This can be overridden by `(setq org-ravel-no-confirm-for-ravel t)' if
 ever needed.
-
 
 Maybe need to add check if (functionp org-confirm-babel-evaluate) is
 nil in which case, I do not reset it.
@@ -966,8 +883,6 @@ transcoders for the parent backend.
 
 #+END_SRC
 ** export to file, to buffer, string as string
-
-
 *** defun-org-ravel-create-backend
 #+BEGIN_SRC emacs-lisp
   (defun  org-ravel-create-backend (parent &optional style)
@@ -981,6 +896,84 @@ transcoders for the parent backend.
      :options `((:ravel-style "RAVEL_STYLE" nil ,style t))
      :blocks    '("RAVEL")))
 
+#+END_SRC
+
+*** defmacro-org-ravel-export-wrapper
+
+See [[*defun-org-ravel-export-string-as][defun-org-ravel-export-string-as]] as an example of how this
+macro is used.
+
+#+BEGIN_SRC emacs-lisp
+  (defmacro org-ravel-export-wrapper (&rest body)
+    "Set up the preliminaries for the BODY of an export function.
+
+  `org-ravel-export-to-file' and similar actions need to redefine
+   `org-babel-get-src-block-info' and restore the
+   function to its original value on exit, set values for
+   `org-ravel-run' and for `org-ravel-style', force the `backend'
+   to be ravel compliant and let-bind its parent as
+   `org-ravel-backend-parent', and (by default) turn off
+   confirmation for the evaluation of ravel blocks.
+
+  `(org-ravel-export-wrapper BODY)' when used inside a `defun' will
+  take care of these issues.
+
+  Use of this macro outside of ravel export functions is
+  discouraged as it can corrupt the cache used by the
+  `org-element-*' functions.  In case of these issues,
+  `org-element-cache-reset' will straighten things out."
+    (declare (indent 1) (debug (form body)))
+    `(let* ((org-ravel-get-s-b-info
+	     ;; avoid recursive redefinition
+	     (or (org-bound-and-true-p org-ravel-get-s-b-info)
+		 (symbol-function
+		  'org-babel-get-src-block-info)))
+	    ;; set ravel variables
+	    (org-ravel-run
+	     (or  engines org-ravel-run org-ravel-engines))
+	    (bk-orig
+	     (if (symbolp backend)
+		 (org-export-get-backend backend) backend))
+	    (ravel-style-option
+	     (assq :ravel-style
+		   (org-export-backend-options bk-orig)))
+	    (backend (if ravel-style-option bk-orig
+		       (unless style
+			 (message "Non ravel BACKEND might need STYLE."))
+		       (org-ravel-create-backend
+			(org-export-backend-name bk-orig) style)))
+	    (org-ravel-backend-parent (org-export-backend-parent backend))
+	    (org-ravel-style
+	     (or style org-ravel-style
+		 (nth 3
+		      (assoc :ravel-style
+			     (org-export-backend-options
+			      backend)))))
+	    (org-confirm-babel-evaluate org-confirm-babel-evaluate))
+       ;; org-babel-get-src-block-info will modify info for ravel blocks
+       (letf
+	   (((symbol-function 'org-babel-get-src-block-info)
+	     (lambda (&optional light datum)
+	       (let* ((dat (or datum (org-element-context)))
+		      (lang (org-element-property :language dat))
+		      (ravel-it (assoc lang org-ravel-run))
+		      (engine-cdr (and ravel-it (cdr ravel-it))))
+		 (if ravel-it
+		     (setf (nth 1 dat)
+			   (plist-put (nth 1 dat) :language "ravel")))
+		 (let* ((dat2 (funcall org-ravel-get-s-b-info light dat))
+			(nth-2-dat2 (nth 2 dat2)))
+		   (if (or (not ravel-it)
+			   (equal (cdr (assoc :exports nth-2-dat2)) "none"))
+		       dat2 ;; non-ravel or nothing to do
+		     (setf (cdr (assoc :exports nth-2-dat2)) "results")
+		     (add-to-list 'nth-2-dat2 `(:engine . ,engine-cdr))
+		     (setf (nth 2 dat2) nth-2-dat2)
+		     (if (eq 'inline-src-block (org-element-type dat))
+			 (org-ravel-set-raw-results dat2)
+		       (org-ravel-rewrap dat2))
+		     dat2))))))
+	 ,@body)))
 #+END_SRC
 *** defun-org-ravel-export-string-as
 #+NAME: defun-org-ravel-export-string-as

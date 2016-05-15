@@ -966,6 +966,9 @@ macro is used.
 		   (if (or (not ravel-it)
 			   (equal (cdr (assoc :exports nth-2-dat2)) "none"))
 		       dat2 ;; non-ravel or nothing to do
+		     (add-to-list
+		      'nth-2-dat2
+		      `(:exports-arg . ,(cdr (assoc :exports nth-2-dat2))))
 		     (setf (cdr (assoc :exports nth-2-dat2)) "results")
 		     (add-to-list 'nth-2-dat2 `(:engine . ,engine-cdr))
 		     (setf (nth 2 dat2) nth-2-dat2)

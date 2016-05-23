@@ -193,7 +193,7 @@ can be used. Check out
 
  #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :comments no
    ;;; ox-ravel.el --- Sweave/knit/brew document maker for orgmode
-   ;; Copyright (C) 2012,2014,2016  Charles C. Berry
+   ;; Copyright (C) 2012---2016  Charles C. Berry
 
    ;; This program is free software: you can redistribute it and/or modify
    ;; it under the terms of the GNU General Public License as published by
@@ -263,22 +263,25 @@ usual export mechanism in which the source code (aka src blocks) are
 evaluated by orgmode's Babel engine and (optionally) code and/or
 results are passed to the exporter.
 
-Before the document is parsed, Babel is run. However, R src blocks are
-not evaluated in the usual way. Instead they are processed as if they
-were ~ravel~ language src blocks. The ~ravel~ language takes a block
-of code and marks it up to define chunks according to the convention
-of Sweave, knitr, or some other report generator.  Src blocks with the
-~:noweb yes~ header argument are expanded (by inserting the code from
-the blocks in the noweb references) before being marked up.  R src
-blocks that have the ~:exports none~ header argument are ignored. Src
-blocks in other languages are evaluated and exported as usual.
+Before the document is parsed, Babel is run. However, src blocks are
+not evaluated in the usual way if their language is a key in the
+~org-ravel-engines~ alist (which by default includes =R=). Instead
+they are processed as if they were ~ravel~ language src blocks. The
+~ravel~ language takes a block of code and marks it up to define
+chunks according to the convention of Sweave, knitr, or some other
+report generator.  Src blocks with the ~:noweb yes~ header argument
+are expanded (by inserting the code from the blocks in the noweb
+references) before being marked up.  Src blocks that have the
+~:exports none~ header argument are ignored. Src blocks in other
+languages than those in ~org-ravel-engines~ are evaluated and exported
+as usual.
 
 Thus, a document can define many R src blocks and select a few to
 export by constructing a subtree with src blocks that include noweb
 references in them and for which ~:noweb yes~ is specified. Then, just
 that subtree can be exported.
 
-An R header argument named ~:ravel~ and ~:attr_ravel~ properties are
+A header argument named ~:ravel~ and ~:attr_ravel~ properties are
 passed to the exporter for use as options in the ultimate code
 chunks. So, ~knitr~ chunk options such as 'results="as.is"' would be
 given as ~ravel~ arguments. The way these are handled depends on the
@@ -287,7 +290,7 @@ they are used to construct variants of the '<% ... %>' code
 delimiters.
 
 Once Babel is finished, the exporter takes over. Typically, an export
-backend is dierived from an existing backend like ~latex~, and
+backend is derived from an existing backend like ~latex~, and
 merely adds transcoders for handling the marked up src blocks or
 inline src, and menu selections.
 
@@ -298,7 +301,7 @@ Currently, backends are avaiable for
 - ~ravel-latex~ :: LaTeX Sweave, knitr, or brew documents
 - ~ravel-beamer~ :: LaTeX Sweave and knitr beamer documents
 - ~ravel-markdown-~ :: Markdown knitr documents
-  - ~ravel-html~ :: HTML knitr/Rhtml documents
+- ~ravel-html~ :: HTML knitr/Rhtml documents
 
 
 A look at the ~*.org~ files in [[examples][the examples section]] should provide a
@@ -354,6 +357,12 @@ ingredients needed:
 
 The examples below should serve to show what is needed to create
 different chunk and inline styles.
+
+Also, the functions ~org-ravel-export-string-as~,
+~org-ravel-export-to-file~, and ~org-ravel-export-to-buffer~ can
+accept ordinary backends as arguments, but it is usually necessary to
+specify an argument for the style with which chunks are formed for
+proper processing.
 
 * Babel
 ** variables

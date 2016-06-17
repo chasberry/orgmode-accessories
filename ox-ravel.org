@@ -634,7 +634,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 	     (setq ravel-attr
 		   (cons engine
 			 ravel-attr)))
-           (if (equal type 'inline-src-block)
+           (if (memq type '(inline-src-block inline-babel-call))
                (org-ravel-snippetize chunk-style ravelarg non-ravelargs full-body)
              (org-ravel-blockify chunk-style label ravelarg ravel-attr
 				 non-ravelargs full-body))))))

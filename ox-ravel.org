@@ -934,7 +934,7 @@ macro is used.
     (declare (indent 1) (debug (form body)))
     `(let* ((org-ravel-get-s-b-info
 	     ;; avoid recursive redefinition
-	     (or (org-bound-and-true-p org-ravel-get-s-b-info)
+	     (or (bound-and-true-p org-ravel-get-s-b-info)
 		 (symbol-function
 		  'org-babel-get-src-block-info)))
 	    ;; set ravel variables

@@ -230,7 +230,7 @@ can be used. Check out
 
  #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el
    ;;; Requisites and Declarations
-   (eval-when-compile (require 'cl))
+   (eval-when-compile (require 'cl-lib))
    (require 'ox)
 
    (declare-function org-babel-expand-body:R "ob-R.el" )
@@ -960,7 +960,7 @@ macro is used.
 			      backend)))))
 	    (org-confirm-babel-evaluate org-confirm-babel-evaluate))
        ;; org-babel-get-src-block-info will modify info for ravel blocks
-       (letf
+       (cl-letf
 	   (((symbol-function 'org-babel-get-src-block-info)
 	     (lambda (&optional light datum)
 	       (let* ((dat (or datum (org-element-context)))

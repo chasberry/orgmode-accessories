@@ -3,7 +3,7 @@
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
-#+COMMENT: latest revision 2015-09-24
+#+COMMENT: latest revision 2016-12-24
 #+DESCRIPTION: Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -548,12 +548,11 @@ Wrap the results of `org-babel-execute:ravel' in a
       ;; end do
       (setf (nth 2 retval)
 		  (append
-		   `((:results . ,(if inline "raw replace" "replace"))
-		    (:wrap . ,(if inline "ravel" "EXPORT RAVEL"))
+		   `((:results . "replace")
+		     (:wrap . ,(if inline "ravel" "EXPORT RAVEL"))
 		     (:exports . "results")			 
 		     (:engine . ,engine-cdr)) 			 
 		   n2r))))
-
 #+END_SRC
 
 *** defvar-org-ravel-no-confirm-for-ravel
@@ -633,9 +632,8 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 
   Use CHUNK-STYLE, RAVELARG, and R-HEADERS-ATTR (often ignored) to
   format BODY, then wrap it inside an export snippet."
-    (org-macro-escape-arguments
      (funcall (nth 1 chunk-style)
-	      ravelarg r-headers-attr body)))
+	      ravelarg r-headers-attr body))
 
   (defun  org-ravel-blockify
     (chunk-style label ravelarg ravel-attr non-ravelargs body)

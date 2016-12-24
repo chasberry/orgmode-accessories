@@ -528,51 +528,34 @@ Wrap the results of `org-babel-execute:ravel' in a
 
 #+NAME: defun-org-ravel-rewrap
 #+BEGIN_SRC emacs-lisp
-  (defun org-ravel-rewrap (retval)
-    ":wrap with `ravel' maybe.
-  Argument RETVAL is the parsed src block.
+  (defun org-ravel-rewrap (retval &optional inline engine-cdr)
+    "(Re)Set `:wrap', `:results', `:exports', amd `:engine'
+     header args to values ravel uses. INLINE settings
+     differ. ENGINE-CDR gives the engine string, if any.
 
-  `:file', `:file-ext', and `:results' get suffixed with `-arg'
-  to neuter their effects. Block/snippet style functions can find
-  them in `R-HEADERS-ATTR'. "
-    (if (assoc :wrap (nth 2 retval))
-	(setf (cdr (assoc :wrap (nth 2 retval))) "EXPORT RAVEL")
-      (setf (nth 2 retval)  (append (nth 2 retval)
-                                    '((:wrap . "EXPORT RAVEL")))))
-    ;; :results value gets saved in non-ravelargs in case it is ever
-    ;; needed
-    (if (assq :file (nth 2 retval))
-	(setf (car (assoc :file (nth 2 retval))) :file-arg))
-    (if (assq :file-ext (nth 2 retval))
-	(setf (car (assq :file-ext (nth 2 retval))) :file-ext-arg))
-    (if (assq :results (nth 2 retval))
-	(let
-            ((results-arg (cdr (assq :results (nth 2 retval)))))
-          (setf (cdr (assq :results (nth 2 retval)))
-		"replace")
-	  (setf (nth 2 retval)  (append (nth 2 retval)
-					`((:results-arg . ,results-arg)))))))
+	Argument RETVAL is the vslue of `org-babel-get-src-block-info'..
 
-
-#+END_SRC
-
-*** defun-org-ravel-set-raw-results 
-
-The inline results are in ~@@ravel: ... @@~ snippets. Do not allow
-further formatting.
-
-#+NAME: defun-org-ravel-set-raw-results
-#+BEGIN_SRC emacs-lisp
-  (defun org-ravel-set-raw-results (retval)
-    "Set (:results raw replace).
-  Argument RETVAL is the parsed src block."
-    (if (assoc :results (nth 2 retval))
-	(setf (cdr (assoc :results (nth 2 retval))) "raw replace")
+	The original header args `:exports', `:wrap', `:file', `:file-ext', and
+	`:results' get suffixed with `-arg'. Block/snippet style
+	functions can find them in `R-HEADERS-ATTR'. "
+    (let ((n2r (nth 2 retval)))
+      (cl-loop
+       for carname in
+       '(:exports :results :wrap :file :file-ext) do
+       (let ((elt (assq carname n2r)))
+	 (if elt
+	     (setcar elt (intern (format "%S-arg" carname))))))
+      ;; end do
       (setf (nth 2 retval)
-            (append (nth 2 retval)
-                    '((:results . "raw replace"))))))
+		  (append
+		   `((:results . ,(if inline "raw replace" "replace"))
+		    (:wrap . ,(if inline "ravel" "EXPORT RAVEL"))
+		     (:exports . "results")			 
+		     (:engine . ,engine-cdr)) 			 
+		   n2r))))
 
 #+END_SRC
+
 *** defvar-org-ravel-no-confirm-for-ravel
 
 Confirmation of ravel `execution' is a nuisance --- and no code is
@@ -650,9 +633,8 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 
   Use CHUNK-STYLE, RAVELARG, and R-HEADERS-ATTR (often ignored) to
   format BODY, then wrap it inside an export snippet."
-    (format "@@ravel:%s@@"
             (funcall (nth 1 chunk-style)
-                     ravelarg r-headers-attr body)))
+                     ravelarg r-headers-attr body))
 
   (defun  org-ravel-blockify
     (chunk-style label ravelarg ravel-attr non-ravelargs body)
@@ -662,7 +644,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
   NON-RAVELARGS (typically ignored) to format BODY and wrap it
   inside an export block."
              (funcall (nth 0 chunk-style) label ravelarg
-                      ravel-attr non-ravelargs body))
+		      ravel-attr non-ravelargs body))
 #+END_SRC
 *** defun-org-ravel-get-style
 #+NAME: defun-org-ravel-get-style
@@ -960,31 +942,27 @@ macro is used.
 			      backend)))))
 	    (org-confirm-babel-evaluate org-confirm-babel-evaluate))
        ;; org-babel-get-src-block-info will modify info for ravel blocks
+
        (cl-letf
 	   (((symbol-function 'org-babel-get-src-block-info)
 	     (lambda (&optional light datum)
 	       (let* ((dat (or datum (org-element-context)))
 		      (lang (org-element-property :language dat))
 		      (ravel-it (assoc lang org-ravel-run))
+		      (inline (eq 'inline-src-block (org-element-type datum)))
 		      (engine-cdr (and ravel-it (cdr ravel-it))))
 		 (if ravel-it
 		     (setf (nth 1 dat)
 			   (plist-put (nth 1 dat) :language "ravel")))
-		 (let* ((dat2 (funcall org-ravel-get-s-b-info light dat))
-			(nth-2-dat2 (nth 2 dat2)))
-		   (if (or (not ravel-it)
-			   (equal (cdr (assoc :exports nth-2-dat2)) "none"))
-		       dat2 ;; non-ravel or nothing to do
-		     (add-to-list
-		      'nth-2-dat2
-		      `(:exports-arg . ,(cdr (assoc :exports nth-2-dat2))))
-		     (setf (cdr (assoc :exports nth-2-dat2)) "results")
-		     (add-to-list 'nth-2-dat2 `(:engine . ,engine-cdr))
-		     (setf (nth 2 dat2) nth-2-dat2)
-		     (if (eq 'inline-src-block (org-element-type dat))
-			 (org-ravel-set-raw-results dat2)
-		       (org-ravel-rewrap dat2))
-		     dat2))))))
+		 (let* ((info (funcall org-ravel-get-s-b-info light dat))
+			(nth-2-info (nth 2 info)))
+		 
+		   (unless (or (not ravel-it)
+			       (member '(:exports . "none") (nth 2 info)))
+		     ;; revise headers of RAVEL src-blocks
+		     (org-ravel-rewrap info inline engine-cdr))
+		   ;; return info for all src-blocks
+		   info)))))
 	 ,@body)))
 #+END_SRC
 *** defun-org-ravel-export-string-as

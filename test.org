@@ -16,7 +16,7 @@
   :header-args:emacs-lisp: :tangle yes
   :END:
 
-First, modify ~testing-path~ in [[*setup org-test* functions][setup org-test* functions]] as needed to point
+First, modify ~testing-path~ in [[#setfile][setup org-test* functions]] as needed to point
 to the =testing= directory in the Org-mode distribution.
 
 Load the ert-deftest's by
@@ -34,6 +34,9 @@ or execute this subtree via
 and type 'y' to each query.
 
 *** setup org-test* functions
+    :PROPERTIES:
+    :CUSTOM_ID: setfile
+    :END:
 
  #+BEGIN_SRC emacs-lisp :var testing-path="~/elisp/org-mode/testing/" 
    (require 'org)
@@ -215,6 +218,9 @@ and type 'y' to each query.
      "\\Sexpr{ round(pmin(x,10),3) }\n")))
 #+END_SRC
 
+#+RESULTS:
+: ox-ravel/inline-code-may-have-commas
+
 ** run tests
 
 After running the [[define setup and tests][setup]]:
@@ -236,17 +242,19 @@ or by executing this block
 #+RESULTS:
 #+begin_example
 Selector: "ox-ravel/.*"
-Passed:  5
+Passed:  6
 Failed:  0
 Skipped: 0
-Total:   5/5
+Total:   6/6
 
-Started at:   2016-04-09 13:42:55-0700
+Started at:   2016-12-24 09:12:24-0800
 Finished.
-Finished at:  2016-04-09 13:42:56-0700
+Finished at:  2016-12-24 09:12:25-0800
 
-.....
+......
+
 
 #+end_example
+
 
 See =/path/to/org-mode/testing/README= for more details on testing.

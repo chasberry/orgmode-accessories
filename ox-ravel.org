@@ -633,8 +633,9 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 
   Use CHUNK-STYLE, RAVELARG, and R-HEADERS-ATTR (often ignored) to
   format BODY, then wrap it inside an export snippet."
-            (funcall (nth 1 chunk-style)
-                     ravelarg r-headers-attr body))
+    (org-macro-escape-arguments
+     (funcall (nth 1 chunk-style)
+	      ravelarg r-headers-attr body)))
 
   (defun  org-ravel-blockify
     (chunk-style label ravelarg ravel-attr non-ravelargs body)

@@ -1,13 +1,12 @@
 * orgmode-accessories
 
-Add ons for orgmode
+_Add ons for orgmode_
 
+This is the rl-no-parser branch. Use this with *Release 9.0* or higher. It utilizes
+the new versions of `org-babel-get-src-block-info' and `org-babel-lob-get-info'.
 
-This is the rl-no-parser branch.
-
-*Note this branch requires at least this commit of Org mode* utilizing
-the new version of `org-babel-get-src-block-info':
-
+If you are running on the `master' branch this commit of Org mode is
+this first with those new versions:
 
 #+BEGIN_QUOTE
  commit 9738da473277712804e0d004899388ad71c6b791
@@ -20,8 +19,11 @@ the new version of `org-babel-get-src-block-info':
 
 - ox-ravel.org :: description and definition of backends to create
                ~Sweave~, ~brew~, ~Rmd~, and ~html~ style files.
+
 - demos.org :: demonstrations of various ravel features and use cases.
+
 - test.org :: ERT unit tests of ravel features.
+
 - example-1-Rnw.org :: includes an orgmode translation of example-1 from the
      Sweave user's manual. Exporting with ~ravel-latex~ produces a
      file very similar to the =*.Rnw= code.

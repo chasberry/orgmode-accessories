@@ -918,6 +918,11 @@ macro is used.
 	     (or (bound-and-true-p org-ravel-get-s-b-info)
 		 (symbol-function
 		  'org-babel-get-src-block-info)))
+	    (org-ravel-lob-get-info
+	     ;; avoid recursive redefinition
+	     (or (bound-and-true-p org-ravel-lob-get-info)
+		 (symbol-function
+		  'org-babel-lob-get-info)))
 	    ;; set ravel variables
 	    (org-ravel-run
 	     (or  engines org-ravel-run org-ravel-engines))
@@ -955,13 +960,26 @@ macro is used.
 			   (plist-put (nth 1 dat) :language "ravel")))
 		 (let* ((info (funcall org-ravel-get-s-b-info light dat))
 			(nth-2-info (nth 2 info)))
-		 
+
 		   (unless (or (not ravel-it)
 			       (member '(:exports . "none") (nth 2 info)))
 		     ;; revise headers of RAVEL src-blocks
 		     (org-ravel-rewrap info inline engine-cdr))
 		   ;; return info for all src-blocks
-		   info)))))
+		   info))))
+	    ((symbol-function 'org-babel-lob-get-info)
+	     (lambda (&optional datum)
+	       (let*
+		   ((datum (or datum (org-element-context)))
+		    (info  (funcall org-ravel-lob-get-info datum))
+		    (lang (car info))
+		    (ravel-it  (string= lang "ravel"))
+		    (inline (eq 'inline-babel-call (org-element-type datum))))
+		 (unless (or (not ravel-it)
+			     (member '(:exports . "none") (nth 2 info)))
+		      ;; revise headers of RAVEL src-blocks
+		   (org-ravel-rewrap info inline))
+		 info))))
 	 ,@body)))
 #+END_SRC
 *** defun-org-ravel-export-string-as

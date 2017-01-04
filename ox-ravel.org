@@ -18,6 +18,8 @@
   :header-args: :eval never
   :END:
 
+*Org-9.0* and higher releases of org will use this version of  =ox-ravel=.
+
 *Note this version requires at least this commit of Org mode* utilizing
 the new version of `org-babel-get-src-block-info':
 
@@ -26,6 +28,7 @@ the new version of `org-babel-get-src-block-info':
   Author: Nicolas Goaziou <mail@nicolasgoaziou.fr>
   Date:   Wed Feb 10 00:22:09 2016 +0100
 #+END_QUOTE
+
 
 ** browsing this file
 

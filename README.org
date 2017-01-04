@@ -2,11 +2,11 @@
 
 _Add ons for orgmode_
 
-This is the rl-no-parser branch. Use this with *Release 9.0* or higher. It utilizes
+This is the =org-9-plus= branch. Use this with *Release 9.0* or higher. It utilizes
 the new versions of `org-babel-get-src-block-info' and `org-babel-lob-get-info'.
 
 If you are running on the `master' branch this commit of Org mode is
-this first with those new versions:
+this first with new versions of those functions:
 
 #+BEGIN_QUOTE
  commit 9738da473277712804e0d004899388ad71c6b791

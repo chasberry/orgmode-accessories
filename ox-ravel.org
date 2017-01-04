@@ -3,7 +3,7 @@
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
-#+COMMENT: latest revision 2015-09-24
+#+COMMENT: latest revision 2015-09-24,2017-01-03
 #+DESCRIPTION: Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -186,75 +186,6 @@ can be used. Check out
   :eval:     never
   :END:
 
-*************** 
-
-Things to think about:
-- load, require, autoload, provide
-- Commentary and Code as per checkDoc
-- dexy does integration of documents, see [[http://www.dexy.it/faq/#how-is-dexy-different-to-sweave][Dexy FAQ]], maybe later ...
-
-- melpa might be a good way to distribute: [[http://melpa.milkbox.net/][MELPA homepage]]
-
-- DO flet: use org-flet instead - [2012-08-17 Fri] HUH? org-flet is
-  gone!!! Back to plain old flet. Push this to github along with other
-  new stuff.
-
-- DONE: I have set up to combine :ravel and #+ATTR_RAVEL: then
-
-- Save the header info as #+ATTR_R-HEADERS: then parse the header info in
-  the src block function and
-  possibly refer to its values in setting up the chunk.
-
-- exporting brew style to *.org might be an awesome capability. Here is how to do it:
-  1. write the usual code including `:ravel <%[=] ... [{}][-]%>' arguments
-     - install a hook for org-export-before-parsing-hook that will
-     - (copy and) save the temp buffer
-     - run R and call brew( <the saved copy> )
-     - ad-deactivate as needed
-     - (stop "all done") or
-     - copy the saved buffer back to working buffer and continue. Under
-       this option, one can later use the saved buffer to export to
-       other formats
-     - then just export with any backend that supports brew
-  2. put brew delimiters in an *.org file
-     - run brew on that file and write another file
-     - export that file as usual, possibly letting babel work as usual
-
-
-Mostly DONE:
-- so here is what I am figuring out:
-  - DONE need to advise org-babel-exp-do-export
-    - to strip results of R blocks
-    - to pre-format R src-blocks and inline src blocks
-    - to pre-format and possibly run non-R source blocks according to
-      the original parent (e.g. latex)
-  - DONE advise org-export-as to
-    - add hook for pre-parsed buffer
-    - ad-activate org-babel-exp-do-export
-    - ad-do-it
-    - remove hook for pre-parsed buffer
-    - ad-deactivate
-    so that other back-ends are not tripped up
-  - DONE define a universal src-block function
-  - DONE define a universal inline-src-block function
-  - define a back-end specific src-block format [DONE for latex-brew
-    and latex-noweb]
-  - define a back-end specific inline-src-block format [LIKEWISE]
-  - DONE for the non-R src block function, use the ancestral version
-  - DONE for the non-R inline src block function, use ancestor
-  - NB ( assoc 'src-block (reverse org-rnw-translate-alist)) will
-    find the ancestor!!!! - might need to revise for multiply derived
-    backends like ox-md.
-  - NB org-export-before-parsing-hook is handy - it can remove delimiters
-    I insert to subvert babel's machinations.
-  - need to add a native knitr backend
-  - DONE src_R{} idiom is tricky. org-babel-inline-src-block-regexp
-    needs whitespace between the [args] if any in the src_R call. So,
-    I add that in the flet'ed version of org-babel-execute:R.
-
-    
-*************** END
-
 ** The elisp header for ox-ravel.el
 
  #+BEGIN_SRC emacs-lisp :tangle ox-ravel.el :comments no
@@ -410,7 +341,7 @@ ingredients needed:
 The examples below should serve to show what is needed to create
 different chunk and inline styles.
 
-* TODO Babel
+* Babel
 
 ** variables
 *** defconst-org-babel-header-args:ravel
@@ -547,29 +478,7 @@ use `defcustom' here
 
 #+END_SRC
 
-** TODO functions, macros,  and advice
-**************** 
-   TODO
-Or maybe not...
-
-After http://thread.gmane.org/gmane.emacs.orgmode/87533/focus=87845
-patches are accepted, convert the code below to use :exports code, so
-`org-babel-exp-do-export' will use `org-babel-exp-code' instead of
-running `org-babel-exp-results'. Simplifies a lot.
-- no need to change :lang ravel
-- no need to set :results raw
-- cleaning old results is automagic
-Need to do:
-- advice org-babel-exp-code to
-  - call org-babel-expand-src-block to do :var assignment
-  - noweb expansion just works
-  - apply the chunk style functions as per --snippetize/blockify
-  - let-bind org-babel-exp-code-template if (member lang engines)
-  - let-bind org-babel-exp-inline-code-template if (member lang engines)
-
-*************** END
-
-
+** functions, macros,  and advice
 *** defadvice-org-babel-parse-inline-src-block-match
 
 #+NAME: defadvice-org-babel-parse-inline-src-block-match
@@ -692,20 +601,7 @@ nil in which case, I do not reset it.
             value)))
 
 #+END_SRC
-*** TODO defun-org-babel-execute:ravel
-*************** 
-    TODO
-engine needs to go somewhere.
-
-- Maybe best to pass it on to the chunk styling functions. That way,
-  brew chunks can ignore the engine spec in sorting out how to handle
-  the ravel spec.
-
-- or cons it to ravel-attr, which brew can ignore
-
-
-*************** END
-
+*** defun-org-babel-execute:ravel
 
 `org-babel-execute:ravel' calls formatting functions for the code. No
 actual code is run. Also need to add some kind of alias for edit modes

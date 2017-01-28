@@ -9,8 +9,8 @@
 * Setup for test-deck
 
 1. Run the [[new-deck]] src block once to start.
-2. Go to the [[#tds-headline][test-deck slides]] subtree, edit, and export with the
-  =md-knitr= backend
+2. Go to the [[#tds-headline][test-deck slides]] subtree, edit as desired, and export
+   with the =ravel-markdown= backend (=C-c C-e C-s r m=).
 3. Go to the [[run-slidify]] src block and run the code there.
 4. Repeat 2 and 3 as needed.
 

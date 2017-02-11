@@ -51,7 +51,7 @@ mode        : selfcontained # {standalone, draft}
 - =EXPORT_OPTIONS= needs =toc:nil= or html creation will barf
 - =#+MD: ---= terminates slides (not needed at the very end)
 - ~ox-ravel.el~ needs to be loaded
-- export using the ~md-knitr~ backend, e.g. =C-c C-e C-s m r=
+- export using the ~ravel-markdown~ backend, e.g. =C-c C-e C-s r m=
 #+MD: ---
 ** Square root of 2
 

@@ -721,7 +721,8 @@ functions to be so called.
            (inline-args '(ravel r-headers-attr src-code))
            (blk-body
             `(let* ((label
-		     (replace-regexp-in-string "[^[:alnum:]#+-_.]" "_" label))
+		     (if label
+			 (replace-regexp-in-string "[^[:alnum:]#+-_.]" "_" label)))
 		    (ravel  (org-ravel-attr-plus-header label ravel attr-ravel)))
                ,(if xcode
                     `(format ,xblock ravel

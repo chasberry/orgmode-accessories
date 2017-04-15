@@ -701,11 +701,15 @@ functions to be so called.
   inline format, and XCODE is an optional line prefix.
 
    `org-ravel-block-X' defines the Chunk code style.  It's arguments are
-       LABEL - the chunk name,
+
+       LABEL - the chunk name (which will be sanitized by
+	substituting `_' for any character not allowed as a
+	chunk label by Sweave),
+
        RAVEL - header args as a string,
        ATTR-RAVEL - attributes to be combined with RAVEL,
        R-HEADERS-ATTR - other headers from Babel as a string parseable
-        by `org-babel-parse-header-arguments',
+	by `org-babel-parse-header-arguments',
        SRC-CODE is the code from the block.
 
    `org-ravel-inline-X' defines the inline code style.  It's arguments
@@ -716,7 +720,9 @@ functions to be so called.
             '(label ravel attr-ravel r-headers-attr src-code))
            (inline-args '(ravel r-headers-attr src-code))
            (blk-body
-            `(let ((ravel  (org-ravel-attr-plus-header label ravel attr-ravel)))
+            `(let* ((label
+		     (replace-regexp-in-string "[^[:alnum:]#+-_.]" "_" label))
+		    (ravel  (org-ravel-attr-plus-header label ravel attr-ravel)))
                ,(if xcode
                     `(format ,xblock ravel
                              (replace-regexp-in-string "^" ,xcode src-code))
@@ -725,11 +731,11 @@ functions to be so called.
            (bname (concat "org-ravel-block-" x))
            (iname (concat "org-ravel-inline-" x)))
        (defalias (intern bname)
-         (list 'lambda blk-args blk-body)
-         (concat "Run this:\n\n" (pp-to-string blk-body)))
+	 (list 'lambda blk-args blk-body)
+	 (concat "Run this:\n\n" (pp-to-string blk-body)))
        (defalias (intern iname)
-         (list 'lambda inline-args inline-body)
-         (concat "Run this:\n\n" (pp-to-string inline-body)))
+	 (list 'lambda inline-args inline-body)
+	 (concat "Run this:\n\n" (pp-to-string inline-body)))
        (format "Functions: %s and %s" bname iname)))
 
 #+END_SRC

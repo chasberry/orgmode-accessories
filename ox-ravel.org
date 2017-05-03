@@ -374,15 +374,24 @@ proper processing.
 #+BEGIN_SRC emacs-lisp
   (defconst org-babel-header-args:ravel
     '(
-      (ravel               . (:any))
+      (ravel               . :any)
       (ravel-style         . :any)
-      (engine              . :any)
-      (exports             . :any)
-      (results             . ((file list vector table scalar verbatim)
-                              (raw org html latex code pp wrap)
-                              (replace silent append prepend)
-                              (output value graphics))))
+      (engine              . :any))
     "Ravel-specific header arguments.")
+
+  ;; org-lint org-lint needs these
+  (eval-after-load 'ob-core
+    '(mapc (lambda (x)
+	     (add-to-list
+	      'org-babel-common-header-args-w-values x))
+	   org-babel-header-args:ravel))
+
+  (eval-after-load 'ob-core
+    '(mapc (lambda (x)
+	     (add-to-list
+	      'org-babel-header-arg-names (car x)))
+	   org-babel-header-args:ravel))
+
 #+END_SRC
 *** defvar-org-ravel-style
 

@@ -27,7 +27,7 @@ author("test-deck",open_rmd=FALSE,use_git=FALSE)
 * test-deck slides
    :PROPERTIES:
    :EXPORT_FILE_NAME: test-deck/my.Rmd
-   :EXPORT_OPTIONS: toc:nil
+   :EXPORT_OPTIONS: toc:nil rmd_yaml:nil
    :CUSTOM_ID: tds-headline
    :END:
 
@@ -109,7 +109,7 @@ this last slide had no headline
 
 #+NAME: run-slidify
 #+BEGIN_SRC R 
-slidify("my.Rmd")
+  slidify("my.Rmd")
 #+END_SRC
 
 #+RESULTS: run-slidify

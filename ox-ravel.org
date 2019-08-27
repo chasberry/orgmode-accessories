@@ -1184,29 +1184,32 @@ A ravel backend whose parent is not in `org-export-backends' will need
 to `require' or `load' that parent.
 
 The `rmd' backend and its child, `Ravel-markdown', have the
-`:with-auto-yaml-header' option. Setting `rmd_yaml:t' in an options
-line will insert a yaml header with title, author, and date. Doing so
-may interfere with later yaml blocks in some report generators. 
+`:with-auto-yaml-header' option. Setting `rmd_yaml:header' in an
+options line will insert a yaml header with title, author, and
+date. Doing so may interfere with later yaml blocks in report
+generators like the R markdown::render() function that evidently
+expects particular setting to apper in the very first YAML block. So
+the default is set to `footer'.
 
 #+NAME: run-org-ravel-define-exporters
 #+BEGIN_SRC emacs-lisp :comments org
 
-    (eval-after-load 'ox-latex
-      '(org-ravel-define-exporter
-       'ravel-latex
-       'latex ?l "Ravel-LaTeX" "rnw" nil t (lambda () (LaTeX-mode))))
+  (eval-after-load 'ox-latex
+    '(org-ravel-define-exporter
+      'ravel-latex
+      'latex ?l "Ravel-LaTeX" "rnw" nil t (lambda () (LaTeX-mode))))
 
-    (eval-after-load 'ox-beamer
-      '(org-ravel-define-exporter
-       'ravel-beamer
-       'beamer ?b "Ravel-beamer" "rnw" nil t (lambda () (LaTeX-mode)))
-  )
-    (eval-after-load 'ox-html
-      '(org-ravel-define-exporter
-       'ravel-html
-       'html ?h "Ravel-html" "html" nil t ))
+  (eval-after-load 'ox-beamer
+    '(org-ravel-define-exporter
+      'ravel-beamer
+      'beamer ?b "Ravel-beamer" "rnw" nil t (lambda () (LaTeX-mode)))
+    )
+  (eval-after-load 'ox-html
+    '(org-ravel-define-exporter
+      'ravel-html
+      'html ?h "Ravel-html" "html" nil t ))
 
-   (defun org-ravel--fix-cite (str)
+  (defun org-ravel--fix-cite (str)
     "Fix a \\cite{...} entry in STR."
     (let
 	((newstr
@@ -1216,41 +1219,49 @@ may interfere with later yaml blocks in some report generators.
 
   (defun org-ravel-filter-cite-as-pandoc (text back-end info)
     "Translate citations in latex format (i.e. \cite{id}) into
-    citations in pandoc format (i.e. [@id]). 
+      citations in pandoc format (i.e. [@id]). 
 
-    Note, loading `ox-bibtex' transforms all latex/bibtex citations
-    into html links, so do not load it if this format is desired."
+      Note, loading `ox-bibtex' transforms all latex/bibtex citations
+      into html links, so do not load it if this format is desired."
     (replace-regexp-in-string "\\\\cite{[^}]*}" #'org-ravel--fix-cite
 			      text nil t))
 
   (defun org-ravel--yaml-header (info)
-    "A minimal header."
-    (when (plist-get info :with-auto-yaml-header)
-    (let* ((title  (org-element-interpret-data (plist-get info :title)))
-	   (author (org-element-interpret-data (plist-get info :author)))
-	   (date   (org-element-interpret-data (plist-get info :date))))
-      ;; (concat title author date))
-      ;; envir)
-      (org-fill-template "---\nauthor: %author\ntitle: %title\ndate: %date\n---\n"
-			 `(("author" . ,author)
-			   ( "title" . ,title)
-			   ( "date" . ,date ))))))
+    "A minimal header/footer is CONSed to value in 
+  :with-auto-yaml-header from INFO."
+    (let ((rmd_yaml (plist-get info :with-auto-yaml-header)))
+      (when rmd_yaml 
+	(let* ((title  (org-element-interpret-data (plist-get info :title)))
+	       (author (org-element-interpret-data (plist-get info :author)))
+	       (date   (org-element-interpret-data (plist-get info :date))))
+	  ;; (concat title author date))
+	  ;; envir)
+	  (cons rmd_yaml       
+		(org-fill-template
+		 "\n---\nauthor: %author\ntitle: %title\ndate: %date\n---\n"
+		 `(("author" . ,author)
+		   ( "title" . ,title)
+		   ( "date" . ,date ))))))))
 
   (defun org-ravel-rmd-template (contents info)
     "Return complete document string after Markdown conversion.
-  CONTENTS is the transcoded contents string.  INFO is a plist used
-  as a communication channel."
-    (concat (org-ravel--yaml-header info) contents))
+    CONTENTS is the transcoded contents string.  INFO is a plist used
+    as a communication channel. A YAML block is added as a header or footer."
+    (let ((rmd_yaml (org-ravel--yaml-header info)))
+      (concat (when (eq (car rmd_yaml) 'header) (cdr rmd_yaml))
+	      contents
+	      (when (eq (car rmd_yaml) 'footer) (cdr rmd_yaml)))))
+
 
   (eval-after-load 'ox-md
     '(progn
-      (org-export-define-derived-backend
-	  'rmd
-	  'md
-	:translate-alist '((template . org-ravel-rmd-template))
-	:options-alist '((:with-auto-yaml-header nil "rmd_yaml" nil t)) 
-	:filters-alist   '((:filter-latex-fragment .org-ravel-cite-as-pandoc)))
-      (org-ravel-define-exporter
+       (org-export-define-derived-backend
+	   'rmd
+	   'md
+	 :translate-alist '((template . org-ravel-rmd-template))
+	 :options-alist '((:with-auto-yaml-header nil "rmd_yaml" 'footer t)) 
+	 :filters-alist   '((:filter-latex-fragment .org-ravel-cite-as-pandoc)))
+       (org-ravel-define-exporter
 	'ravel-markdown
 	'rmd ?m "Ravel-markdown" "md" nil t nil 
 	'((:filter-latex-fragment . org-ravel-filter-cite-as-pandoc)))))

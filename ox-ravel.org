@@ -856,6 +856,101 @@ See the `org-ravel-style-x' docstring for more details.
 
 *** TODO org-ravel-style-x-asciidoc
 *** TODO org-ravel-style-x-textile
+* Markdown helpers
+
+#+begin_src emacs-lisp
+  (defun org-ravel--fix-cite (str)
+    "Fix a \\cite{...} entry in STR."
+    (let
+	((newstr
+	  (replace-regexp-in-string ",[\s-]*" "; @" str)))
+      (setq newstr (replace-regexp-in-string "^\\\\cite{" "[@" newstr))
+      (replace-regexp-in-string "}$" "]" newstr)))
+
+  (defun org-ravel-filter-cite-as-pandoc (text back-end info)
+    "Translate citations in latex format (i.e. \cite{id}) into
+	citations in pandoc format (i.e. [@id]). 
+
+	Note, loading `ox-bibtex' transforms all latex/bibtex citations
+	into html links, so do not load it if this format is desired."
+    (replace-regexp-in-string "\\\\cite{[^}]*}" #'org-ravel--fix-cite
+			      text nil t))
+
+  (defun org-ravel--yaml-header (info)
+    "A minimal header/footer is CONSed to value in 
+    :with-auto-yaml-header from INFO."
+    (let ((rmd_yaml (plist-get info :with-auto-yaml-header)))
+      (when rmd_yaml 
+	(let* ((title  (org-element-interpret-data (plist-get info :title)))
+	       (author (org-element-interpret-data (plist-get info :author)))
+	       (date   (org-element-interpret-data (plist-get info :date))))
+	  ;; (concat title author date))
+	  ;; envir)
+	  (cons rmd_yaml       
+		(org-fill-template
+		 "author: %author\ntitle: %title\ndate: %date\n"
+		 `(("author" . ,author)
+		   ( "title" . ,title)
+		   ( "date" . ,date ))))))))
+
+  (defun org-ravel--yaml-header (info)
+    "A minimal header/footer is CONSed to value in 
+    :with-auto-yaml-header from INFO."
+    (let ((rmd_yaml (plist-get info :with-auto-yaml-header)))
+      (when rmd_yaml 
+	(let* ((with-title  (plist-get info :with-title))
+	       (with-author  (plist-get info :with-author))
+	       (with-date  (plist-get info :with-date))
+
+	       (title  (and with-title
+			    (concat "title: "
+				    (org-element-interpret-data
+				     (plist-get info :title))
+				    "\n")))	
+	       (author  (and with-author
+			    (concat "author: "
+				    (org-element-interpret-data
+				     (plist-get info :author))
+				    "\n")))
+	       (date  (and with-date
+			    (concat "date: "
+				    (org-element-interpret-data
+				     (plist-get info :date))
+				    "\n")))
+	       )
+	  (cons rmd_yaml (concat title author date))))))
+
+
+
+
+    (defun org-ravel-rmd-template (contents info)
+      "Return complete document string after Markdown conversion.
+      CONTENTS is the transcoded contents string.  INFO is a plist
+      used as a communication channel. A YAML block is added as a
+      header consisting of all YAML export blocks and (optionally)
+      the title, author and date as determined from their options."
+      (let* ((rmd_yaml (org-ravel--yaml-header info))
+	     (auto-first (eq (car rmd_yaml) 'header))
+	     (auto-last (eq (car rmd_yaml) 'footer))
+	     (auto-content (cdr rmd_yaml))
+	     (yaml-export-blocks
+	      (apply 'concat (org-element-map
+				 (org-element-parse-buffer 'greater-element )
+				 'export-block
+			       (lambda (exb) (and
+					      (equal (org-element-property :type exb)
+						     "YAML")
+					      (org-element-property :value exb)))))))
+	(concat
+	 (when (or (< 0 (length auto-content)) (<  0 (length yaml-export-blocks)))
+	   (concat "---\n" "# YAML header created by ox-ravel\n"
+		   (when auto-first (cdr rmd_yaml))
+		   yaml-export-blocks
+		   (when auto-last (cdr rmd_yaml))
+		   "---\n"))
+	 contents)))
+
+#+end_src
 * Exporter
 ** Transcoders
 
@@ -1183,13 +1278,17 @@ parent backends. The `ravel' backends that depend on those parents are
 A ravel backend whose parent is not in `org-export-backends' will need
 to `require' or `load' that parent.
 
-The `rmd' backend and its child, `Ravel-markdown', have the
-`:with-auto-yaml-header' option. Setting `rmd_yaml:header' in an
-options line will insert a yaml header with title, author, and
-date. Doing so may interfere with later yaml blocks in report
-generators like the R markdown::render() function that evidently
-expects particular setting to apper in the very first YAML block. So
-the default is set to `footer'.
+The `rmd' backend and its child, `Ravel-markdown', will extract all
+`yaml' export blocks and combine their contents to form a yaml header.
+
+The `:with-auto-yaml-header' option controls automatic setting of
+author, title and date. Setting `rmd_yaml:header' in an options line
+will insert a yaml header with title, author, and date before any
+other yaml lines.  Setting `rmd_yaml:footer' puts them after those
+lines. Since yaml obeys `left-join' rules, the latter allows yaml
+export blocks to override those settings.  Setting `rmd_yaml:nil'
+prevents those lines from being inserted, which if there are no yaml
+export blocks will result in no yaml header being included.
 
 #+NAME: run-org-ravel-define-exporters
 #+BEGIN_SRC emacs-lisp :comments org
@@ -1208,49 +1307,6 @@ the default is set to `footer'.
     '(org-ravel-define-exporter
       'ravel-html
       'html ?h "Ravel-html" "html" nil t ))
-
-  (defun org-ravel--fix-cite (str)
-    "Fix a \\cite{...} entry in STR."
-    (let
-	((newstr
-	  (replace-regexp-in-string ",[\s-]*" "; @" str)))
-      (setq newstr (replace-regexp-in-string "^\\\\cite{" "[@" newstr))
-      (replace-regexp-in-string "}$" "]" newstr)))
-
-  (defun org-ravel-filter-cite-as-pandoc (text back-end info)
-    "Translate citations in latex format (i.e. \cite{id}) into
-      citations in pandoc format (i.e. [@id]). 
-
-      Note, loading `ox-bibtex' transforms all latex/bibtex citations
-      into html links, so do not load it if this format is desired."
-    (replace-regexp-in-string "\\\\cite{[^}]*}" #'org-ravel--fix-cite
-			      text nil t))
-
-  (defun org-ravel--yaml-header (info)
-    "A minimal header/footer is CONSed to value in 
-  :with-auto-yaml-header from INFO."
-    (let ((rmd_yaml (plist-get info :with-auto-yaml-header)))
-      (when rmd_yaml 
-	(let* ((title  (org-element-interpret-data (plist-get info :title)))
-	       (author (org-element-interpret-data (plist-get info :author)))
-	       (date   (org-element-interpret-data (plist-get info :date))))
-	  ;; (concat title author date))
-	  ;; envir)
-	  (cons rmd_yaml       
-		(org-fill-template
-		 "\n---\nauthor: %author\ntitle: %title\ndate: %date\n---\n"
-		 `(("author" . ,author)
-		   ( "title" . ,title)
-		   ( "date" . ,date ))))))))
-
-  (defun org-ravel-rmd-template (contents info)
-    "Return complete document string after Markdown conversion.
-    CONTENTS is the transcoded contents string.  INFO is a plist used
-    as a communication channel. A YAML block is added as a header or footer."
-    (let ((rmd_yaml (org-ravel--yaml-header info)))
-      (concat (when (eq (car rmd_yaml) 'header) (cdr rmd_yaml))
-	      contents
-	      (when (eq (car rmd_yaml) 'footer) (cdr rmd_yaml)))))
 
 
   (eval-after-load 'ox-md

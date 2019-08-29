@@ -1301,7 +1301,7 @@ of contents as some output formats produce their own.  Setting
 	 :translate-alist '((template . org-ravel-rmd-template))
 	 :options-alist '((:with-auto-yaml-header nil "rmd_yaml" 'footer t)
 			  (:with-toc nil "toc" nil t)) 
-	 :filters-alist   '((:filter-latex-fragment .org-ravel-cite-as-pandoc)))
+	 :filters-alist   '((:filter-latex-fragment . org-ravel-filter-cite-as-pandoc)))
        (org-ravel-define-exporter
 	'ravel-markdown
 	'rmd ?m "Ravel-markdown" "md" nil t nil 

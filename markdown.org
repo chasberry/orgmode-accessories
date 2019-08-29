@@ -1,0 +1,179 @@
+
+
+#+title: markdown demo
+#+date: <2019-08-28 Wed>
+#+author: Charles Berry
+#+email: ccberry@ucsd.edu
+#+language: en
+#+creator: Emacs 26.1 (Org mode 9.2.5)
+
+* Ravel-markdown backend
+
+** 
+
+The Ravel-markdown exporter will produce =*.Rmd= files,
+
+
+
+** R markdown
+
+=*.Rmd= files can be processed by =markdown::render()=
+
+Various output formats can be produced
+
+** Handling of src blocks
+
+Here is an R src block. When =markdown::render()= is run the block is
+executed and its output include in the document.
+
+#+begin_src R
+a <- rnorm(100)
+summary(a)
+#+end_src
+
+** Inline src blocks
+
+Here is an inline src block: src_R{mean(rnorm(10))}. Its code will be
+replaced by the result upon rendering.
+
+** YAML front matter
+
+YAML export blocks like this:
+
+#+begin_export yaml
+output: html_document
+#+end_export
+
+: #+begin_export yaml
+: output: html_document
+: #+end_export
+
+
+will be combined and added to front matter.
+
+The author, title and date will be included if the corresponding
+`:with-*' options are set.
+
+The blocks should not be indented although lines within them may be
+indented consistent with YAML.
+
+** Tables of Contents
+
+Some output formats produce their own tables of contents, so by
+default `:with-toc' is set to `nil'. Setting it to `t' --- by having
+=toc:t= in an options line for example --- will produce a table of
+contents if one is needed.
+
+** This document as =*.Rmd=
+
+Here is some code to print the document:
+
+#+name: print-rmd
+#+begin_src emacs-lisp :eval no :exports none
+  (org-ravel-export-to-buffer 'rmd "tmp markdown output"
+			      nil nil nil nil nil nil
+			      org-ravel-engines
+			      "md")
+  (with-temp-buffer
+  (insert-buffer "tmp markdown output")
+  (kill-buffer "tmp markdown output")
+  (buffer-string))
+#+end_src
+
+The result of running that code looks like this:
+
+#+begin_src emacs-lisp :noweb eval :eval never-export :exports results :results replace
+<<print-rmd>>
+#+end_src
+
+#+RESULTS:
+#+begin_example
+---
+# YAML header created by ox-ravel
+output: html_document
+title: markdown demo
+author: Charles Berry
+date: <2019-08-28 Wed>
+---
+
+
+# Ravel-markdown backend
+
+
+## 
+
+The Ravel-markdown exporter will produce `*.Rmd` files,
+
+
+## R markdown
+
+`*.Rmd` files can be processed by `markdown::render()`
+
+Various output formats can be produced
+
+
+## Handling of src blocks
+
+Here is an R src block. When `markdown::render()` is run the block is
+executed and its output include in the document.
+
+```{r   }
+a <- rnorm(100)
+summary(a) 
+```
+
+
+## Inline src blocks
+
+Here is an inline src block: `r mean(rnorm(10)) `. Its code will be
+replaced by the result upon rendering.
+
+
+## YAML front matter
+
+YAML export blocks like this:
+
+    ,#+begin_export yaml
+    output: html_document
+    ,#+end_export
+
+will be combined and added to front matter.
+
+The author, title and date will be included if the corresponding
+\`:with-\*' options are set.
+
+The blocks should not be indented although lines within them may be
+indented consistent with YAML.
+
+
+## Tables of Contents
+
+Some output formats produce their own tables of contents, so by
+default \`:with-toc' is set to \`nil'. Setting it to \`t' &#x2014; by having
+`toc:t` in an options line for example &#x2014; will produce a table of
+contents if one is needed.
+
+
+## This document as `*.Rmd`
+
+Here is some code to print the document:
+
+The result of running that code looks like this:
+
+#+end_example
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

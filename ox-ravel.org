@@ -1205,7 +1205,12 @@ to `require' or `load' that parent.
 
 #+END_SRC
 
-*** R markdown exports
+*** TODO R markdown exports
+This is setup to use org-ref.  I think I need to use (featurep
+'org-ref) or maybe (eval-after-load 'org-ref) to set this as an
+option.
+
+Maybe need to set it up as optional, so users can opt out.
 
 The Markdown flavored exporters have a template that inserts a =YAML=
 header at the top of the exported document. The ='ravel-markdown=
@@ -1241,7 +1246,8 @@ LaTeX style =\cite= directives are translated to Pandoc format in ='ravel-markdo
        (org-export-define-derived-backend
 	   'rmd
 	   'md
-	 :translate-alist '((template . org-ravel-rmd-template))
+	 :translate-alist '((template . org-ravel-rmd-template)
+			    (link . org-rmd-link))
 	 :options-alist '((:with-auto-yaml-header nil "rmd_yaml" 'footer t)
 			  (:with-toc nil "toc" nil t)))
        (org-ravel-define-exporter
@@ -1282,25 +1288,22 @@ Set up a =YAML= header:
     :with-auto-yaml-header from INFO."
     (let ((rmd_yaml (plist-get info :with-auto-yaml-header)))
       (when rmd_yaml 
-	(let* ((with-title  (plist-get info :with-title))
-	       (with-author  (plist-get info :with-author))
-	       (with-date  (plist-get info :with-date))
+	(let* ((with-title  (and (plist-get info :with-title)
+				  (plist-get info :title)))
+	       (with-author  (and (plist-get info :with-author)
+				  (plist-get info :author)))
+	       (with-date  (and (plist-get info :with-date)
+				(plist-get info :date)))
 	       (title  (and with-title
-			    (concat "title: "
-				    (org-element-interpret-data
-				     (plist-get info :title))
-				    "\n")))	
+			    (format "title: %s\n"
+				    (org-element-interpret-data with-title))))	
 	       (author  (and with-author
-			     (concat "author: "
-				     (org-element-interpret-data
-				      (plist-get info :author))
-				     "\n")))
+			     (format "author: %s\n"
+				     (org-element-interpret-data with-author))))
 	       (date  (and with-date
-			   (concat "date: "
-				   (org-element-interpret-data
-				    (plist-get info :date))
-				   "\n"))))
-		  (cons rmd_yaml (concat title author date))))))
+			   (format "date: %s\n"
+				   (org-element-interpret-data with-date)))))
+	  (cons rmd_yaml (concat title author date))))))
 
   (defun org-ravel-rmd-template (contents info)
     "Return complete document string after Markdown conversion.
@@ -1312,10 +1315,20 @@ Set up a =YAML= header:
 	   (auto-first (eq (car rmd_yaml) 'header))
 	   (auto-last (eq (car rmd_yaml) 'footer))
 	   (auto-content (cdr rmd_yaml))
+	   (parsed (plist-get info :parse-tree))
+	   (bibliog (org-element-map parsed 'link
+		      (lambda (lnk) (and
+				     (string= "bibliography"
+					      (org-element-property
+					       :type lnk))
+				     (org-element-property :path lnk)))))
+	   (biblines (when bibliog (mapconcat
+				    '(lambda (x) (replace-regexp-in-string
+						 "[.]bib$" "" x))
+				    (cons "bibliography: " bibliog)
+				    "\n  - ")))
 	   (yaml-export-blocks
-	    (apply 'concat (org-element-map
-			       (org-element-parse-buffer 'greater-element )
-			       'export-block
+	    (apply 'concat (org-element-map parsed 'export-block
 			     (lambda (exb) (and
 					    (equal (org-element-property :type exb)
 						   "YAML")
@@ -1325,9 +1338,19 @@ Set up a =YAML= header:
 	 (concat "---\n" "# YAML header created by ox-ravel\n"
 		 (when auto-first auto-content)
 		 yaml-export-blocks
+		 (when biblines (concat "\n" biblines "\n"))
 		 (when auto-last auto-content)
 		 "---\n"))
        contents)))
+
+  (defun org-rmd-link (link contents info)
+    "Transcode LINK object into Markdown format.
+  CONTENTS is the link's description.  INFO is a plist used as
+  a communication channel."
+    (unless (string= (org-element-property :type link) "bibliography")
+      (or (org-export-custom-protocol-maybe link contents 'rmd)
+	  (org-export-with-backend 'md link contents info))))
+
 
 #+end_src
 

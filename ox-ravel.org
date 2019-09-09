@@ -1205,12 +1205,7 @@ to `require' or `load' that parent.
 
 #+END_SRC
 
-*** TODO R markdown exports
-This is setup to use org-ref.  I think I need to use (featurep
-'org-ref) or maybe (eval-after-load 'org-ref) to set this as an
-option.
-
-Maybe need to set it up as optional, so users can opt out.
+*** R markdown exports
 
 The Markdown flavored exporters have a template that inserts a =YAML=
 header at the top of the exported document. The ='ravel-markdown=
@@ -1222,8 +1217,8 @@ does not add options or transcoders on its own.
 
 The =`ravel-markdown= backend will extract all `YAML' export blocks
 and combine their contents to form the yaml header.  The
-`:with-auto-yaml-header' option controls inclusion of the author,
-title and date (from the corresponding =org= options) in that
+`:with-auto-yaml-header' option controls automatic inclusion of the
+author, title and date (from the corresponding =org= options) in that
 block. Setting `rmd_yaml:header' in an options line will insert a yaml
 header with title, author, and date before any other yaml lines.
 Setting `rmd_yaml:footer' puts them after those lines. Since yaml
@@ -1237,12 +1232,16 @@ By default ='ravel-markdown= (and ='rmd=) does (do) not produce a table
 of contents as some output formats produce their own.  Setting
 `:with-toc' to `t' will produce a table of contents in the =*.Rmd= file.
 
-LaTeX style =\cite= directives are translated to Pandoc format in ='ravel-markdown=.
+LaTeX style =\cite= directives are translated to Pandoc format in
+='ravel-markdown=.
 
 The option =:with-biblinks= allows bibliography links to be processed
-if such are defined.  Often one will want to place the bibliography
-directives in a =YAML= export block, and the option =biblinks:nil= will
-prevent superfluous insertion of a bibliography in the =*.Rmd= file.
+if such are defined and will allow citation links to be rendered by
+=org-ref= if it is loaded.  Often one will want to place the
+bibliography directives in a =YAML= export block, and the option
+=biblinks:nil= will prevent superfluous insertion of a bibliography in
+the =*.Rmd= file. Also, with =biblinks:nil= and =org-ref= loaded,
+citation links will be rendered in =pandoc= =[@mycite]= style.
 
 #+NAME: run-org-ravel-define-rmarkdown
 #+BEGIN_SRC emacs-lisp :comments org
@@ -1337,16 +1336,27 @@ Set up a =YAML= header:
 		 (when auto-last auto-content)
 		 "---\n"))
        contents)))
+#+end_src
 
+=org-rmd-link= is a kludge to enable =[@mycite]= style citations to
+override =org-ref= processing of =cite= (et cetera) links without
+having to rewrite a bunch of code or advise a lot of functions.
+=org-ref= provides the right format under =pandoc= exports, so this
+works. However, custom link types that refer to the backend could
+trigger a failure if the pandoc backend is not loaded.
+
+#+begin_src emacs-lisp
   (defun org-rmd-link (link contents info)
     "Transcode LINK object into Markdown format.
     CONTENTS is the link's description.  INFO is a plist used as
     a communication channel."
-    (unless (and 
-	     (string= (org-element-property :type link) "bibliography")
-	      (not (plist-get info :with-biblinks)))
-      (or (org-export-custom-protocol-maybe link contents 'rmd)
-	  (org-export-with-backend 'md link contents info))))
+    (let ((biblinks (plist-get info :with-biblinks)))
+      (if (or biblinks (not (featurep 'org-ref)))
+	  (org-export-with-backend 'md link contents info)
+	(unless 
+	    (string= (org-element-property :type link) "bibliography")
+	  (org-export-custom-protocol-maybe link contents 'pandoc)))))
+	
 
 
 #+end_src

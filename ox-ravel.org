@@ -1239,6 +1239,11 @@ of contents as some output formats produce their own.  Setting
 
 LaTeX style =\cite= directives are translated to Pandoc format in ='ravel-markdown=.
 
+The option =:with-biblinks= allows bibliography links to be processed
+if such are defined.  Often one will want to place the bibliography
+directives in a =YAML= export block, and the option =biblinks:nil= will
+prevent superfluous insertion of a bibliography in the =*.Rmd= file.
+
 #+NAME: run-org-ravel-define-rmarkdown
 #+BEGIN_SRC emacs-lisp :comments org
   (eval-after-load 'ox-md
@@ -1249,7 +1254,8 @@ LaTeX style =\cite= directives are translated to Pandoc format in ='ravel-markdo
 	 :translate-alist '((template . org-ravel-rmd-template)
 			    (link . org-rmd-link))
 	 :options-alist '((:with-auto-yaml-header nil "rmd_yaml" 'footer t)
-			  (:with-toc nil "toc" nil t)))
+			  (:with-toc nil "toc" nil t)
+			  (:with-biblinks nil "biblinks" t t)))
        (org-ravel-define-exporter
 	'ravel-markdown
 	'rmd ?m "Ravel-markdown" "md" nil t nil 
@@ -1285,11 +1291,11 @@ Set up a =YAML= header:
 #+begin_src emacs-lisp
   (defun org-ravel--yaml-header (info)
     "A minimal header/footer is CONSed to value in 
-    :with-auto-yaml-header from INFO."
+      :with-auto-yaml-header from INFO."
     (let ((rmd_yaml (plist-get info :with-auto-yaml-header)))
       (when rmd_yaml 
 	(let* ((with-title  (and (plist-get info :with-title)
-				  (plist-get info :title)))
+				 (plist-get info :title)))
 	       (with-author  (and (plist-get info :with-author)
 				  (plist-get info :author)))
 	       (with-date  (and (plist-get info :with-date)
@@ -1302,31 +1308,21 @@ Set up a =YAML= header:
 				     (org-element-interpret-data with-author))))
 	       (date  (and with-date
 			   (format "date: %s\n"
-				   (org-element-interpret-data with-date)))))
+				   (org-element-interpret-data with-date))))
+	       )
 	  (cons rmd_yaml (concat title author date))))))
 
   (defun org-ravel-rmd-template (contents info)
     "Return complete document string after Markdown conversion.
-      CONTENTS is the transcoded contents string.  INFO is a plist
-      used as a communication channel. A YAML block is added as a
-      header consisting of all YAML export blocks and (optionally)
-      the title, author and date as determined from their options."
+	CONTENTS is the transcoded contents string.  INFO is a plist
+	used as a communication channel. A YAML block is added as a
+	header consisting of all YAML export blocks and (optionally)
+	the title, author and date as determined from their options."
     (let* ((rmd_yaml (org-ravel--yaml-header info))
 	   (auto-first (eq (car rmd_yaml) 'header))
 	   (auto-last (eq (car rmd_yaml) 'footer))
-	   (auto-content (cdr rmd_yaml))
+	   (auto-content (cdr rmd_yaml))	 
 	   (parsed (plist-get info :parse-tree))
-	   (bibliog (org-element-map parsed 'link
-		      (lambda (lnk) (and
-				     (string= "bibliography"
-					      (org-element-property
-					       :type lnk))
-				     (org-element-property :path lnk)))))
-	   (biblines (when bibliog (mapconcat
-				    '(lambda (x) (replace-regexp-in-string
-						 "[.]bib$" "" x))
-				    (cons "bibliography: " bibliog)
-				    "\n  - ")))
 	   (yaml-export-blocks
 	    (apply 'concat (org-element-map parsed 'export-block
 			     (lambda (exb) (and
@@ -1338,16 +1334,17 @@ Set up a =YAML= header:
 	 (concat "---\n" "# YAML header created by ox-ravel\n"
 		 (when auto-first auto-content)
 		 yaml-export-blocks
-		 (when biblines (concat "\n" biblines "\n"))
 		 (when auto-last auto-content)
 		 "---\n"))
        contents)))
 
   (defun org-rmd-link (link contents info)
     "Transcode LINK object into Markdown format.
-  CONTENTS is the link's description.  INFO is a plist used as
-  a communication channel."
-    (unless (string= (org-element-property :type link) "bibliography")
+    CONTENTS is the link's description.  INFO is a plist used as
+    a communication channel."
+    (unless (and 
+	     (string= (org-element-property :type link) "bibliography")
+	      (not (plist-get info :with-biblinks)))
       (or (org-export-custom-protocol-maybe link contents 'rmd)
 	  (org-export-with-backend 'md link contents info))))
 

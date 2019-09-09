@@ -43,6 +43,8 @@ this first with new versions of those functions:
 - slidify-example.org :: how to use the ~slidify~ package to make
      slides.
 
+- markdown.org :: describes features of the ~ravel-markdown~ backend.
+
 * Bugs?
 
 Bugs happen. Please let me know if you encounter a bug or if

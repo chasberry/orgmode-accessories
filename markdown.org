@@ -57,6 +57,20 @@ The author, title and date will be included if the corresponding
 The blocks should not be indented although lines within them may be
 indented consistent with YAML.
 
+** Bibliographies and citations
+
+[[https://github.com/jkitchin/org-ref][org-ref]] can be used to manage citations in the ='md'= backend and its
+derivatives and will place the citations and a bibliography in the
+resulting =*.Rmd= document.  If =org-ref= is loaded, this is the
+default.  However, report generators like RMarkdown can render
+documents using =pandoc= style =[@mycite]= citations and BibTex
+bibliographies stored in =*.bib= files. This makes for a neater
+=*.Rmd= file and may be desirable for producing vignettes for R
+packages.  Setting the ~biblinks:nil~ option will select the =pandoc=
+style citations rendered by =org-ref= (if it is loaded) and prohibit
+the creation of a bibliography in the resulting =*.Rmd= file.  The
+=bibliography:= directive can be included in a YAML export block.
+
 ** Tables of Contents
 
 Some output formats produce their own tables of contents, so by

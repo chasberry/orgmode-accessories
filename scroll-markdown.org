@@ -1,0 +1,53 @@
+#+title: Scrollable code blocks
+
+#+begin_export yaml
+output: html_document
+#+end_export
+
+This example is translated from from the [[https://github.com/yihui/rmarkdown-cookbook/blob/master/examples/html-scroll.Rmd][examples/html-scroll.Rmd]] file
+of Yihui Xie's Rmarkdown Cookbook to org.
+
+To run this successfully, be sure that the =css= engine is activated.
+
+#+begin_src css :ravel echo=FALSE
+  pre {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  pre[class] {
+    max-height: 100px;
+  }
+#+end_src
+  
+
+We have defined some CSS rules to limit the height of
+code blocks. Now we can test if these rules work on code
+blocks and text output:
+
+#+begin_src R
+# pretend that we have a lot of code in this chunk
+if (1 + 1 == 2) {
+  # of course that is true
+  print(mtcars)
+  # we just printed a lengthy data set
+}
+#+end_src
+
+  
+
+Next we add rules for a new class `scroll-100` to limit
+the height to 100px, and add the class to the output of
+a code chunk via the chunk option `class.output`:
+
+#+begin_src css :ravel echo=FALSE
+  .scroll-100 {
+      max-height: 100px;
+      overflow-y: auto;
+      background-color: inherit;
+  }
+#+end_src
+
+#+begin_src R :ravel class.output="scroll-100"
+print(mtcars)
+#+end_src
+

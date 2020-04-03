@@ -440,24 +440,25 @@ proper processing.
    :group 'org-export-ravel
 
    :type '(set :greedy t
-               (const :tag "   R" ("R") )
-               (const :tag "   c" ("c" . "engine='c'"))
+	       (const :tag "   R" ("R") )
+	       (const :tag "   c" ("c" . "engine='c'"))
+	       (const :tag "   css" ("css" . "engine='css'"))
 	       (const :tag "   rcpp" ("c++" . "engine='Rcpp'"))
-               (const :tag "   C" ("C" . "engine='c'"))
+	       (const :tag "   C" ("C" . "engine='c'"))
 	       (const :tag "   Rcpp" ("C++" . "engine='Rcpp'"))
-               (const :tag "   Python" ("python" . "engine='python'"))
-               (const :tag "   AWK" ("awk" . "engine='awk'"))
-               (const :tag "   Ruby" ("ruby" . "engine='ruby'"))
-               (const :tag "   Haskell" ("haskell" . "engine='haskell'"))
-               (const :tag "   bash" ("bash" . "engine='bash'"))
-               (const :tag "   perl" ("perl" . "engine='perl'"))
-               (const :tag "   dot" ("dot" . "engine='dot'"))
-               (const :tag "   TikZ" ("tikz" . "engine='tikz'"))
-               (const :tag "   SAS" ("sas" . "engine='sas'"))
-               (const :tag "   CoffeeScript"
-                      ("coffeescript" . "engine='coffeescript'"))
-               (const :tag "   Polyglot" ("polyglot" . "engine='polyglot'"))
-               (cons  :tag "   Other"  string  string)))
+	       (const :tag "   Python" ("python" . "engine='python'"))
+	       (const :tag "   AWK" ("awk" . "engine='awk'"))
+	       (const :tag "   Ruby" ("ruby" . "engine='ruby'"))
+	       (const :tag "   Haskell" ("haskell" . "engine='haskell'"))
+	       (const :tag "   bash" ("bash" . "engine='bash'"))
+	       (const :tag "   perl" ("perl" . "engine='perl'"))
+	       (const :tag "   dot" ("dot" . "engine='dot'"))
+	       (const :tag "   TikZ" ("tikz" . "engine='tikz'"))
+	       (const :tag "   SAS" ("sas" . "engine='sas'"))
+	       (const :tag "   CoffeeScript"
+		      ("coffeescript" . "engine='coffeescript'"))
+	       (const :tag "   Polyglot" ("polyglot" . "engine='polyglot'"))
+	       (cons  :tag "   Other"  string  string)))
 
 
   (make-variable-buffer-local 'org-ravel-engines)

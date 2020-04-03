@@ -7,7 +7,8 @@ output: html_document
 This example is translated from from the [[https://github.com/yihui/rmarkdown-cookbook/blob/master/examples/html-scroll.Rmd][examples/html-scroll.Rmd]] file
 of Yihui Xie's Rmarkdown Cookbook to org.
 
-To run this successfully, be sure that the =css= engine is activated.
+To run this successfully, be sure that the =css= engine is activated
+(by customizing ~org-ravel-engines~).
 
 #+begin_src css :ravel echo=FALSE
   pre {

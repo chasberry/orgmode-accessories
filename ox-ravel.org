@@ -833,9 +833,7 @@ See the `org-ravel-style-x' docstring for more details.
 #+BEGIN_SRC emacs-lisp
   (org-ravel-style-x "md"
   "```{r  %s }\n%s \n```"
-  "`r  %s `")
-
-
+  "@@html:`r  %s `@@")
 #+END_SRC
 *** org-ravel-style-x-braces
 #+NAME: org-ravel-style-x-braces

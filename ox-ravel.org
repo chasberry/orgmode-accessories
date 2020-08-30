@@ -829,6 +829,13 @@ See the `org-ravel-style-x' docstring for more details.
   "<!--rinline  %s  -->")
 #+END_SRC
 *** org-ravel-style-x-md
+
+=ob-md.el= has no provision for the export-snippet, so the html snippet
+is applied by default.  The md exporter processes `this kind of text` as plain
+text and escapes `*` and other characters that might be legitimate
+inline code. 
+
+
 #+NAME: org-ravel-style-x-md
 #+BEGIN_SRC emacs-lisp
   (org-ravel-style-x "md"

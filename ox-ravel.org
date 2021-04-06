@@ -35,8 +35,9 @@ the new version of `org-babel-get-src-block-info':
 ~ox-ravel.org~ is an orgmode file.
 
 If you have downloaded a copy of ~ox-ravel.org~, it is best to view it
-using [[orgmode][orgmode]], which is a part of recent distributions of GNU
-Emacs. In other words, it should suffice to open the file using emacs.
+using [[https://orgmode.org][org mode]], which is a part of recent
+distributions of GNU Emacs. In other words, it should suffice to open
+the file using emacs.
 
 ** quickstart guide
 

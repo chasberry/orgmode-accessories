@@ -683,6 +683,19 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 
 #+END_SRC
 
+*** defcustom-org-ravel-menu-key
+
+#+begin_src emacs-lisp
+  (defcustom org-ravel-menu-key ?r
+    "Key to access the Ravel Exporters via the `org-export-dispatch menu. 
+  Customizing this key may be needed to avoid conflicts with 
+  other export backends.
+    After customizing the key will take effect once ox-ravel is re-initialized,
+    i.e. you must either save the value and restart emacs or reload `ox-ravel'. 
+    "
+      :type '(restricted-sexp :match-alternatives (characterp)))
+#+end_src
+
 * Chunk styling
 
 These functions will be called by the transcoders or used to set up
@@ -1162,7 +1175,7 @@ macro is used.
 					nil ,style-default t))
 	 :filters-alist ,filters
 	 :menu-entry
-	 '(?r "Ravel"
+	 '(,org-ravel-menu-key "Ravel"
               ,(remq nil
                      `((,menu-key ,(concat menu-label " file")
                                   (lambda (a s v b)

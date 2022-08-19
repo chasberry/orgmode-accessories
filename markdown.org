@@ -9,7 +9,11 @@
 
 * Ravel-markdown backend
 
-** 
+Note: when viewing this on github, some sections may not render properly. Try
+`raw` to see the true text or download the file and view it using
+emacs org-mode.
+
+** The Exporter
 
 The Ravel-markdown exporter will produce =*.Rmd= files,
 

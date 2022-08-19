@@ -3,8 +3,8 @@
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
-#+COMMENT: latest revision 2019-10-24
-#+DESCRIPTION: Sweave/knit/brew document maker for orgmode
+#+COMMENT: latest revision 2022-08-19
+#+DESCRIPTION: rmarkdown/Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
 #+EXPORT_SELECT_TAGS: export
@@ -844,18 +844,88 @@ See the `org-ravel-style-x' docstring for more details.
 #+END_SRC
 *** org-ravel-style-x-md
 
-=ob-md.el= has no provision for the export-snippet, so the html snippet
-is applied by default.  The md exporter processes `this kind of text` as plain
-text and escapes `*` and other characters that might be legitimate
-inline code. 
+=ox-md.el= has no provision for the export-snippet, so the html
+snippet is applied by default to protect it from the md exporter which
+processes `this kind of text` as plain text and escapes `*` and other
+characters that might be legitimate inline code.
 
+As of knitr 1.35 https://github.com/yihui/knitr/releases/tag/v1.35 (Sept 2021),
+chunk options are optionally given as YAML syntax after the special comment #|, e.g.,
+
+#+begin_example
+  ```{r}
+  #| echo = FALSE, fig.width = 10,
+  #| fig.cap = "This is a long caption."
+
+  plot(cars)
+  ```
+#+end_example
+
+This is now implemented for the backends that use the ~md~ style. The
+old style given here is not used. For legacy purposes, removing
+~:tangle no~ here and adding it to the next src block before tangling
+will restore the old style.
+
+#+NAME: org-ravel-style-x-md-old
+#+BEGIN_SRC emacs-lisp :tangle no
+  (org-ravel-style-x "md" "```{r %s }\n%s \n```" "@@html:`r %s `@@")
+#+END_SRC
 
 #+NAME: org-ravel-style-x-md
-#+BEGIN_SRC emacs-lisp
-  (org-ravel-style-x "md"
-  "```{r  %s }\n%s \n```"
-  "@@html:`r  %s `@@")
+#+BEGIN_SRC emacs-lisp 
+  (defun ox-ravel--args-alist (argstring)
+    "Return all arguments as an alist with cars set to argument
+  names and cdrs set to the expressions given as argument. Both
+  cars and cdrs are returned as strings."
+    (with-temp-buffer
+      (insert argstring)
+      (ess-r-mode)
+      (beginning-of-buffer)
+      (let (args current-arg)
+	(while (and (setq current-arg (ess-cons-arg))
+		    (setq args (nconc args (list current-arg)))
+		    (ess-jump-to-next-arg)))
+	(assoc-delete-all nil args))))
+
+  (defun ox-ravel--format-cell-opts ( arglist )
+    "Convert ARGLIST to commented YAML syntax."
+    (mapconcat
+     (lambda( argmnt ) (concat "#| " (car argmnt) ": " (cdr argmnt)))
+     arglist
+     "\n"))
+
+  (defun org-ravel-block-md (label ravel attr-ravel _r-headers-attr src-code)
+    "Create a code cell (aka chunk) for SRC-CODE with optional LABEL
+  using options in RAVEL possibly superceded by those in
+  ATTR-RAVEL. The default engine, `R`, may be overridden by an
+  `engine = 'Rcpp'` style specification in RAVEL or ATTR-RAVEL." 
+    (let*
+	((label
+	  (if label
+	      (replace-regexp-in-string "[^[:alnum:]#+-_.]" "_" label)))
+	 (ravelplus
+	  (org-ravel-attr-plus-header nil ravel attr-ravel))
+	 (ravel-alist (ox-ravel--args-alist ravelplus))
+	 (engine (or (assoc-default "engine" ravel-alist) "r"))
+	 (not-engine  (assoc-delete-all "engine" ravel-alist)))
+      (concat "```{"
+	      ;; strip enclosing single quotes
+	      (replace-regexp-in-string "^[']\\(.*\\)[']$" "\\1" engine)
+	      "}\n"
+	      (when label (concat "#| label: " label "\n"))
+	      (ox-ravel--format-cell-opts not-engine)
+	      (and not-engine "\n")
+	      src-code
+	      "\n```")))
+
+  ;; Only R code is allowed inline with this idiom.
+  (defun org-ravel-inline-md (ravel r-headers-attr src-code)
+    "Wrap SRC-CODE as inline rmarkdown code"
+    (format "@@html:‘r  %s ‘@@" src-code))
+
 #+END_SRC
+
+
 *** org-ravel-style-x-braces
 #+NAME: org-ravel-style-x-braces
 #+BEGIN_SRC emacs-lisp
@@ -1262,6 +1332,10 @@ bibliography directives in a =YAML= export block, and the option
 =biblinks:nil= will prevent superfluous insertion of a bibliography in
 the =*.Rmd= file. Also, with =biblinks:nil= and =org-ref= loaded,
 citation links will be rendered in =pandoc= =[@mycite]= style.
+
+The ='ravel-markdown= exporter will produce [[https://quarto.org][quarto]] documents. The
+~.Rmd~ file extension that is produced by default can be changed to
+~.qmd~ by customizing the entry for ~md~ in `org-ravel-style-alist`.
 
 #+NAME: run-org-ravel-define-rmarkdown
 #+BEGIN_SRC emacs-lisp :comments org

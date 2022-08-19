@@ -439,25 +439,39 @@ Test the ~square()~ function:
 ** Expected Result 						   :noexport:
 
 #+BEGIN_EXAMPLE
-  # Compile C Code
+  ---
+  # YAML header created by ox-ravel
+  title: Org Version of Example 090
+  author: Charles Berry
+  date: <2014-08-26 Tue>, [2016-04-17 Sun]
+  ---
 
-  ```{r   }
+  # Table of Contents
+
+
+
+      # Compile C Code
+
+  ```{r}
   ## is gcc or clang there ?
-    Sys.which(c("gcc","clang")) 
+    Sys.which(c("gcc","clang"))
   ```
 
-  ```{r  test-c, results="hide", engine='c' }
+  ```{c}
+  #| label: test-c
+  #| results: "hide"
   void square(double *x) {
     ,*x = *x * *x;
-  } 
+  }
   ```
 
   Test the `square()` function:
 
-  ```{r   }
+  ```{r}
   .C('square', 9)
-  .C('square', 123) 
+  .C('square', 123)
   ```
+
 #+END_EXAMPLE
 
 * Example 029 engine-Rcpp
@@ -602,11 +616,23 @@ Finally, you can pass additional arguments to ~sourceCpp()~ via the chunk option
 ** Expected Result						   :noexport:
 
 #+BEGIN_EXAMPLE
-  # Call Rcpp from knitr
+  ---
+  # YAML header created by ox-ravel
+  title: Org Version of Example 029
+  author: Charles Berry
+  date: <2014-08-26 Tue>, [2016-04-17 Sun]
+  ---
 
-  ```{r  setup }
+  # Table of Contents
+
+
+
+      # Call Rcpp from knitr
+
+  ```{r}
+  #| label: setup
   library(knitr)
-  opts_chunk$set(cache = TRUE) # because the compilation takes time, let's cache it 
+  opts_chunk$set(cache = TRUE) # because the compilation takes time, let's cache it
   ```
 
   When the chunk option `engine='Rcpp'` is specified (or you write the
@@ -615,26 +641,30 @@ Finally, you can pass additional arguments to ~sourceCpp()~ via the chunk option
 
   Test for `fibonacci`:
 
-  ```{r  fibCpp, engine='Rcpp' }
+  ```{Rcpp}
+  #| label: fibCpp
   #include <Rcpp.h>
 
   // [[Rcpp::export]]
   int fibonacci(const int x) {
       if (x == 0 || x == 1) return(x);
       return (fibonacci(x - 1)) + fibonacci(x - 2);
-  } 
+  }
   ```
 
   Because `fibonacci` was defined with the `Rcpp::export` attribute it can now be called as a normal R function:
 
-  ```{r  fibTest, dependson='fibCpp' }
+  ```{r}
+  #| label: fibTest
+  #| dependson: 'fibCpp'
   fibonacci(10L)
-  fibonacci(20L) 
+  fibonacci(20L)
   ```
 
   You can define multiple functions (or helper functions that are not exported) within Rcpp code chunks:
 
-  ```{r  multipleCpp, engine='Rcpp' }
+  ```{Rcpp}
+  #| label: multipleCpp
   #include <Rcpp.h>
   using namespace Rcpp;
 
@@ -646,8 +676,8 @@ Finally, you can pass additional arguments to ~sourceCpp()~ via the chunk option
       NumericVector xab(nab);
 
       for (int i = 0; i < na; i++)
-          for (int j = 0; j < nb; j++)
-              xab[i + j] += a[i] * b[j];
+	  for (int j = 0; j < nb; j++)
+	      xab[i + j] += a[i] * b[j];
 
       return xab;
   }
@@ -661,12 +691,13 @@ Finally, you can pass additional arguments to ~sourceCpp()~ via the chunk option
       output.names() = input.names();
 
       return output;
-  } 
+  }
   ```
 
   If you want to link to code defined in another package (e.g ****RcppArmadillo****) then you need to provide an `Rcpp::depends` attribute. For example:
 
-  ```{r  lmCpp, engine='Rcpp' }
+  ```{Rcpp}
+  #| label: lmCpp
   // [[Rcpp::depends(RcppArmadillo)]]
 
   #include <RcppArmadillo.h>
@@ -685,20 +716,22 @@ Finally, you can pass additional arguments to ~sourceCpp()~ via the chunk option
       arma::colvec resid = y - X*coef;            // residuals
 
       double sig2 = arma::as_scalar( arma::trans(resid)*resid/(n-k) );
-                                                  // std.error of estimate
+						  // std.error of estimate
       arma::colvec stderrest = arma::sqrt(
-                      sig2 * arma::diagvec( arma::inv(arma::trans(X)*X)) );
+		      sig2 * arma::diagvec( arma::inv(arma::trans(X)*X)) );
 
       return List::create(Named("coefficients") = coef,
-                          Named("stderr")       = stderrest
+			  Named("stderr")       = stderrest
       );
-  } 
+  }
   ```
 
   A test:
 
-  ```{r  lmTest, dependson='lmCpp' }
-  fastLm(rnorm(10), matrix(1:20, ncol = 2)) 
+  ```{r}
+  #| label: lmTest
+  #| dependson: 'lmCpp'
+  fastLm(rnorm(10), matrix(1:20, ncol = 2))
   ```
 
   Finally, you can pass additional arguments to `sourceCpp()` via the chunk option `engine.opts`. For example, we can specify `engine.opts=list(showOutput=TRUE, rebuild=FALSE)` to show the output of `R CMD SHLIB`.
@@ -708,7 +741,10 @@ Finally, you can pass additional arguments to ~sourceCpp()~ via the chunk option
 * Run and Save All Demos
 
 The following src block saves the results of the above sections to the
-directory =ravel-demo-results=.
+directory =ravel-demo-results=.  Note that the ~`ravel-latex~ calls
+specify =t= for the body-only argument to generate more readable
+results. Change that to =nil= to produce documents for procesing via
+~knit()~.
 
 #+BEGIN_SRC emacs-lisp :results file :file ravel-demo-results/knitr-expand.tex
   (require 'ox-ravel)

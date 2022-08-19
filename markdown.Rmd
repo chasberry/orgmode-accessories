@@ -1,0 +1,93 @@
+---
+# YAML header created by ox-ravel
+output: html_document
+title: markdown demo
+author: Charles Berry
+date: <2019-08-28 Wed>
+---
+
+
+# Ravel-markdown backend
+
+Note: when viewing this on github, some sections may not render properly. Try
+\`raw\` to see the true text or download the file and view it using
+emacs org-mode.
+
+
+## The Exporter
+
+The Ravel-markdown exporter will produce `*.Rmd` files,
+
+
+## R markdown
+
+`*.Rmd` files can be processed by `markdown::render()`
+
+Various output formats can be produced
+
+
+## Handling of src blocks
+
+Here is an R src block. When `markdown::render()` is run the block is
+executed and its output include in the document.
+
+```{r}
+a <- rnorm(100)
+summary(a)
+```
+
+
+## Inline src blocks
+
+Here is an inline src block: ‘r mean(rnorm(10)) ‘. Its code will be
+replaced by the result upon rendering.
+
+
+## YAML front matter
+
+YAML export blocks like this:
+
+    #+begin_export yaml
+    output: html_document
+    #+end_export
+
+will be combined and added to front matter.
+
+The author, title and date will be included if the corresponding
+\`:with-\*' options are set.
+
+The blocks should not be indented although lines within them may be
+indented consistent with YAML.
+
+
+## Bibliographies and citations
+
+[org-ref](https://github.com/jkitchin/org-ref) can be used to manage citations in the `'md'` backend and its
+derivatives and will place the citations and a bibliography in the
+resulting `*.Rmd` document.  If `org-ref` is loaded, this is the
+default.  However, report generators like RMarkdown can render
+documents using `pandoc` style `[@mycite]` citations and BibTex
+bibliographies stored in `*.bib` files. This makes for a neater
+`*.Rmd` file and may be desirable for producing vignettes for R
+packages.  Setting the `biblinks:nil` option will select the `pandoc`
+style citations rendered by `org-ref` (if it is loaded) and prohibit
+the creation of a bibliography in the resulting `*.Rmd` file.  The
+`bibliography:` directive can be included in a YAML export block.
+
+
+## Tables of Contents
+
+Some output formats produce their own tables of contents, so by
+default \`:with-toc' is set to \`nil'. Setting it to \`t' &#x2014; by having
+`toc:t` in an options line for example &#x2014; will produce a table of
+contents if one is needed.
+
+
+## This document as `*.Rmd`
+
+Here is some code to export the document:
+
+    (org-ravel-export-to-file 'ravel-markdown)
+
+See `markdown.Rmd` for the result.
+

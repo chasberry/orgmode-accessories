@@ -87,7 +87,5 @@ contents if one is needed.
 
 Here is some code to export the document:
 
-    (org-ravel-export-to-file 'ravel-markdown)
-
-See `markdown.Rmd` for the result.
+    (org-ravel-export-to-file 'ravel-markdown )
 

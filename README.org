@@ -44,7 +44,7 @@ this first with new versions of those functions:
      slides.
 
 - markdown.org :: describes features of the ~ravel-markdown~ backend.
-
+- markdown.Rmd  :: the exported version of =markdown.org=.
 * Bugs?
 
 Bugs happen. Please let me know if you encounter a bug or if
@@ -73,7 +73,7 @@ Several to which this software is aimed are
 
    - Sweave
    - brew 
-   - knitr
+   - knitr/rmarkdown/quarto
 
 ** Putting orgmode and Sweave together
 

@@ -874,18 +874,24 @@ will restore the old style.
 #+NAME: org-ravel-style-x-md
 #+BEGIN_SRC emacs-lisp 
   (defun ox-ravel--args-alist (argstring)
-    "Return all arguments as an alist with cars set to argument
-  names and cdrs set to the expressions given as argument. Both
-  cars and cdrs are returned as strings."
-    (with-temp-buffer
-      (insert argstring)
-      (ess-r-mode)
-      (beginning-of-buffer)
-      (let (args current-arg)
-	(while (and (setq current-arg (ess-cons-arg))
-		    (setq args (nconc args (list current-arg)))
-		    (ess-jump-to-next-arg)))
-	(assoc-delete-all nil args))))
+      "Return all arguments as an alist with cars set to argument names
+    and cdrs set to the expressions given as argument. Both cars
+    and cdrs are returned as strings. Only the last instance of a
+    key is retained."
+      (with-temp-buffer
+	(insert argstring)
+	(ess-r-mode)
+	(beginning-of-buffer)
+	(let (args current-arg alst elt (blst ()))
+	  (while (and (setq current-arg (ess-cons-arg))
+		      (setq args (nconc args (list current-arg)))
+		      (ess-jump-to-next-arg)))
+	  (setq alst (assoc-delete-all nil args))
+	
+	  (while alst
+	    (setq elt (pop alst))
+	    (unless (assoc (car elt) alst) (push elt blst)))
+	  (reverse blst))))
 
   (defun ox-ravel--format-cell-opts ( arglist )
     "Convert ARGLIST to commented YAML syntax."
@@ -909,8 +915,8 @@ will restore the old style.
 	 (engine (or (assoc-default "engine" ravel-alist) "r"))
 	 (not-engine  (assoc-delete-all "engine" ravel-alist)))
       (concat "```{"
-	      ;; strip enclosing single quotes
-	      (replace-regexp-in-string "^[']\\(.*\\)[']$" "\\1" engine)
+	      ;; strip enclosing single or double quotes
+	      (replace-regexp-in-string "^['\"]\\(.*\\)['\"]$" "\\1" engine)
 	      "}\n"
 	      (when label (concat "#| label: " label "\n"))
 	      (ox-ravel--format-cell-opts not-engine)

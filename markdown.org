@@ -88,6 +88,7 @@ Here is some code to export the document:
 
 #+name: print-rmd
 #+begin_src emacs-lisp  :exports code
+  (require 'ox-md)
   (org-ravel-export-to-file 'ravel-markdown )
 #+end_src
 

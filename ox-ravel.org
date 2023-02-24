@@ -303,9 +303,17 @@ inline src, and menu selections.
 Currently, backends are avaiable for
 
 - ~ravel-latex~ :: LaTeX Sweave, knitr, or brew documents
-- ~ravel-beamer~ :: LaTeX Sweave and knitr beamer documents
-- ~ravel-markdown-~ :: Markdown knitr documents
 - ~ravel-html~ :: HTML knitr/Rhtml documents
+
+If you load the ~beamer~ backend with ~(require 'ox-beamer)~ in your
+init file or with interactive commands then you will also have
+
+- ~ravel-beamer~ :: LaTeX Sweave and knitr beamer documents
+
+and if you load the ~md~ backend via ~(require 'ox-md)~ in your init
+file or with interactive commands you also get
+
+- ~ravel-markdown-~ :: Markdown knitr documents.
 
 
 A look at the ~*.org~ files in [[examples][the examples section]] should provide a

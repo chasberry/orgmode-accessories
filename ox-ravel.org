@@ -313,7 +313,7 @@ init file or with interactive commands then you will also have
 and if you load the ~md~ backend via ~(require 'ox-md)~ in your init
 file or with interactive commands you also get
 
-- ~ravel-markdown-~ :: Markdown knitr documents.
+- ~ravel-markdown~ :: Markdown knitr documents.
 
 
 A look at the ~*.org~ files in [[examples][the examples section]] should provide a
@@ -935,7 +935,7 @@ will restore the old style.
   ;; Only R code is allowed inline with this idiom.
   (defun org-ravel-inline-md (ravel r-headers-attr src-code)
     "Wrap SRC-CODE as inline rmarkdown code"
-    (format "@@html:‘r  %s ‘@@" src-code))
+    (format "@@html:`r  %s `@@" src-code))
 
 #+END_SRC
 

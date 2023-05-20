@@ -177,6 +177,12 @@ For everyday use, move =ox-ravel.el= into your load path,
 e.g. =~/.emacs.d/= or =~/elisp/= and add ~(require 'ox-ravel)~ to your
 startup.
 
+** enable R in Babel
+
+Customize ~org-babel-load-languages~ setting ~R~ to ~on~. See
+the Org-mode Manual Section 16.9 (Working with Source Code :
+Languages).
+
 * examples
 
 Some =*.org= files in this directory show how the available backends

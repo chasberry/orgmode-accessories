@@ -87,5 +87,6 @@ contents if one is needed.
 
 Here is some code to export the document:
 
+    (require 'ox-md)
     (org-ravel-export-to-file 'ravel-markdown )
 

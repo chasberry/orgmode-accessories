@@ -58,8 +58,8 @@ and type 'y' to each query.
             (inline-code (format "src_R{%s}" code))
             (rnw-res (format "\\Sexpr{ %s }\n" code))
             (tex-res (format "\\rinline{ %s }\n" code))
-            (html-res (format "<!--rinline  %s  -->\n" code))
-            (md-res (format "`r  %s `\n" code)))
+            (html-res (format "<!--rinline %s -->\n" code))
+            (md-res (format "`{r} %s`\n\n" code)))
        (should
 	(string= rnw-res
                  (org-ravel-export-string-as inline-code 'ravel-latex t nil nil nil)))
@@ -74,7 +74,7 @@ and type 'y' to each query.
        (should
 	(string= md-res
                  (org-ravel-export-string-as inline-code
-                                             'ravel-latex t nil nil  "md")))))
+                                             'ravel-markdown t nil nil  "md")))))
     
  #+END_SRC
 
@@ -92,7 +92,7 @@ and type 'y' to each query.
 		(rnw-res (format "<<>>=\n%s\n@ %%def\n" code))
 		(tex-res (format  "%% begin.rcode(  )\n%%%s\n%% end.code\n" code))
 		(html-res (format "<!--begin.rcode   \n%s\nend.rcode-->\n" code))
-		(md-res (format  "```{r   }\n%s \n```\n" code)))
+		(md-res (format  "```{r}\n%s\n```\n" code)))
            (should
             (string= rnw-res
                      (org-ravel-export-string-as src-blk-code 'ravel-latex t
@@ -129,17 +129,17 @@ and type 'y' to each query.
                  (format "#+begin_src R :ravel <%% code  {%%> \n%s\n#+end_src\n" code))
 		(post-blk-code
                  (format "#+begin_src R :ravel <%% code  }%%> \n%s\n#+end_src\n" code))
-		(inline-code (format "src_R[<%% code %%>]{%s}" code))
+		(inline-code (format "src_R{%s}" code))
 		(plain-res (format "<%% %s %%>\n" code))
 		(pre-blk-res
                  (format "<%% %s {%%>\n" code))
 		(post-blk-res
                  (format "<%% %s }%%>\n" code))
 		(inline-res
-                 (format "<%%= %s  -%%>\n" code)))
+                 (format "<%%= %s -%%>\n\n" code)))
          (should
           (string= inline-res
-                   (org-ravel-export-string-as inline-code 'ravel-latex t
+                   (org-ravel-export-string-as inline-code 'ravel-markdown t
                                                nil nil "brew" )))
          (should
           (string= plain-res

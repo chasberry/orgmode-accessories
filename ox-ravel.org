@@ -341,14 +341,14 @@ arguments with the name of their backend.
 Babel headers as a string parseable by
 `org-babel-parse-header-arguments' are made available to the
 ~org-ravel-blockify~ function in the ~non-ravelargs~ argument. This
-would allow translation of some org-babel R header arguments
-to exported chunk headers.  `org-ravel-style-list' defines the
-allowable styles for chunks and adding to that list allows for special
-handling of Babel header args.  The src block and inline processing
-functions of a style would need to inspect the alist of
-~r-headers-attr~ and find those that can be (re-)rendered and add the
-necessary arguments to the output string in the header position along
-with the arguments provided by the ~ravel~ argument.
+would allow translation of some org-babel R header arguments to
+exported chunk headers.  `org-ravel-style-list' defines the allowable
+styles for chunks and adding to that list allows for special handling
+of Babel header args.  The src block function of a style would need to
+inspect the alist of ~r-headers-attr~ and find those that can be
+(re-)rendered and add the necessary arguments to the output string in
+the header position along with the arguments provided by the ~ravel~
+argument.
 
 *** new backends
 
@@ -645,7 +645,7 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 		   (cons engine
 			 ravel-attr)))
            (if (memq type '(inline-src-block inline-babel-call))
-               (org-ravel-snippetize chunk-style ravelarg non-ravelargs full-body)
+               (org-ravel-snippetize chunk-style ravelarg ravel-attr full-body)
              (org-ravel-blockify chunk-style label ravelarg ravel-attr
 				 non-ravelargs full-body))))))
 #+END_SRC
@@ -655,13 +655,13 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
 
 #+NAME: defun-org-ravel-snippetize
 #+BEGIN_SRC emacs-lisp
-  (defun org-ravel-snippetize (chunk-style ravelarg r-headers-attr body)
+  (defun org-ravel-snippetize (chunk-style ravelarg ravel-attr body)
     "Format an inline src block.
 
   Use CHUNK-STYLE, RAVELARG, and R-HEADERS-ATTR (often ignored) to
   format BODY, then wrap it inside an export snippet."
      (funcall (nth 1 chunk-style)
-	      ravelarg r-headers-attr body))
+	      ravelarg ravel-attr body))
 
   (defun  org-ravel-blockify
     (chunk-style label ravelarg ravel-attr non-ravelargs body)
@@ -684,16 +684,16 @@ if Rcpp is to be supported. Like `(defalias 'Rcpp-mode 'c++-mode)'
     (or
      (assoc-default
       (or style-from-header
-          (cdr (assoc
-                :ravel-style
-                (org-babel-parse-header-arguments
-                 (org-entry-get (point)
-                                "header-args:ravel"
-                                'inherit))))
-          org-ravel-style)
+	  (cdr (assoc
+		:ravel-style
+		(org-babel-parse-header-arguments
+		 (org-entry-get (point)
+				"header-args:ravel"
+				'inherit))))
+	  org-ravel-style)
       org-ravel-style-alist 'string=)
      (user-error "Ravel-style: %S not found -- Consult `org-ravel-style-alist'"
-                 style-from-header)))
+		 style-from-header)))
 
 #+END_SRC
 
@@ -751,12 +751,12 @@ functions to be so called.
        SRC-CODE is the code from the block.
 
    `org-ravel-inline-X' defines the inline code style.  It's arguments
-       are RAVEL, R-HEADERS-ATTR, SRC-CODE as above.  Note that only SRC-CODE is
+       are RAVEL, ATTR-RAVEL, SRC-CODE as above.  Note that only SRC-CODE is
        used in this macro, but other arguments may be used in hand tooled inline
        style functions."
      (let ((blk-args
             '(label ravel attr-ravel r-headers-attr src-code))
-           (inline-args '(ravel r-headers-attr src-code))
+           (inline-args '(ravel attr-ravel src-code))
            (blk-body
             `(let* ((label
 		     (if label
@@ -783,6 +783,9 @@ functions to be so called.
 Brew needs to wrap the code inside "<% ... %>" and possibly add
 additional markup. So the `org-ravel-style-x' macro is not used to
 produce the `org-ravel-block/inline-brew' functions.
+
+Inline code may not format properly for some backends where percent
+signs or broken brackets are escaped or replaced by other characters.
 
 *** defun-org-ravel-format-brew-spec
 #+NAME: defun-org-ravel-format-brew-spec
@@ -818,10 +821,10 @@ produce the `org-ravel-block/inline-brew' functions.
   SRC-CODE is the code from the block."
     (format (org-ravel-format-brew-spec ravel) src-code))
 
-  (defun org-ravel-inline-brew (ravel r-headers-attr src-code)
+  (defun org-ravel-inline-brew (ravel attr-ravel src-code)
     "Define the inline-src style for brew.
 
-  RAVEL is the collection of ravel args as a string, R-HEADERS-ATTR
+  RAVEL is the collection of ravel args as a string, RAVEL-ATTR
   is the collection of headers from Babel as a string parseable by
   `org-babel-parse-header-arguments', SRC-CODE is the code from the
   block."
@@ -901,7 +904,7 @@ will restore the old style.
 		      (setq args (nconc args (list current-arg)))
 		      (ess-jump-to-next-arg)))
 	  (setq alst (assoc-delete-all nil args))
-	
+
 	  (while alst
 	    (setq elt (pop alst))
 	    (unless (assoc (car elt) alst) (push elt blst)))
@@ -938,10 +941,24 @@ will restore the old style.
 	      src-code
 	      "\n```")))
 
-  ;; Only R code is allowed inline with this idiom.
-  (defun org-ravel-inline-md (ravel r-headers-attr src-code)
-    "Wrap SRC-CODE as inline rmarkdown code"
-    (format "@@html:`r  %s `@@" src-code))
+
+  (defun org-ravel-inline-md (ravel attr-ravel  src-code)
+     "Create a code cell (aka chunk) for SRC-CODE with optional LABEL
+   using options in RAVEL possibly superceded by those in
+   ATTR-RAVEL. The default engine, `R`, may be overridden by an
+   `engine = 'Rcpp'` style specification in RAVEL or ATTR-RAVEL." 
+     (let*
+	 ((ravelplus
+	   (org-ravel-attr-plus-header nil ravel attr-ravel))
+	  (ravel-alist (ox-ravel--args-alist ravelplus))
+	  (engine (or (assoc-default "engine" ravel-alist) "r"))
+	  (not-engine  (assoc-delete-all "engine" ravel-alist)))
+       (concat "@@html:`{"
+	       ;; strip enclosing single or double quotes
+	       (replace-regexp-in-string "^['\"]\\(.*\\)['\"]$" "\\1" engine)
+	       "} "
+	       src-code
+	       "`@@")))
 
 #+END_SRC
 

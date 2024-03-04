@@ -3,7 +3,7 @@
 #+AUTHOR:    Charles Berry
 #+EMAIL:     ccberry@ucsd.edu
 #+DATE:      2012-10-04
-#+COMMENT: latest revision 2022-08-19
+#+COMMENT: latest revision 2024-03-04
 #+DESCRIPTION: rmarkdown/Sweave/knit/brew document maker for orgmode
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -444,11 +444,20 @@ proper processing.
   Typically, `org-ravel-run' will default to these.  It can be
   buffer-local.  These engines are recognized by `knitr':
 
-	`R' `python' `awk' `ruby' `haskell' `bash' `perl' `dot'
+	`R' `python' `awk' `ruby' `haskell' `bash' `perl' `dot' `mermaid'
 	 `tikz' `sas' `coffeescript', `c', `Rcpp', and `polyglot'.
 
-  Each alist CONS cell has the language (as a string) for the CAR and
-  any cdr is cons-ed to the ravel attributes.
+  Each alist CONS cell has the src block language (as a string) for the CAR
+  and string for the CDR is cons-ed to the ravel
+  attributes. the format for the CDR may be omitted (for R src
+  blocks) or be like this:
+
+      engine='dot' comment='//'
+
+  At least the engine must be specified and it should be in single
+  or double quotes.
+
+  The customization buffer allows the addition of other src block languages.
 
   Buffer local values are allowed."
 
@@ -456,25 +465,28 @@ proper processing.
 
    :type '(set :greedy t
 	       (const :tag "   R" ("R") )
-	       (const :tag "   c" ("c" . "engine='c'"))
+	       (const :tag "   c" ("c" . "engine='c' comment='//'"))
 	       (const :tag "   css" ("css" . "engine='css'"))
-	       (const :tag "   rcpp" ("c++" . "engine='Rcpp'"))
-	       (const :tag "   C" ("C" . "engine='c'"))
-	       (const :tag "   Rcpp" ("C++" . "engine='Rcpp'"))
+	       (const :tag "   rcpp" ("c++" . "engine='Rcpp' comment='//'"))
+	       (const :tag "   C" ("C" . "engine='c' comment='//'"))
+	       (const :tag "   Rcpp" ("C++" . "engine='Rcpp' comment='//'"))
 	       (const :tag "   Python" ("python" . "engine='python'"))
 	       (const :tag "   AWK" ("awk" . "engine='awk'"))
 	       (const :tag "   Ruby" ("ruby" . "engine='ruby'"))
 	       (const :tag "   Haskell" ("haskell" . "engine='haskell'"))
 	       (const :tag "   bash" ("bash" . "engine='bash'"))
 	       (const :tag "   perl" ("perl" . "engine='perl'"))
-	       (const :tag "   dot" ("dot" . "engine='dot'"))
+	       (const :tag "   dot" ("dot" . "engine='dot' comment='//'"))
+	       (const :tag "   Mermaid" ("mermaid" . "engine='mermaid' comment = '%%'"))
 	       (const :tag "   TikZ" ("tikz" . "engine='tikz'"))
 	       (const :tag "   SAS" ("sas" . "engine='sas'"))
 	       (const :tag "   CoffeeScript"
 		      ("coffeescript" . "engine='coffeescript'"))
 	       (const :tag "   Polyglot" ("polyglot" . "engine='polyglot'"))
-	       (cons  :tag "   Other"  string  string)))
-
+	       (repeat  :tag "Add More Languages" :inline t
+			(cons :tag "Other Language"
+			      (string :tag "Language Name")
+			      (string :tag "engine='x' def")))))
 
   (make-variable-buffer-local 'org-ravel-engines)
 #+END_SRC
@@ -900,9 +912,11 @@ will restore the old style.
 	(ess-r-mode)
 	(beginning-of-buffer)
 	(let (args current-arg alst elt (blst ()))
-	  (while (and (setq current-arg (ess-cons-arg))
-		      (setq args (nconc args (list current-arg)))
-		      (ess-jump-to-next-arg)))
+	  (while (and
+		  (not (eobp))
+		  (car (setq current-arg (ess-cons-arg))))
+	    (setq args (nconc args (list current-arg)))	    
+	    (ess-jump-to-next-arg))
 	  (setq alst (assoc-delete-all nil args))
 
 	  (while alst
@@ -910,10 +924,10 @@ will restore the old style.
 	    (unless (assoc (car elt) alst) (push elt blst)))
 	  (reverse blst))))
 
-  (defun ox-ravel--format-cell-opts ( arglist )
+  (defun ox-ravel--format-cell-opts ( arglist &optional comment)
     "Convert ARGLIST to commented YAML syntax."
     (mapconcat
-     (lambda( argmnt ) (concat "#| " (car argmnt) ": " (cdr argmnt)))
+     (lambda( argmnt ) (concat (or comment "#") "| " (car argmnt) ": " (cdr argmnt)))
      arglist
      "\n"))
 
@@ -929,14 +943,21 @@ will restore the old style.
 	 (ravelplus
 	  (org-ravel-attr-plus-header nil ravel attr-ravel))
 	 (ravel-alist (ox-ravel--args-alist ravelplus))
-	 (engine (or (assoc-default "engine" ravel-alist) "r"))
-	 (not-engine  (assoc-delete-all "engine" ravel-alist)))
+	 (engine
+	  (org-unbracket-string "'" "'"
+	    (org-strip-quotes (or (assoc-default "engine" ravel-alist) "r"))))
+	  (comment
+	   (org-unbracket-string "'" "'"
+	     (org-strip-quotes
+	      (assoc-default "comment"  ravel-alist))))
+	  (not-engine
+	   (assoc-delete-all "engine" (assoc-delete-all "comment" ravel-alist))))
       (concat "```{"
 	      ;; strip enclosing single or double quotes
 	      (replace-regexp-in-string "^['\"]\\(.*\\)['\"]$" "\\1" engine)
 	      "}\n"
-	      (when label (concat "#| label: " label "\n"))
-	      (ox-ravel--format-cell-opts not-engine)
+	      (when label (concat (or comment "#") "| label: " label "\n"))
+	      (ox-ravel--format-cell-opts not-engine comment)
 	      (and not-engine "\n")
 	      src-code
 	      "\n```")))

@@ -445,7 +445,7 @@ proper processing.
   buffer-local.  These engines are recognized by `knitr':
 
 	`R' `python' `awk' `ruby' `haskell' `bash' `perl' `dot' `mermaid'
-	 `tikz' `sas' `coffeescript', `c', `Rcpp', and `polyglot'.
+	 `plantuml' `tikz' `sas' `coffeescript', `c', `Rcpp', and `polyglot'.
 
   Each alist CONS cell has the src block language (as a string) for the CAR
   and string for the CDR is cons-ed to the ravel
@@ -453,6 +453,9 @@ proper processing.
   blocks) or be like this:
 
       engine='dot' comment='//'
+
+  In the case of languages like plantuml which uses a single quote,
+  a workaround is needed. See comments in the source code for details.
 
   At least the engine must be specified and it should be in single
   or double quotes.
@@ -478,6 +481,10 @@ proper processing.
 	       (const :tag "   perl" ("perl" . "engine='perl'"))
 	       (const :tag "   dot" ("dot" . "engine='dot' comment='//'"))
 	       (const :tag "   Mermaid" ("mermaid" . "engine='mermaid' comment = '%%'"))
+	       ;; The comment for plantuml is \"'''\". This is needed to workaround some
+	       ;; oddities in the handling of quotes in ess functions used to isolate option
+	       ;; values that result in a single quote being deleted.  
+	       (const :tag "   plantuml" ("plantuml" . "engine='mermaid' comment=\"'''\""))
 	       (const :tag "   TikZ" ("tikz" . "engine='tikz'"))
 	       (const :tag "   SAS" ("sas" . "engine='sas'"))
 	       (const :tag "   CoffeeScript"

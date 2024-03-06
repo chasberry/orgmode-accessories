@@ -484,7 +484,7 @@ proper processing.
 	       ;; The comment for plantuml is \"'''\". This is needed to workaround some
 	       ;; oddities in the handling of quotes in ess functions used to isolate option
 	       ;; values that result in a single quote being deleted.  
-	       (const :tag "   plantuml" ("plantuml" . "engine='mermaid' comment=\"'''\""))
+	       (const :tag "   plantuml" ("plantuml" . "engine='plantuml' comment=\"'''\""))
 	       (const :tag "   TikZ" ("tikz" . "engine='tikz'"))
 	       (const :tag "   SAS" ("sas" . "engine='sas'"))
 	       (const :tag "   CoffeeScript"

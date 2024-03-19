@@ -902,6 +902,9 @@ old style given here is not used. For legacy purposes, removing
 ~:tangle no~ here and adding it to the next src block before tangling
 will restore the old style.
 
+Arbitrary YAML arguments can be enclosed in backticks. These will be
+stripped on output. Interior backticks will not be affected.
+
 #+NAME: org-ravel-style-x-md-old
 #+BEGIN_SRC emacs-lisp :tangle no
   (org-ravel-style-x "md" "```{r %s }\n%s \n```" "@@html:`r %s `@@")
@@ -934,7 +937,9 @@ will restore the old style.
   (defun ox-ravel--format-cell-opts ( arglist &optional comment)
     "Convert ARGLIST to commented YAML syntax."
     (mapconcat
-     (lambda( argmnt ) (concat (or comment "#") "| " (car argmnt) ": " (cdr argmnt)))
+     (lambda( argmnt ) (concat (or comment "#") "| " (car argmnt) ": "
+			       ;; strip enclosing backticks
+			       (org-unbracket-string "`" "`" (cdr argmnt))))
      arglist
      "\n"))
 

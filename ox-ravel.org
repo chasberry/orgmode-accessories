@@ -937,7 +937,8 @@ stripped on output. Interior backticks will not be affected.
   (defun ox-ravel--format-cell-opts ( arglist &optional comment)
     "Convert ARGLIST to commented YAML syntax."
     (mapconcat
-     (lambda( argmnt ) (concat (or comment "#") "| " (car argmnt) ": "
+     (lambda( argmnt ) (concat (or comment "#") "| "
+			       (org-unbracket-string "`" "`" (car argmnt)) ": "
 			       ;; strip enclosing backticks
 			       (org-unbracket-string "`" "`" (cdr argmnt))))
      arglist

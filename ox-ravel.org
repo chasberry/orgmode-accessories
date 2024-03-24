@@ -297,7 +297,7 @@ chunks. So, ~knitr~ chunk options such as 'results="as.is"' would be
 given as ~ravel~ arguments. The way these are handled depends on the
 backend; for ~knitr~ they are placed as chunk options and for ~brew~
 they are used to construct variants of the '<% ... %>' code
-delimiters.
+delimiters. 
 
 Once Babel is finished, the exporter takes over. Typically, an export
 backend is derived from an existing backend like ~latex~, and
@@ -902,8 +902,18 @@ old style given here is not used. For legacy purposes, removing
 ~:tangle no~ here and adding it to the next src block before tangling
 will restore the old style.
 
-Arbitrary YAML arguments can be enclosed in backticks. These will be
-stripped on output. Interior backticks will not be affected.
+Arbitrary YAML arguments in ~#+ATTR_RAVEL~ properties can be enclosed
+in backticks. These will be stripped on output. Interior backticks
+will not be affected.
+
+Note that ~:ravel~ header arguments are a bit fragile. Their names
+cannot include special characters like backticks or dashes unless they
+occur in lisp expressions, e.g. ~(identity `code-fold`=TRUE)~. So,
+ordinarily the ~#+ATTR_RAVEL~ idiom is used to pass cell options like ~case-fold~.
+
+Malformed names may be ignored on output.  There is a check that non-nil
+properties and ~:ravel~ headers produce a result, but this falls short
+of checking that each and every specification is proper.
 
 #+NAME: org-ravel-style-x-md-old
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -932,6 +942,8 @@ stripped on output. Interior backticks will not be affected.
 	  (while alst
 	    (setq elt (pop alst))
 	    (unless (assoc (car elt) alst) (push elt blst)))
+	  (and (not blst) (< 0 (length argstring))
+	       (warn "apparent parse error in %s" argstring))
 	  (reverse blst))))
 
   (defun ox-ravel--format-cell-opts ( arglist &optional comment)
